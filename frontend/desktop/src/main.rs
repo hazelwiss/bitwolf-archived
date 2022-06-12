@@ -17,6 +17,6 @@ fn main() {
             ctx.ui().text("hello world!");
         },
         // Ran whenever input was received.
-        move |input| logger::info!("{input:?}"),
+        move |_input| {},
     );
 }
