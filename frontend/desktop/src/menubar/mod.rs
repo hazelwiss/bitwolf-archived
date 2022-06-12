@@ -8,7 +8,7 @@ use crate::backends::Backend;
 use imgui::DrawContext;
 
 pub fn draw(draw_ctx: &mut DrawContext, backend: &mut Backend) {
-    draw_ctx.ui().menu_bar(|| {
+    draw_ctx.ui().main_menu_bar(|| {
         file::draw(draw_ctx, backend);
         emulation::draw(draw_ctx, backend);
         options::draw(draw_ctx, backend);

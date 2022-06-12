@@ -4,7 +4,7 @@ mod menubar;
 
 fn main() {
     // Backend.
-    let mut backend = backends::Backend::None;
+    let mut backend = backends::Backend::none();
 
     // Create imgui rendering window.
     let ctx = imgui::Context::spawn_with_window();
