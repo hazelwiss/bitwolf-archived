@@ -22,6 +22,13 @@ impl Backend {
         &mut self.be
     }
 
+    pub fn update(&mut self) {
+        match self.get() {
+            BackendType::NintendoGBC(gbc) => gbc.update(),
+            BackendType::None => {}
+        }
+    }
+
     pub fn swap(&mut self, _: &mut DrawContext, new: BackendType) {
         self.be = new;
     }

@@ -3,14 +3,14 @@ use crate::Core;
 
 pub struct Builder {}
 
-pub struct Interpeter {}
+pub struct Interpreter {}
 
-impl Engine for Interpeter {}
+impl Engine for Interpreter {}
 
-impl Core<Interpeter> {
+impl Core<Interpreter> {
     pub fn new(_: Builder) -> Self {
         Self {
-            engine: Interpeter {},
+            engine: Interpreter {},
         }
     }
 

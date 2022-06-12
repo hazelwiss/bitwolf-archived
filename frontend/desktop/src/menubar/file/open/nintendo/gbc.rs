@@ -1,12 +1,11 @@
-use crate::backends::nintendo::gbc::Context;
+use crate::backends::nintendo::gbc::{Context, Engine};
 use gbc::{
-    engines::interpreter::{Builder, Interpeter},
+    engines::interpreter::{Builder, Interpreter},
     Core,
 };
 use std::path::Path;
 
 pub fn open(_: &Path) -> Context {
-    let mut core = Core::<Interpeter>::new(Builder {});
-    core.step();
-    Context {}
+    let core = Core::<Interpreter>::new(Builder {});
+    Context::new(Engine::Interp(core))
 }

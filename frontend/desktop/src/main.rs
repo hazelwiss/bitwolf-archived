@@ -14,7 +14,7 @@ fn main() {
         // Ran on each draw.
         move |ctx| {
             menubar::draw(ctx, &mut backend);
-            ctx.ui().text("hello world!");
+            backend.update();
         },
         // Ran whenever input was received.
         move |_input| {},
