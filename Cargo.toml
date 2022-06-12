@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "cores/common",
+    "cores/nintendo/*",
+    "frontend/*",
+    "util",
+    "logger",
+]
+# Required to determine version for wgpu
+resolver = "2"

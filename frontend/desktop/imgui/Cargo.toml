@@ -1,0 +1,19 @@
+[package]
+name = "imgui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+util = {path = "../../../util"}
+logger = {path = "../../../logger"}
+
+env_logger = "0.9"
+
+imgui = {version = "0.8.2", features = ["tables-api"] }
+imgui-wgpu = { git = "https://github.com/Yatekii/imgui-wgpu-rs" }
+imgui-winit-support = { version = "0.8", default-features = false, features = ["winit-26"] }
+
+winit = { version = "0.26" }
+wgpu = { version = "0.12" }
+
+pollster = "0.2"
