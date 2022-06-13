@@ -5,9 +5,7 @@ pub trait MenuBar {
 
     fn emulation(&mut self, draw_ctx: &mut DrawContext);
 
-    fn file(&mut self, _draw_ctx: &mut DrawContext) {}
+    fn show_debug_menu(&self) -> bool;
 
-    fn options(&mut self, _draw_ctx: &mut DrawContext) {}
-
-    fn help(&mut self, _draw_ctx: &mut DrawContext) {}
+    fn show_emulation_window(&self) -> bool;
 }
