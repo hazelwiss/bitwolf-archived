@@ -14,7 +14,5 @@ impl Core<Interpreter> {
         }
     }
 
-    pub fn step(&mut self) {
-        println!("step!");
-    }
+    pub fn step(&mut self) {}
 }

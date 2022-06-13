@@ -1,5 +1,6 @@
 mod backends;
 mod config;
+mod file_explorer;
 mod menubar;
 
 fn main() {

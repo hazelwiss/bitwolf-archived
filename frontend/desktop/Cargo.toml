@@ -6,6 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# Backends.
 gbc = {path = "../../cores/nintendo/gbc"}
-imgui = {path = "imgui"}
+
+# Logger.
 logger = {path = "../../logger"}
+
+# Frontend utility crates.
+imgui = {path = "imgui"}
+file_dialogue = {path = "file_dialogue"}
