@@ -4,7 +4,8 @@ mod menu;
 
 fn main() {
     // Backend.
-    let mut backend: common_frontend::FrontendBox = Box::new(default_backend::EmptyFrontend::new());
+    let mut frontend: common_frontend::FrontendBox =
+        Box::new(default_backend::EmptyFrontend::new());
 
     // Create imgui rendering window.
     let ctx = imgui::Context::spawn_with_window();
@@ -12,9 +13,9 @@ fn main() {
     // Start imgui rendering window event loop.
     ctx.run(
         // Ran on each draw.
-        move |ctx| {
-            menu::draw(ctx, &mut backend)
-            // rustfmt is being naughty removing my brackets if I don't keep this line!
+        move |draw_ctx| {
+            // Draws main menu bar.
+            menu::menu(draw_ctx, &mut frontend);
         },
         // Ran whenever input was received.
         move |_input| {},
