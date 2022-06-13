@@ -3,6 +3,8 @@ members = [
     "cores/common",
     "cores/nintendo/*",
     "frontend/*",
+    "frontend/desktop/frontend",
+    "frontend/desktop/frontend/nintendo/*",
     "util",
     "logger",
 ]

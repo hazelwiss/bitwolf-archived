@@ -1,11 +1,8 @@
-mod backends;
-mod config;
-mod file_explorer;
-mod menubar;
+#![feature(if_let_guard)]
 
 fn main() {
     // Backend.
-    let mut backend = backends::Backend::none();
+    let mut backend: Box<dyn frontend::Frontend> = Box::new(frontend::empty::EmptyFrontend::new());
 
     // Create imgui rendering window.
     let ctx = imgui::Context::spawn_with_window();
@@ -14,8 +11,8 @@ fn main() {
     ctx.run(
         // Ran on each draw.
         move |ctx| {
-            menubar::draw(ctx, &mut backend);
-            backend.update();
+            backend.menu(ctx)
+            // rustfmt is being naughty removing my brackets if I don't keep this line!
         },
         // Ran whenever input was received.
         move |_input| {},

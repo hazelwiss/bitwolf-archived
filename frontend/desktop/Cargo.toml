@@ -14,4 +14,12 @@ logger = {path = "../../logger"}
 
 # Frontend utility crates.
 imgui = {path = "imgui"}
-file_dialogue = {path = "file_dialogue"}
+
+# Generic frontend crate. 
+frontend = {path = "frontend"}
+
+# GBC frontend crate.
+gbc_frontend = {path = "frontend/nintendo/gbc_frontend"}
+
+# File dialogue crate.
+rfd = "0.8.4"
