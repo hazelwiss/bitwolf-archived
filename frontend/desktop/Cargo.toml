@@ -16,10 +16,10 @@ logger = {path = "../../logger"}
 imgui = {path = "imgui"}
 
 # Generic frontend crate. 
-frontend = {path = "frontend"}
+common-frontend = {path = "common-frontend"}
 
 # GBC frontend crate.
-gbc_frontend = {path = "frontend/nintendo/gbc_frontend"}
+gbc_frontend = {path = "nintendo/gbc_frontend"}
 
 # File dialogue crate.
 rfd = "0.8.4"

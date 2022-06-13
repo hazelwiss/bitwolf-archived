@@ -2,11 +2,9 @@
 mod default_backend;
 mod menu;
 
-type FrontendBox = Box<dyn frontend::Frontend>;
-
 fn main() {
     // Backend.
-    let mut backend: FrontendBox = Box::new(default_backend::EmptyFrontend::new());
+    let mut backend: common_frontend::FrontendBox = Box::new(default_backend::EmptyFrontend::new());
 
     // Create imgui rendering window.
     let ctx = imgui::Context::spawn_with_window();

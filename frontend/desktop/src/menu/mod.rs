@@ -2,7 +2,7 @@ mod file;
 mod help;
 mod options;
 
-use crate::FrontendBox;
+use common_frontend::FrontendBox;
 use imgui::DrawContext;
 
 pub fn draw(draw_ctx: &mut DrawContext, frontend: &mut FrontendBox) {
