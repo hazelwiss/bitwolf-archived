@@ -1,6 +1,5 @@
 mod menu;
-
-use common_frontend::Frontend;
+mod update;
 
 pub struct EmptyFrontend {}
 
@@ -10,4 +9,4 @@ impl EmptyFrontend {
     }
 }
 
-impl Frontend for EmptyFrontend {}
+impl common_frontend::Frontend for EmptyFrontend {}

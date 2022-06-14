@@ -1,6 +1,5 @@
-mod menu;
+mod frontend;
 
-use common_frontend::Frontend;
 use gbc_backend::{engines, Core};
 use std::{fmt::Display, path::Path};
 
@@ -39,4 +38,4 @@ impl GBC {
     }
 }
 
-impl Frontend for GBC {}
+impl common_frontend::Frontend for GBC {}
