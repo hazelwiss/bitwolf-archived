@@ -1,6 +1,7 @@
 use super::Unprefixed;
 use crate::registers::{R16, R8};
 
+#[derive(Debug)]
 pub enum CC {
     NZ,
     Z,
@@ -9,6 +10,7 @@ pub enum CC {
 }
 
 #[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum LD {
     PNN_SP,
     PHLI_A,
@@ -31,7 +33,7 @@ pub enum LD {
     SP_HL,
 }
 
-#[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum RSTVec {
     V00,
     V08,
@@ -43,59 +45,31 @@ pub enum RSTVec {
     V38,
 }
 
-#[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum INC {
     E8(E8),
     RPTblRet(RPTblEntry),
 }
 
-#[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum DEC {
     E8(E8),
     RPTblRet(RPTblEntry),
 }
 
-pub enum ADDHL {
-    RPTblRet(RPTblEntry),
-}
-
-#[allow(non_camel_case_types)]
-pub enum RLC {}
-
-#[allow(non_camel_case_types)]
-pub enum RRC {}
-
-#[allow(non_camel_case_types)]
-pub enum RL {}
-
-#[allow(non_camel_case_types)]
-pub enum RR {}
-
-#[allow(non_camel_case_types)]
-pub enum SLA {}
-
-#[allow(non_camel_case_types)]
-pub enum SRA {}
-
-#[allow(non_camel_case_types)]
-pub enum SWAP {}
-
-#[allow(non_camel_case_types)]
-pub enum SRL {}
-
-#[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum ROT {
-    RLC(RLC),
-    RRC(RRC),
-    RL(RL),
-    RR(RR),
-    SLA(SLA),
-    SRA(SRA),
-    SWAP(SWAP),
-    SRL(SRL),
+    RLC(ALUArg),
+    RRC(ALUArg),
+    RL(ALUArg),
+    RR(ALUArg),
+    SLA(ALUArg),
+    SRA(ALUArg),
+    SWAP(ALUArg),
+    SRL(ALUArg),
 }
 
-#[allow(non_camel_case_types)]
+#[derive(Debug)]
 pub enum ALU {
     ADD(ALUArg),
     ADC(ALUArg),
@@ -111,7 +85,7 @@ impl Unprefixed {
     pub const fn from_byte(byte: u8) -> Self {
         let x = byte >> 6;
         let y = (byte >> 3) & 0b111;
-        let z = byte & 0b11;
+        let z = byte & 0b111;
         match x {
             0b00 => Self::x0(y, z),
             0b01 => Self::x1(y, z),
@@ -136,7 +110,7 @@ impl Unprefixed {
                 },
                 0b001 => match q {
                     false => Unprefixed::LD(LD::R16_NN(Unprefixed::tbl_rp(p))),
-                    true => Unprefixed::ADDHL(ADDHL::RPTblRet(Unprefixed::tbl_rp(p))),
+                    true => Unprefixed::ADDHL(Unprefixed::tbl_rp(p)),
                 },
                 0b010 => match q {
                     false => match p {
@@ -155,8 +129,8 @@ impl Unprefixed {
                     },
                 },
                 0b011 => match q {
-                    false => Unprefixed::INC(INC::RPTblRet(Unprefixed::tbl_rp(y))),
-                    true => Unprefixed::DEC(DEC::RPTblRet(Unprefixed::tbl_rp(y))),
+                    false => Unprefixed::INC(INC::RPTblRet(Unprefixed::tbl_rp(p))),
+                    true => Unprefixed::DEC(DEC::RPTblRet(Unprefixed::tbl_rp(p))),
                 },
                 0b100 => Unprefixed::INC(INC::E8(Unprefixed::tbl_r(y))),
                 0b101 => Unprefixed::DEC(DEC::E8(Unprefixed::tbl_r(y))),
@@ -298,7 +272,7 @@ impl Unprefixed {
             1 => R16::DE,
             2 => R16::HL,
             3 => R16::AF,
-            _ => logger::fatal!("Invalid index for rdp LUT lookup"),
+            _ => panic!("Invalid index for rp2 LUT lookup"),
         }
     }
 
@@ -308,7 +282,7 @@ impl Unprefixed {
             1 => CC::Z,
             2 => CC::NC,
             3 => CC::C,
-            _ => logger::fatal!("Invalid index for cc LUT lookup"),
+            _ => panic!("Invalid index for cc LUT lookup"),
         }
     }
 
@@ -322,23 +296,26 @@ impl Unprefixed {
             5 => ALU::XOR(src),
             6 => ALU::OR(src),
             7 => ALU::CP(src),
-            _ => logger::fatal!(""),
+            _ => panic!(""),
         }
     }
 
     //const fn tbl_rot(idx: u8) -> ROT {}
 }
 
-enum ALUArg {
+#[derive(Debug)]
+pub enum ALUArg {
     E8(E8),
     N,
 }
 
+#[derive(Debug)]
 pub enum RPTblEntry {
     R16(R16),
     SP,
 }
 
+#[derive(Debug)]
 pub enum E8 {
     R8(R8),
     PHL,

@@ -1,7 +1,10 @@
-mod decode;
+pub mod decode;
+//#[cfg(feature = "test")]
+pub mod test;
 
 use crate::registers::R16;
 
+#[derive(Debug)]
 pub enum Unprefixed {
     NOP,
     STOP,
@@ -29,7 +32,7 @@ pub enum Unprefixed {
     POP(R16),
     CALLCC(decode::CC),
     JPCC(decode::CC),
-    ADDHL(decode::ADDHL),
+    ADDHL(decode::RPTblEntry),
     RETCC(decode::CC),
     JRCC(decode::CC),
     LD(decode::LD),

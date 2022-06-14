@@ -1,5 +1,6 @@
 use super::CPU;
 
+#[derive(Debug)]
 pub enum R8 {
     A,
     B,
@@ -10,6 +11,7 @@ pub enum R8 {
     L,
 }
 
+#[derive(Debug)]
 pub enum R16 {
     AF,
     BC,
@@ -17,6 +19,7 @@ pub enum R16 {
     HL,
 }
 
+#[derive(Debug)]
 pub enum Flag {
     Z,
     N,
@@ -24,6 +27,7 @@ pub enum Flag {
     C,
 }
 
+#[derive(Debug)]
 pub struct FlagRegister {
     z: bool,
     n: bool,
@@ -64,6 +68,7 @@ impl FlagRegister {
     }
 }
 
+#[derive(Debug)]
 pub struct RegisterFile {
     a: u8,
     b: u8,
@@ -94,12 +99,32 @@ impl RegisterFile {
     }
 
     #[inline]
-    fn set_flag(&mut self, f: Flag, v: bool) {
+    pub fn read_sp(&self) -> u16 {
+        self.sp
+    }
+
+    #[inline]
+    pub fn write_sp(&mut self, v: u16) {
+        self.sp = v
+    }
+
+    #[inline]
+    pub fn read_pc(&self) -> u16 {
+        self.pc
+    }
+
+    #[inline]
+    pub fn write_pc(&mut self, v: u16) {
+        self.pc = v
+    }
+
+    #[inline]
+    pub fn set_flag(&mut self, f: Flag, v: bool) {
         self.f.set(f, v)
     }
 
     #[inline]
-    fn get_flag(&self, f: Flag) -> bool {
+    pub fn get_flag(&self, f: Flag) -> bool {
         self.f.get(f)
     }
 
