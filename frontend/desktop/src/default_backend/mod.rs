@@ -1,6 +1,6 @@
 mod menu;
 
-use common_frontend::{menubar::MenuBar, Frontend};
+use common_frontend::Frontend;
 
 pub struct EmptyFrontend {}
 

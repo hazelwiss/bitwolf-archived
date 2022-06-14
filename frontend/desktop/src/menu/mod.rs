@@ -5,12 +5,24 @@ mod options;
 use common_frontend::FrontendBox;
 use imgui::DrawContext;
 
-pub fn menu(draw_ctx: &mut DrawContext, frontend: &mut FrontendBox) {
+pub fn menu(
+    draw_ctx: &mut DrawContext,
+    file_reader: &mut file_reader::FileReader<crate::backend_types::Types>,
+    frontend: &mut FrontendBox,
+) {
     draw_ctx.ui().main_menu_bar(|| {
-        file::menu(draw_ctx, frontend);
-        frontend.emulation(draw_ctx);
-        options::menu(draw_ctx, frontend);
-        frontend.debug(draw_ctx);
-        help::menu(draw_ctx, frontend);
+        draw_ctx
+            .ui()
+            .menu("File", || file::menu(draw_ctx, file_reader, frontend));
+        draw_ctx
+            .ui()
+            .menu("Emulation", || frontend.emulation(draw_ctx));
+        draw_ctx
+            .ui()
+            .menu("Options", || options::menu(draw_ctx, frontend));
+        draw_ctx.ui().menu("Debug", || frontend.debug(draw_ctx));
+        draw_ctx
+            .ui()
+            .menu("Help", || help::menu(draw_ctx, frontend));
     });
 }
