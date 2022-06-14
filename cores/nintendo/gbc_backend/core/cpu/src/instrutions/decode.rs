@@ -158,8 +158,8 @@ impl Unprefixed {
 
     const fn x1(y: u8, z: u8) -> Self {
         match z {
-            0b000..=0b101 | 0b111 => Self::LD(LD::E8_R8(Self::tbl_r(y), Self::tbl_r(z))),
-            0b110 => Self::HALT,
+            0b110 if y == 6 => Self::HALT,
+            0b000..=0b111 => Self::LD(LD::E8_R8(Self::tbl_r(y), Self::tbl_r(z))),
             _ => panic!("impossible decode z-value"),
         }
     }

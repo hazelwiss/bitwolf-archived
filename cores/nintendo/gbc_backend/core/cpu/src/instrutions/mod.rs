@@ -1,6 +1,6 @@
 pub mod decode;
-//#[cfg(feature = "test")]
-pub mod test;
+#[cfg(test)]
+mod test;
 
 use crate::registers::R16;
 
