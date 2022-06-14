@@ -1,5 +1,5 @@
 #![allow(unused)]
-use crate::core::bus::{
+use crate::{
     memory_map::{IOReg, Section},
     Bus,
 };

@@ -1,9 +1,14 @@
 [workspace]
 members = [
+    # Shared utility between backends.
     "cores/common-backend",
+    # The different backend cores.
     "cores/nintendo/*",
+    # Frontend crates.
     "frontend/*",
+    # Utility crate.
     "util",
+    # Logging crate.
     "logger",
 ]
 # Required to determine version for wgpu

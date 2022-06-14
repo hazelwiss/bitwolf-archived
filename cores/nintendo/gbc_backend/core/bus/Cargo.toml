@@ -1,5 +1,5 @@
 [package]
-name = "gbc_backend"
+name = "bus"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,13 +7,8 @@ edition = "2021"
 
 [dependencies]
 # Logger crate.
-logger = {path = "../../../logger"}
-
-# CPU crate.
-cpu = {path = "core/cpu"}
+logger = {path = "../../../../../logger"}
 
 # PPU crate.
-ppu = {path = "core/ppu"}
+ppu = {path = "../ppu"}
 
-# Bus crate.
-bus = {path = "core/bus"}

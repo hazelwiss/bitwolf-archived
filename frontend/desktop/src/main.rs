@@ -24,6 +24,7 @@ fn main() {
             // Draws main menu bar.
             menu::menu(draw_ctx, &mut file_reader, &mut frontend);
             msg_receiver::files::receive(&mut file_reader, &mut frontend);
+            frontend.update();
         },
         // Ran whenever input was received.
         move |_input| {},

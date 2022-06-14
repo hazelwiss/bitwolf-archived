@@ -1,9 +1,7 @@
-pub(crate) mod access;
-pub(crate) mod memory_map;
+pub mod access;
+pub mod memory_map;
 
-use crate::core::ppu;
-
-pub(crate) struct Bus {
+pub struct Bus {
     _ppu: ppu::PPU,
     _bootrom: [u8; 256],
 }

@@ -1,8 +1,7 @@
+pub(crate) mod internal;
+
 use super::Engine;
-use crate::{
-    core::{bus, cpu},
-    Core,
-};
+use crate::Core;
 
 pub struct Builder {
     pub rom: Vec<u8>,
@@ -26,5 +25,7 @@ impl Core<Interpreter> {
         }
     }
 
-    pub fn step(&mut self) {}
+    pub fn step(&mut self) {
+        self.internal_step()
+    }
 }

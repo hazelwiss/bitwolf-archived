@@ -11,7 +11,10 @@ pub fn menu(
     ui.menu("Open As", || {
         ui.menu("Nintendo", || {
             if ui.button("GBC (Game Boy Color)") {
-                file_reader.read_file(Types::NintendoGBC, vec![("all", &["gbc", "gb"])]);
+                file_reader.read_file(
+                    Types::NintendoGBC,
+                    vec![("all", &["*"]), (".gbc, .gb", &["gbc", "gb"])],
+                );
             }
         });
     });

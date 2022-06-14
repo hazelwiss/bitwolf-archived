@@ -1,6 +1,6 @@
-pub(crate) mod access;
+pub mod access;
 
-pub(crate) struct PPU {}
+pub struct PPU {}
 
 impl PPU {
     pub fn new() -> Self {
