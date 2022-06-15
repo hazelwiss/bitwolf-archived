@@ -12,6 +12,10 @@ impl FrontendBox {
         }
     }
 
+    pub fn from_box(frontend: Box<dyn Frontend>) -> Self {
+        Self { inner: frontend }
+    }
+
     pub fn swap(&mut self, other: Box<dyn Frontend>) {
         self.inner = other;
     }

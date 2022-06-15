@@ -2,17 +2,17 @@
 
 mod backend_types;
 mod default_backend;
+mod frontend_creator;
 mod menu;
 mod msg_receiver;
-
-use common_frontend::FrontendBox;
+mod proc_flags;
 
 fn main() {
-    // Backend.
-    let mut frontend: FrontendBox = FrontendBox::new(default_backend::EmptyFrontend::new());
-
-    // Create imgui rendering window.
-    let ctx = imgui::Context::spawn_with_window();
+    // Spawn the environment based on input flags to the binary.
+    let proc_flags::Environment {
+        frontend_box: mut frontend,
+        imgui_ctx: ctx,
+    } = proc_flags::env_from_flags();
 
     // Asynchronous file reader.
     let mut file_reader = file_reader::FileReader::<backend_types::Types>::new(100);
@@ -23,7 +23,9 @@ fn main() {
         move |draw_ctx| {
             // Draws main menu bar.
             menu::menu(draw_ctx, &mut file_reader, &mut frontend);
+            // Receive files from message queue.
             msg_receiver::files::receive(&mut file_reader, &mut frontend);
+            // Update backend.
             frontend.update();
         },
         // Ran whenever input was received.
