@@ -1,6 +1,6 @@
 use super::CPU;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum R8 {
     A,
     B,
@@ -11,7 +11,7 @@ pub enum R8 {
     L,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum R16 {
     AF,
     BC,
@@ -19,7 +19,7 @@ pub enum R16 {
     HL,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Flag {
     Z,
     N,

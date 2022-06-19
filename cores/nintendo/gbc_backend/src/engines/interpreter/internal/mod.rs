@@ -1,3 +1,5 @@
+mod instructions;
+
 use super::Interpreter;
 use crate::Core;
 

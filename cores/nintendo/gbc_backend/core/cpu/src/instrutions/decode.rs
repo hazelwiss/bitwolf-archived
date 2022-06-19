@@ -1,7 +1,7 @@
 use super::Unprefixed;
 use crate::registers::{R16, R8};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum CC {
     NZ,
     Z,
@@ -10,7 +10,7 @@ pub enum CC {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum LD {
     PNN_SP,
     PHLI_A,
@@ -33,7 +33,7 @@ pub enum LD {
     SP_HL,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum RSTVec {
     V00,
     V08,
@@ -45,19 +45,19 @@ pub enum RSTVec {
     V38,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum INC {
     E8(E8),
     RPTblRet(RPTblEntry),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum DEC {
     E8(E8),
     RPTblRet(RPTblEntry),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ROT {
     RLC(ALUArg),
     RRC(ALUArg),
@@ -69,7 +69,7 @@ pub enum ROT {
     SRL(ALUArg),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ALU {
     ADD(ALUArg),
     ADC(ALUArg),
@@ -303,19 +303,19 @@ impl Unprefixed {
     //const fn tbl_rot(idx: u8) -> ROT {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ALUArg {
     E8(E8),
     N,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum RPTblEntry {
     R16(R16),
     SP,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum E8 {
     R8(R8),
     PHL,

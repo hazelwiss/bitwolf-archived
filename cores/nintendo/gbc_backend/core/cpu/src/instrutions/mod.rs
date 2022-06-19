@@ -4,7 +4,7 @@ mod test;
 
 use crate::registers::R16;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Unprefixed {
     NOP,
     STOP,
