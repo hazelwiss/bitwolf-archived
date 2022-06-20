@@ -39,6 +39,5 @@ pub enum Unprefixed {
     INC(decode::INC),
     DEC(decode::DEC),
     ALU(decode::ALU),
-    ROT(decode::ROT),
     INVALID,
 }

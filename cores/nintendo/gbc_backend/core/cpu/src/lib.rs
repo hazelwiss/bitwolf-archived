@@ -1,3 +1,4 @@
+pub mod cycles;
 pub mod instrutions;
 pub mod registers;
 

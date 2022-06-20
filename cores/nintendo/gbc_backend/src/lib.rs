@@ -1,6 +1,5 @@
 #![feature(const_mut_refs)]
-#![feature(adt_const_params)]
-#![feature(generic_const_exprs)]
+#![feature(mixed_integer_ops)]
 
 pub mod engines;
 

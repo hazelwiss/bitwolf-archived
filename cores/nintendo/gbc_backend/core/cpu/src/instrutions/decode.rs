@@ -34,15 +34,16 @@ pub enum LD {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum RSTVec {
-    V00,
-    V08,
-    V10,
-    V18,
-    V20,
-    V28,
-    V30,
-    V38,
+    V00 = 0x00,
+    V08 = 0x08,
+    V10 = 0x10,
+    V18 = 0x18,
+    V20 = 0x20,
+    V28 = 0x28,
+    V30 = 0x30,
+    V38 = 0x38,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -59,14 +60,14 @@ pub enum DEC {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ROT {
-    RLC(ALUArg),
-    RRC(ALUArg),
-    RL(ALUArg),
-    RR(ALUArg),
-    SLA(ALUArg),
-    SRA(ALUArg),
-    SWAP(ALUArg),
-    SRL(ALUArg),
+    RLC(E8),
+    RRC(E8),
+    RL(E8),
+    RR(E8),
+    SLA(E8),
+    SRA(E8),
+    SWAP(E8),
+    SRL(E8),
 }
 
 #[derive(Debug, PartialEq, Eq)]
