@@ -6,8 +6,8 @@ use crate::Interpreter;
 use cpu::instrutions::Unprefixed;
 
 impl Interpreter {
-    pub fn fetch_decode_execute(&mut self) {
-        let val = Unprefixed::from_byte(0 as u8);
+    pub(crate) fn fetch_decode_execute(&mut self) {
+        let val = Unprefixed::from_byte(self.fetch());
         match val {
             Unprefixed::NOP => self.nop(),
             Unprefixed::STOP => self.stop(),

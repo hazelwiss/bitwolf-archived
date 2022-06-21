@@ -13,6 +13,7 @@ impl Core<Interpreter> {
     }
 
     pub fn step(&mut self) {
-        self.engine.fetch_decode_execute();
+        println!("hello!");
+        //self.engine.step();
     }
 }

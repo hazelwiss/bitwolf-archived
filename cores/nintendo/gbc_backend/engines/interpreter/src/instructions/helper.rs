@@ -68,12 +68,14 @@ impl Interpreter {
 
     #[inline(always)]
     pub(crate) fn mem_read(&mut self, adr: u16) -> u8 {
-        todo!()
+        self.tick(Cycles::M(1));
+        self.bus.read(adr)
     }
 
     #[inline(always)]
     pub(crate) fn mem_write(&mut self, adr: u16, val: u8) {
-        todo!()
+        self.tick(Cycles::M(1));
+        self.bus.write(adr, val);
     }
 
     #[inline(always)]
@@ -120,6 +122,10 @@ impl Interpreter {
 
     #[inline(always)]
     pub(crate) fn tick(&mut self, cycles: Cycles) {
-        todo!()
+        self.check_events();
+        match cycles {
+            Cycles::T(t) => self.cycle_counter += t as u64,
+            Cycles::M(m) => self.cycle_counter += (m << 2) as u64,
+        }
     }
 }

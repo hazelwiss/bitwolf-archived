@@ -1,7 +1,10 @@
-use crate::Interpreter;
+use crate::{events::Event, Interpreter};
 use cpu::{
     cycles::Cycles,
-    instrutions::decode::{Bit, RSTVec, CC},
+    instrutions::{
+        decode::{Bit, RSTVec, CC},
+        Prefixed,
+    },
     registers::{Flag, R16, R8},
 };
 
@@ -584,15 +587,21 @@ impl Interpreter {
     }
 
     pub(crate) fn di(&mut self) {
-        todo!()
+        self.cpu.ime_set(false);
     }
 
     pub(crate) fn ei(&mut self) {
-        todo!()
+        if !self.cpu.ime_get() {
+            self.scheduler.schedule(self.cycle_counter + 1, Event::EI);
+        }
     }
 
     pub(crate) fn halt(&mut self) {
-        todo!()
+        self.cpu.halted_set(true);
+        while self.cpu.halted_get() {
+            self.interrupt_handler();
+            self.tick(Cycles::M(1));
+        }
     }
 
     pub(crate) fn nop(&mut self) {}
@@ -607,5 +616,31 @@ impl Interpreter {
         logger::fatal!("Attempted to execute STOP instruction!");
     }
 
-    fn cb(&mut self) {}
+    pub(crate) fn cb(&mut self) {
+        let prefixed = Prefixed::from_byte(self.fetch());
+        match prefixed {
+            Prefixed::RLC(dst) => self.rlc_r8(dst),
+            Prefixed::RLC_PHL => self.rlc_phl(),
+            Prefixed::RRC(dst) => self.rrc_r8(dst),
+            Prefixed::RRC_PHL => self.rrc_phl(),
+            Prefixed::RL(dst) => self.rl_r8(dst),
+            Prefixed::RL_PHL => self.rl_phl(),
+            Prefixed::RR(dst) => self.rr_r8(dst),
+            Prefixed::RR_PHL => self.rr_phl(),
+            Prefixed::SLA(dst) => self.sla_r8(dst),
+            Prefixed::SLA_PHL => self.sla_phl(),
+            Prefixed::SRA(dst) => self.sra_r8(dst),
+            Prefixed::SRA_PHL => self.sra_phl(),
+            Prefixed::SWAP(dst) => self.swap_r8(dst),
+            Prefixed::SWAP_PHL => self.swap_phl(),
+            Prefixed::SRL(dst) => self.srl_r8(dst),
+            Prefixed::SRL_PHL => self.srl_phl(),
+            Prefixed::BIT(bit, src) => self.bit_r8(bit, src),
+            Prefixed::BIT_PHL(bit) => self.bit_phl(bit),
+            Prefixed::RES(bit, dst) => self.res_r8(bit, dst),
+            Prefixed::RES_PHL(bit) => self.res_phl(bit),
+            Prefixed::SET(bit, dst) => self.set_r8(bit, dst),
+            Prefixed::SET_PHL(bit) => self.set_phl(bit),
+        }
+    }
 }
