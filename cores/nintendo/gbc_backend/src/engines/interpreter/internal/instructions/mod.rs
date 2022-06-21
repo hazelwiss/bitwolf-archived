@@ -1,10 +1,9 @@
 mod defs;
+mod generic;
+mod helper;
 
 use super::Interpreter;
-use cpu::instrutions::{
-    decode::{ALUArg, RPTblEntry, ALU, DEC, E8, INC, LD},
-    Unprefixed,
-};
+use cpu::instrutions::Unprefixed;
 
 impl Interpreter {
     pub fn fetch_decode_execute(&mut self) {
@@ -29,122 +28,71 @@ impl Interpreter {
             Unprefixed::DI => self.di(),
             Unprefixed::EI => self.ei(),
             Unprefixed::CALL => self.call(),
-            Unprefixed::ADDSP => self.add_sp_e8(),
+            Unprefixed::ADD_SP_I => self.add_sp_e8(),
             Unprefixed::CB => self.nop(), // temporary
             Unprefixed::RST(vec) => self.rst(vec),
-            Unprefixed::PUSH(src) => match src {
-                other => self.push_r16(other),
-            },
-            Unprefixed::POP(dst) => match dst {
-                cpu::registers::R16::AF => self.pop_af(),
-                other => self.pop_r16(other),
-            },
+            Unprefixed::PUSH(src) => self.push_r16(src),
+            Unprefixed::POP(dst) => self.pop_r16(dst),
             Unprefixed::CALLCC(cc) => self.call_cc(cc),
             Unprefixed::JPCC(cc) => self.jp_cc(cc),
             Unprefixed::RETCC(cc) => self.ret_cc(cc),
-            Unprefixed::ADDHL(src) => match src {
-                RPTblEntry::R16(src) => self.add_hl_r16(src),
-                RPTblEntry::SP => self.add_hl_sp(),
-            },
             Unprefixed::JRCC(cc) => self.jr_cc(cc),
-            Unprefixed::LD(ld) => match ld {
-                LD::PNN_SP => todo!(),
-                LD::PHLI_A => todo!(),
-                LD::PHLD_A => todo!(),
-                LD::H_A_PN => todo!(),
-                LD::H_PN_A => todo!(),
-                LD::H_A_PC => todo!(),
-                LD::H_PC_A => todo!(),
-                LD::A_PHLI => todo!(),
-                LD::A_PHLD => todo!(),
-                LD::E8_R8(_, _) => todo!(),
-                LD::E8_N(_) => todo!(),
-                LD::R16_NN(_) => todo!(),
-                LD::PR16_R8(_, _) => todo!(),
-                LD::R8_PR16(_, _) => todo!(),
-                LD::PNN_A => todo!(),
-                LD::A_PNN => todo!(),
-                LD::HL_SP_D => todo!(),
-                LD::SP_HL => todo!(),
-            },
-            Unprefixed::INC(inc) => match inc {
-                INC::E8(e8) => match e8 {
-                    E8::R8(r8) => self.inc_r8(r8),
-                    E8::PHL => self.inc_phl(),
-                },
-                INC::RPTblRet(v) => match v {
-                    RPTblEntry::R16(r16) => self.inc_r16(r16),
-                    RPTblEntry::SP => self.inc_sp(),
-                },
-            },
-            Unprefixed::DEC(dec) => match dec {
-                DEC::E8(e8) => match e8 {
-                    E8::R8(dst) => self.dec_r8(dst),
-                    E8::PHL => self.dec_phl(),
-                },
-                DEC::RPTblRet(v) => match v {
-                    RPTblEntry::R16(dst) => self.dec_r16(dst),
-                    RPTblEntry::SP => self.dec_sp(),
-                },
-            },
-            Unprefixed::ALU(alu) => match alu {
-                ALU::ADD(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.add_r8(src),
-                        E8::PHL => self.add_phl(),
-                    },
-                    ALUArg::N => self.add_n8(),
-                },
-                ALU::ADC(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.adc_r8(src),
-                        E8::PHL => self.adc_phl(),
-                    },
-                    ALUArg::N => self.adc_n8(),
-                },
-                ALU::SUB(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.sub_r8(src),
-                        E8::PHL => self.sub_phl(),
-                    },
-                    ALUArg::N => self.sub_n8(),
-                },
-                ALU::SBC(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.sbc_r8(src),
-                        E8::PHL => self.sbc_phl(),
-                    },
-                    ALUArg::N => self.sbc_n8(),
-                },
-                ALU::AND(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.and_r8(src),
-                        E8::PHL => self.and_phl(),
-                    },
-                    ALUArg::N => self.and_n8(),
-                },
-                ALU::XOR(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.xor_r8(src),
-                        E8::PHL => self.xor_phl(),
-                    },
-                    ALUArg::N => self.xor_n8(),
-                },
-                ALU::OR(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.or_r8(src),
-                        E8::PHL => self.or_phl(),
-                    },
-                    ALUArg::N => self.or_n8(),
-                },
-                ALU::CP(src) => match src {
-                    ALUArg::E8(e8) => match e8 {
-                        E8::R8(src) => self.cp_r8(src),
-                        E8::PHL => self.cp_phl(),
-                    },
-                    ALUArg::N => self.cp_n8(),
-                },
-            },
+            Unprefixed::ADD_HL_R16(src) => self.add_hl_r16(src),
+            Unprefixed::ADD_HL_SP => self.add_hl_sp(),
+            Unprefixed::LD_PNN_SP => self.ld_pn16_sp(),
+            Unprefixed::LD_PHLI_A => self.ld_phli_a(),
+            Unprefixed::LD_PHLD_A => self.ld_phld_a(),
+            Unprefixed::LDH_A_PN => self.ldh_a_pn8(),
+            Unprefixed::LDH_PN_A => self.ldh_pn8_a(),
+            Unprefixed::LDH_A_PC => self.ldh_a_pc(),
+            Unprefixed::LDH_PC_A => self.ldh_pc_a(),
+            Unprefixed::LD_A_PHLI => self.ld_a_phli(),
+            Unprefixed::LD_A_PHLD => self.ld_a_phld(),
+            Unprefixed::LD_R8_R8(dst, src) => self.ld_r8_r8(dst, src),
+            Unprefixed::LD_R8_PHL(dst) => self.ld_r8_phl(dst),
+            Unprefixed::LD_PHL_R8(src) => self.ld_phl_r8(src),
+            Unprefixed::LD_R8_N(dst) => self.ld_r8_n8(dst),
+            Unprefixed::LD_PHL_N => self.ld_phl_n8(),
+            Unprefixed::LD_R16_NN(dst) => self.ld_r16_n16(dst),
+            Unprefixed::LD_SP_NN => self.ld_sp_n16(),
+            Unprefixed::LD_PR16_A(dst) => self.ld_pr16_a(dst),
+            Unprefixed::LD_A_PR16(src) => self.ld_a_pr16(src),
+            Unprefixed::LD_PNN_A => self.ld_pn16_a(),
+            Unprefixed::LD_A_PNN => self.ld_a_pn16(),
+            Unprefixed::LD_HL_SP_I => self.ld_hl_sp_e8(),
+            Unprefixed::LD_SP_HL => self.ld_sp_hl(),
+            Unprefixed::INC_R8(dst) => self.inc_r8(dst),
+            Unprefixed::INC_PHL => self.inc_phl(),
+            Unprefixed::INC_R16(dst) => self.inc_r16(dst),
+            Unprefixed::INC_SP => self.inc_sp(),
+            Unprefixed::DEC_R8(dst) => self.dec_r8(dst),
+            Unprefixed::DEC_PHL => self.dec_phl(),
+            Unprefixed::DEC_R16(dst) => self.dec_r16(dst),
+            Unprefixed::DEC_SP => self.dec_sp(),
+            Unprefixed::ADD_N => self.add_n8(),
+            Unprefixed::ADD_R8(src) => self.add_r8(src),
+            Unprefixed::ADD_PHL => self.add_phl(),
+            Unprefixed::ADC_N => self.adc_n8(),
+            Unprefixed::ADC_R8(src) => self.adc_r8(src),
+            Unprefixed::ADC_PHL => self.adc_phl(),
+            Unprefixed::SUB_N => self.sub_n8(),
+            Unprefixed::SUB_R8(src) => self.sub_r8(src),
+            Unprefixed::SUB_PHL => self.sub_phl(),
+            Unprefixed::SBC_N => self.sbc_n8(),
+            Unprefixed::SBC_R8(src) => self.sbc_r8(src),
+            Unprefixed::SBC_PHL => self.sbc_phl(),
+            Unprefixed::AND_N => self.and_n8(),
+            Unprefixed::AND_R8(src) => self.and_r8(src),
+            Unprefixed::AND_PHL => self.and_phl(),
+            Unprefixed::XOR_N => self.xor_n8(),
+            Unprefixed::XOR_R8(src) => self.xor_r8(src),
+            Unprefixed::XOR_PHL => self.xor_phl(),
+            Unprefixed::OR_N => self.or_n8(),
+            Unprefixed::OR_R8(src) => self.or_r8(src),
+            Unprefixed::OR_PHL => self.or_phl(),
+            Unprefixed::CP_N => self.cp_n8(),
+            Unprefixed::CP_R8(src) => self.cp_r8(src),
+            Unprefixed::CP_PHL => self.cp_phl(),
             Unprefixed::INVALID => logger::fatal!("Attempted to executed invalid instruction"),
         }
     }

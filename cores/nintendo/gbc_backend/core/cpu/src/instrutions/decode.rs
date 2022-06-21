@@ -9,30 +9,6 @@ pub enum CC {
     C,
 }
 
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq)]
-pub enum LD {
-    PNN_SP,
-    PHLI_A,
-    PHLD_A,
-    H_A_PN,
-    H_PN_A,
-    H_A_PC,
-    H_PC_A,
-
-    A_PHLI,
-    A_PHLD,
-    E8_R8(E8, E8),
-    E8_N(E8),
-    R16_NN(RPTblEntry),
-    PR16_R8(R16, R8),
-    R8_PR16(R8, R16),
-    PNN_A,
-    A_PNN,
-    HL_SP_D,
-    SP_HL,
-}
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum RSTVec {
@@ -46,278 +22,280 @@ pub enum RSTVec {
     V38 = 0x38,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum INC {
-    E8(E8),
-    RPTblRet(RPTblEntry),
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum DEC {
-    E8(E8),
-    RPTblRet(RPTblEntry),
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum ROT {
-    RLC(E8),
-    RRC(E8),
-    RL(E8),
-    RR(E8),
-    SLA(E8),
-    SRA(E8),
-    SWAP(E8),
-    SRL(E8),
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum ALU {
-    ADD(ALUArg),
-    ADC(ALUArg),
-    SUB(ALUArg),
-    SBC(ALUArg),
-    AND(ALUArg),
-    XOR(ALUArg),
-    OR(ALUArg),
-    CP(ALUArg),
+#[repr(u8)]
+pub enum Bit {
+    B0 = 0b1,
+    B1 = 0b10,
+    B2 = 0b100,
+    B3 = 0b1000,
+    B4 = 0b1_0000,
+    B5 = 0b10_0000,
+    B6 = 0b100_0000,
+    B7 = 0b1000_0000,
 }
 
 impl Unprefixed {
-    pub const fn from_byte(byte: u8) -> Self {
-        let x = byte >> 6;
-        let y = (byte >> 3) & 0b111;
-        let z = byte & 0b111;
-        match x {
-            0b00 => Self::x0(y, z),
-            0b01 => Self::x1(y, z),
-            0b10 => Self::x2(y, z),
-            0b11 => Self::x3(y, z),
-            _ => panic!("impossible decode x-value"),
+    pub fn from_byte(byte: u8) -> Self {
+        match byte {
+            0x00 => Self::NOP,
+            0x01 => Self::LD_R16_NN(R16::BC),
+            0x02 => Self::LD_PR16_A(R16::BC),
+            0x03 => Self::INC_R16(R16::BC),
+            0x04 => Self::INC_R8(R8::B),
+            0x05 => Self::DEC_R8(R8::B),
+            0x06 => Self::LD_R8_N(R8::B),
+            0x07 => Self::RLCA,
+            0x08 => Self::LD_PNN_SP,
+            0x09 => Self::ADD_HL_R16(R16::BC),
+            0x0A => Self::LD_A_PR16(R16::BC),
+            0x0B => Self::DEC_R16(R16::BC),
+            0x0C => Self::INC_R8(R8::C),
+            0x0D => Self::DEC_R8(R8::C),
+            0x0E => Self::LD_R8_N(R8::C),
+            0x0F => Self::RRCA,
+            0x10 => Self::STOP,
+            0x11 => Self::LD_R16_NN(R16::DE),
+            0x12 => Self::LD_PR16_A(R16::DE),
+            0x13 => Self::INC_R16(R16::DE),
+            0x14 => Self::INC_R8(R8::D),
+            0x15 => Self::DEC_R8(R8::D),
+            0x16 => Self::LD_R8_N(R8::D),
+            0x17 => Self::RLA,
+            0x18 => Self::JR,
+            0x19 => Self::ADD_HL_R16(R16::DE),
+            0x1A => Self::LD_A_PR16(R16::DE),
+            0x1B => Self::DEC_R16(R16::DE),
+            0x1C => Self::INC_R8(R8::E),
+            0x1D => Self::DEC_R8(R8::E),
+            0x1E => Self::LD_R8_N(R8::E),
+            0x1F => Self::RRA,
+            0x20 => Self::JRCC(CC::NZ),
+            0x21 => Self::LD_R16_NN(R16::HL),
+            0x22 => Self::LD_PHLI_A,
+            0x23 => Self::INC_R16(R16::HL),
+            0x24 => Self::INC_R8(R8::H),
+            0x25 => Self::DEC_R8(R8::H),
+            0x26 => Self::LD_R8_N(R8::H),
+            0x27 => Self::DAA,
+            0x28 => Self::JRCC(CC::Z),
+            0x29 => Self::ADD_HL_R16(R16::HL),
+            0x2A => Self::LD_A_PHLI,
+            0x2B => Self::DEC_R16(R16::HL),
+            0x2C => Self::INC_R8(R8::L),
+            0x2D => Self::DEC_R8(R8::L),
+            0x2E => Self::LD_R8_N(R8::L),
+            0x2F => Self::CPL,
+            0x30 => Self::JRCC(CC::NC),
+            0x31 => Self::LD_SP_NN,
+            0x32 => Self::LD_PHLD_A,
+            0x33 => Self::INC_SP,
+            0x34 => Self::INC_PHL,
+            0x35 => Self::DEC_PHL,
+            0x36 => Self::LD_PHL_N,
+            0x37 => Self::SCF,
+            0x38 => Self::JRCC(CC::C),
+            0x39 => Self::ADD_HL_SP,
+            0x3A => Self::LD_A_PHLD,
+            0x3B => Self::DEC_SP,
+            0x3C => Self::INC_R8(R8::A),
+            0x3D => Self::DEC_R8(R8::A),
+            0x3E => Self::LD_R8_N(R8::A),
+            0x3F => Self::CCF,
+
+            0x40 => Self::LD_R8_R8(R8::B, R8::B),
+            0x41 => Self::LD_R8_R8(R8::B, R8::C),
+            0x42 => Self::LD_R8_R8(R8::B, R8::D),
+            0x43 => Self::LD_R8_R8(R8::B, R8::E),
+            0x44 => Self::LD_R8_R8(R8::B, R8::H),
+            0x45 => Self::LD_R8_R8(R8::B, R8::L),
+            0x46 => Self::LD_R8_PHL(R8::B),
+            0x47 => Self::LD_R8_R8(R8::B, R8::A),
+            0x48 => Self::LD_R8_R8(R8::C, R8::B),
+            0x49 => Self::LD_R8_R8(R8::C, R8::C),
+            0x4A => Self::LD_R8_R8(R8::C, R8::D),
+            0x4B => Self::LD_R8_R8(R8::C, R8::E),
+            0x4C => Self::LD_R8_R8(R8::C, R8::H),
+            0x4D => Self::LD_R8_R8(R8::C, R8::L),
+            0x4E => Self::LD_R8_PHL(R8::C),
+            0x4F => Self::LD_R8_R8(R8::C, R8::A),
+            0x50 => Self::LD_R8_R8(R8::D, R8::B),
+            0x51 => Self::LD_R8_R8(R8::D, R8::C),
+            0x52 => Self::LD_R8_R8(R8::D, R8::D),
+            0x53 => Self::LD_R8_R8(R8::D, R8::E),
+            0x54 => Self::LD_R8_R8(R8::D, R8::H),
+            0x55 => Self::LD_R8_R8(R8::D, R8::L),
+            0x56 => Self::LD_R8_PHL(R8::D),
+            0x57 => Self::LD_R8_R8(R8::D, R8::A),
+            0x58 => Self::LD_R8_R8(R8::E, R8::B),
+            0x59 => Self::LD_R8_R8(R8::E, R8::C),
+            0x5A => Self::LD_R8_R8(R8::E, R8::D),
+            0x5B => Self::LD_R8_R8(R8::E, R8::E),
+            0x5C => Self::LD_R8_R8(R8::E, R8::H),
+            0x5D => Self::LD_R8_R8(R8::E, R8::L),
+            0x5E => Self::LD_R8_PHL(R8::E),
+            0x5F => Self::LD_R8_R8(R8::E, R8::A),
+            0x60 => Self::LD_R8_R8(R8::H, R8::B),
+            0x61 => Self::LD_R8_R8(R8::H, R8::C),
+            0x62 => Self::LD_R8_R8(R8::H, R8::D),
+            0x63 => Self::LD_R8_R8(R8::H, R8::E),
+            0x64 => Self::LD_R8_R8(R8::H, R8::H),
+            0x65 => Self::LD_R8_R8(R8::H, R8::L),
+            0x66 => Self::LD_R8_PHL(R8::H),
+            0x67 => Self::LD_R8_R8(R8::H, R8::A),
+            0x68 => Self::LD_R8_R8(R8::L, R8::B),
+            0x69 => Self::LD_R8_R8(R8::L, R8::C),
+            0x6A => Self::LD_R8_R8(R8::L, R8::D),
+            0x6B => Self::LD_R8_R8(R8::L, R8::E),
+            0x6C => Self::LD_R8_R8(R8::L, R8::H),
+            0x6D => Self::LD_R8_R8(R8::L, R8::L),
+            0x6E => Self::LD_R8_PHL(R8::L),
+            0x6F => Self::LD_R8_R8(R8::L, R8::A),
+            0x70 => Self::LD_PHL_R8(R8::B),
+            0x71 => Self::LD_PHL_R8(R8::C),
+            0x72 => Self::LD_PHL_R8(R8::D),
+            0x73 => Self::LD_PHL_R8(R8::E),
+            0x74 => Self::LD_PHL_R8(R8::H),
+            0x75 => Self::LD_PHL_R8(R8::L),
+            0x76 => Self::HALT,
+            0x77 => Self::LD_PHL_R8(R8::A),
+            0x78 => Self::LD_R8_R8(R8::A, R8::B),
+            0x79 => Self::LD_R8_R8(R8::A, R8::C),
+            0x7A => Self::LD_R8_R8(R8::A, R8::D),
+            0x7B => Self::LD_R8_R8(R8::A, R8::E),
+            0x7C => Self::LD_R8_R8(R8::A, R8::H),
+            0x7D => Self::LD_R8_R8(R8::A, R8::L),
+            0x7E => Self::LD_R8_PHL(R8::A),
+            0x7F => Self::LD_R8_R8(R8::A, R8::A),
+
+            0x80 => Self::ADD_R8(R8::B),
+            0x81 => Self::ADD_R8(R8::C),
+            0x82 => Self::ADD_R8(R8::D),
+            0x83 => Self::ADD_R8(R8::E),
+            0x84 => Self::ADD_R8(R8::H),
+            0x85 => Self::ADD_R8(R8::L),
+            0x86 => Self::ADD_PHL,
+            0x87 => Self::ADD_R8(R8::A),
+            0x88 => Self::ADC_R8(R8::B),
+            0x89 => Self::ADC_R8(R8::C),
+            0x8A => Self::ADC_R8(R8::D),
+            0x8B => Self::ADC_R8(R8::E),
+            0x8C => Self::ADC_R8(R8::H),
+            0x8D => Self::ADC_R8(R8::L),
+            0x8E => Self::ADC_PHL,
+            0x8F => Self::ADC_R8(R8::A),
+            0x90 => Self::SUB_R8(R8::B),
+            0x91 => Self::SUB_R8(R8::C),
+            0x92 => Self::SUB_R8(R8::D),
+            0x93 => Self::SUB_R8(R8::E),
+            0x94 => Self::SUB_R8(R8::H),
+            0x95 => Self::SUB_R8(R8::L),
+            0x96 => Self::SUB_PHL,
+            0x97 => Self::SUB_R8(R8::A),
+            0x98 => Self::SBC_R8(R8::B),
+            0x99 => Self::SBC_R8(R8::C),
+            0x9A => Self::SBC_R8(R8::D),
+            0x9B => Self::SBC_R8(R8::E),
+            0x9C => Self::SBC_R8(R8::H),
+            0x9D => Self::SBC_R8(R8::L),
+            0x9E => Self::SBC_PHL,
+            0x9F => Self::SBC_R8(R8::A),
+            0xA0 => Self::AND_R8(R8::B),
+            0xA1 => Self::AND_R8(R8::C),
+            0xA2 => Self::AND_R8(R8::D),
+            0xA3 => Self::AND_R8(R8::E),
+            0xA4 => Self::AND_R8(R8::H),
+            0xA5 => Self::AND_R8(R8::L),
+            0xA6 => Self::AND_PHL,
+            0xA7 => Self::AND_R8(R8::A),
+            0xA8 => Self::XOR_R8(R8::B),
+            0xA9 => Self::XOR_R8(R8::C),
+            0xAA => Self::XOR_R8(R8::D),
+            0xAB => Self::XOR_R8(R8::E),
+            0xAC => Self::XOR_R8(R8::H),
+            0xAD => Self::XOR_R8(R8::L),
+            0xAE => Self::XOR_PHL,
+            0xAF => Self::XOR_R8(R8::A),
+            0xB0 => Self::OR_R8(R8::B),
+            0xB1 => Self::OR_R8(R8::C),
+            0xB2 => Self::OR_R8(R8::D),
+            0xB3 => Self::OR_R8(R8::E),
+            0xB4 => Self::OR_R8(R8::H),
+            0xB5 => Self::OR_R8(R8::L),
+            0xB6 => Self::OR_PHL,
+            0xB7 => Self::OR_R8(R8::A),
+            0xB8 => Self::CP_R8(R8::B),
+            0xB9 => Self::CP_R8(R8::C),
+            0xBA => Self::CP_R8(R8::D),
+            0xBB => Self::CP_R8(R8::E),
+            0xBC => Self::CP_R8(R8::H),
+            0xBD => Self::CP_R8(R8::L),
+            0xBE => Self::CP_PHL,
+            0xBF => Self::CP_R8(R8::A),
+
+            0xC0 => Self::RETCC(CC::NZ),
+            0xC1 => Self::POP(R16::BC),
+            0xC2 => Self::JPCC(CC::NZ),
+            0xC3 => Self::JP,
+            0xC4 => Self::CALLCC(CC::NZ),
+            0xC5 => Self::PUSH(R16::BC),
+            0xC6 => Self::ADD_N,
+            0xC7 => Self::RST(RSTVec::V00),
+            0xC8 => Self::RETCC(CC::Z),
+            0xC9 => Self::RET,
+            0xCA => Self::JPCC(CC::Z),
+            0xCB => Self::CB,
+            0xCC => Self::CALLCC(CC::Z),
+            0xCD => Self::CALL,
+            0xCE => Self::ADC_N,
+            0xCF => Self::RST(RSTVec::V08),
+            0xD0 => Self::RETCC(CC::NC),
+            0xD1 => Self::POP(R16::DE),
+            0xD2 => Self::JPCC(CC::NC),
+            0xD3 => Self::INVALID,
+            0xD4 => Self::CALLCC(CC::NC),
+            0xD5 => Self::PUSH(R16::DE),
+            0xD6 => Self::SUB_N,
+            0xD7 => Self::RST(RSTVec::V10),
+            0xD8 => Self::RETCC(CC::C),
+            0xD9 => Self::RETI,
+            0xDA => Self::JPCC(CC::C),
+            0xDB => Self::INVALID,
+            0xDC => Self::CALLCC(CC::C),
+            0xDD => Self::INVALID,
+            0xDE => Self::SBC_N,
+            0xDF => Self::RST(RSTVec::V18),
+            0xE0 => Self::LDH_PN_A,
+            0xE1 => Self::POP(R16::HL),
+            0xE2 => Self::LDH_PC_A,
+            0xE3 => Self::INVALID,
+            0xE4 => Self::INVALID,
+            0xE5 => Self::PUSH(R16::HL),
+            0xE6 => Self::AND_N,
+            0xE7 => Self::RST(RSTVec::V20),
+            0xE8 => Self::ADD_SP_I,
+            0xE9 => Self::JPHL,
+            0xEA => Self::LD_PNN_A,
+            0xEB => Self::INVALID,
+            0xEC => Self::INVALID,
+            0xED => Self::INVALID,
+            0xEE => Self::XOR_N,
+            0xEF => Self::RST(RSTVec::V28),
+            0xF0 => Self::LDH_A_PN,
+            0xF1 => Self::POP(R16::AF),
+            0xF2 => Self::LDH_A_PC,
+            0xF3 => Self::DI,
+            0xF4 => Self::INVALID,
+            0xF5 => Self::PUSH(R16::AF),
+            0xF6 => Self::OR_N,
+            0xF7 => Self::RST(RSTVec::V30),
+            0xF8 => Self::LD_HL_SP_I,
+            0xF9 => Self::LD_SP_HL,
+            0xFA => Self::LD_A_PNN,
+            0xFB => Self::EI,
+            0xFC => Self::INVALID,
+            0xFD => Self::INVALID,
+            0xFE => Self::CP_N,
+            0xFF => Self::RST(RSTVec::V38),
         }
     }
-
-    const fn x0(y: u8, z: u8) -> Self {
-        const fn handle(y: u8, z: u8) -> Option<Unprefixed> {
-            let q = y & 0b1 != 0;
-            let p = y >> 1;
-            Some(match z {
-                0b000 => match y {
-                    0 => Unprefixed::NOP,
-                    1 => Unprefixed::LD(LD::PNN_SP),
-                    2 => Unprefixed::STOP,
-                    3 => Unprefixed::JR,
-                    4..=7 => Unprefixed::JRCC(Unprefixed::tbl_cc(y & 0b11)),
-                    _ => return None,
-                },
-                0b001 => match q {
-                    false => Unprefixed::LD(LD::R16_NN(Unprefixed::tbl_rp(p))),
-                    true => Unprefixed::ADDHL(Unprefixed::tbl_rp(p)),
-                },
-                0b010 => match q {
-                    false => match p {
-                        0 => Unprefixed::LD(LD::PR16_R8(R16::BC, R8::A)),
-                        1 => Unprefixed::LD(LD::PR16_R8(R16::DE, R8::A)),
-                        2 => Unprefixed::LD(LD::PHLI_A),
-                        3 => Unprefixed::LD(LD::PHLD_A),
-                        _ => return None,
-                    },
-                    true => match p {
-                        0 => Unprefixed::LD(LD::R8_PR16(R8::A, R16::BC)),
-                        1 => Unprefixed::LD(LD::R8_PR16(R8::A, R16::DE)),
-                        2 => Unprefixed::LD(LD::A_PHLI),
-                        3 => Unprefixed::LD(LD::A_PHLD),
-                        _ => return None,
-                    },
-                },
-                0b011 => match q {
-                    false => Unprefixed::INC(INC::RPTblRet(Unprefixed::tbl_rp(p))),
-                    true => Unprefixed::DEC(DEC::RPTblRet(Unprefixed::tbl_rp(p))),
-                },
-                0b100 => Unprefixed::INC(INC::E8(Unprefixed::tbl_r(y))),
-                0b101 => Unprefixed::DEC(DEC::E8(Unprefixed::tbl_r(y))),
-                0b110 => Unprefixed::LD(LD::E8_N(Unprefixed::tbl_r(y))),
-                0b111 => match y {
-                    0 => Unprefixed::RLCA,
-                    1 => Unprefixed::RRCA,
-                    2 => Unprefixed::RLA,
-                    3 => Unprefixed::RRA,
-                    4 => Unprefixed::DAA,
-                    5 => Unprefixed::CPL,
-                    6 => Unprefixed::SCF,
-                    7 => Unprefixed::CCF,
-                    _ => return None,
-                },
-                _ => return None,
-            })
-        }
-        if let Some(val) = handle(y, z) {
-            val
-        } else {
-            panic!("Unable to decode x=0")
-        }
-    }
-
-    const fn x1(y: u8, z: u8) -> Self {
-        match z {
-            0b110 if y == 6 => Self::HALT,
-            0b000..=0b111 => Self::LD(LD::E8_R8(Self::tbl_r(y), Self::tbl_r(z))),
-            _ => panic!("impossible decode z-value"),
-        }
-    }
-
-    const fn x2(y: u8, z: u8) -> Self {
-        Self::ALU(Self::tbl_alu(y, ALUArg::E8(Self::tbl_r(z))))
-    }
-
-    const fn x3(y: u8, z: u8) -> Self {
-        const fn handle(y: u8, z: u8) -> Option<Unprefixed> {
-            let q = y & 0b1 != 0;
-            let p = y >> 1;
-            Some(match z {
-                0b000 => match y {
-                    0..=3 => Unprefixed::RETCC(Unprefixed::tbl_cc(y)),
-                    4 => Unprefixed::LD(LD::H_PN_A),
-                    5 => Unprefixed::ADDSP,
-                    6 => Unprefixed::LD(LD::H_A_PN),
-                    7 => Unprefixed::LD(LD::HL_SP_D),
-                    _ => return None,
-                },
-                0b001 => match q {
-                    false => Unprefixed::POP(Unprefixed::tbl_rp2(p)),
-                    true => match p {
-                        0 => Unprefixed::RET,
-                        1 => Unprefixed::RETI,
-                        2 => Unprefixed::JPHL,
-                        3 => Unprefixed::LD(LD::SP_HL),
-                        _ => return None,
-                    },
-                },
-                0b010 => match y {
-                    0..=3 => Unprefixed::JPCC(Unprefixed::tbl_cc(y)),
-                    4 => Unprefixed::LD(LD::H_PC_A),
-                    5 => Unprefixed::LD(LD::PNN_A),
-                    6 => Unprefixed::LD(LD::H_A_PC),
-                    7 => Unprefixed::LD(LD::A_PNN),
-                    _ => return None,
-                },
-                0b011 => match y {
-                    0 => Unprefixed::JP,
-                    1 => Unprefixed::CB,
-                    2..=5 => Unprefixed::INVALID,
-                    6 => Unprefixed::DI,
-                    7 => Unprefixed::EI,
-                    _ => return None,
-                },
-                0b100 => match y {
-                    0..=3 => Unprefixed::CALLCC(Unprefixed::tbl_cc(y)),
-                    4..=7 => Unprefixed::INVALID,
-                    _ => return None,
-                },
-                0b101 => match q {
-                    false => Unprefixed::PUSH(Unprefixed::tbl_rp2(p)),
-                    true => match p {
-                        0 => Unprefixed::CALL,
-                        1..=3 => Unprefixed::INVALID,
-                        _ => return None,
-                    },
-                },
-                0b110 => Unprefixed::ALU(Unprefixed::tbl_alu(y, ALUArg::N)),
-                0b111 => Unprefixed::RST(match y {
-                    0 => RSTVec::V00,
-                    1 => RSTVec::V08,
-                    2 => RSTVec::V10,
-                    3 => RSTVec::V18,
-                    4 => RSTVec::V20,
-                    5 => RSTVec::V28,
-                    6 => RSTVec::V30,
-                    7 => RSTVec::V38,
-                    _ => return None,
-                }),
-                _ => panic!("impossible decode z-value"),
-            })
-        }
-        if let Some(val) = handle(y, z) {
-            val
-        } else {
-            panic!("Unable to decode for x=3")
-        }
-    }
-
-    const fn tbl_r(idx: u8) -> E8 {
-        E8::R8(match idx {
-            0 => R8::B,
-            1 => R8::C,
-            2 => R8::D,
-            3 => R8::E,
-            4 => R8::H,
-            5 => R8::L,
-            6 => return E8::PHL,
-            7 => R8::A,
-            _ => panic!("Invalid index for r LUT lookup"),
-        })
-    }
-
-    const fn tbl_rp(idx: u8) -> RPTblEntry {
-        RPTblEntry::R16(match idx {
-            0 => R16::BC,
-            1 => R16::DE,
-            2 => R16::HL,
-            3 => return RPTblEntry::SP,
-            _ => panic!("Invalid index for rp LUT lookup"),
-        })
-    }
-
-    const fn tbl_rp2(idx: u8) -> R16 {
-        match idx {
-            0 => R16::BC,
-            1 => R16::DE,
-            2 => R16::HL,
-            3 => R16::AF,
-            _ => panic!("Invalid index for rp2 LUT lookup"),
-        }
-    }
-
-    const fn tbl_cc(idx: u8) -> CC {
-        match idx {
-            0 => CC::NZ,
-            1 => CC::Z,
-            2 => CC::NC,
-            3 => CC::C,
-            _ => panic!("Invalid index for cc LUT lookup"),
-        }
-    }
-
-    const fn tbl_alu(idx: u8, src: ALUArg) -> ALU {
-        match idx {
-            0 => ALU::ADD(src),
-            1 => ALU::ADC(src),
-            2 => ALU::SUB(src),
-            3 => ALU::SBC(src),
-            4 => ALU::AND(src),
-            5 => ALU::XOR(src),
-            6 => ALU::OR(src),
-            7 => ALU::CP(src),
-            _ => panic!(""),
-        }
-    }
-
-    //const fn tbl_rot(idx: u8) -> ROT {}
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum ALUArg {
-    E8(E8),
-    N,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum RPTblEntry {
-    R16(R16),
-    SP,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum E8 {
-    R8(R8),
-    PHL,
 }

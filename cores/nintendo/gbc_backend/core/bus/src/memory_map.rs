@@ -1,17 +1,3 @@
-pub(crate) enum IOReg {
-    IE,
-    Invalid(u8),
-}
-
-impl IOReg {
-    fn from_index(index: u8) -> Self {
-        match index {
-            0xFF => Self::IE,
-            index => Self::Invalid(index),
-        }
-    }
-}
-
 pub(crate) enum Section {
     ROM0(u16),
     ROM1(u16),
@@ -22,7 +8,7 @@ pub(crate) enum Section {
     MIRROR(u16),
     OAM(u16),
     Unusable(u16),
-    IO(IOReg),
+    IO(u8),
     HRAM(u16),
     Invalid(u16),
 }
@@ -50,9 +36,9 @@ impl Section {
                 0xE000..=0xFDFF => Self::MIRROR(adr - 0xE000),
                 0xFE00..=0xFE9F => Self::OAM(adr - 0xFE00),
                 0xFEA0..=0xFEFF => Self::Unusable(adr - 0xFEA0),
-                0xFF00..=0xFF7E => Self::IO(IOReg::from_index(adr as u8)),
+                0xFF00..=0xFF7E => Self::IO(adr as u8),
                 0xFF80..=0xFFFE => Self::HRAM(adr - 0xFF80),
-                0xFFFF => Self::IO(IOReg::IE),
+                0xFFFF => Self::IO(0xFF),
                 _ => Self::Invalid(adr),
             },
         }
