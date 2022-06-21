@@ -1,4 +1,4 @@
-use crate::engines::interpreter::Interpreter;
+use crate::Interpreter;
 use cpu::{
     cycles::Cycles,
     instrutions::decode::{Bit, RSTVec, CC},
@@ -6,141 +6,141 @@ use cpu::{
 };
 
 impl Interpreter {
-    pub fn adc_r8(&mut self, src: R8) {
+    pub(crate) fn adc_r8(&mut self, src: R8) {
         self.alu_adc(self.r8_get(src), self.flag_get(Flag::C));
     }
 
-    pub fn adc_phl(&mut self) {
+    pub(crate) fn adc_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_adc(phl, self.flag_get(Flag::C));
     }
 
-    pub fn adc_n8(&mut self) {
+    pub(crate) fn adc_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_adc(fetch, self.flag_get(Flag::C));
     }
 
-    pub fn add_r8(&mut self, src: R8) {
+    pub(crate) fn add_r8(&mut self, src: R8) {
         self.alu_adc(self.r8_get(src), false);
     }
 
-    pub fn add_phl(&mut self) {
+    pub(crate) fn add_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_adc(phl, false);
     }
 
-    pub fn add_n8(&mut self) {
+    pub(crate) fn add_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_adc(fetch, false);
     }
 
-    pub fn and_r8(&mut self, src: R8) {
+    pub(crate) fn and_r8(&mut self, src: R8) {
         self.alu_and(self.r8_get(src));
     }
 
-    pub fn and_phl(&mut self) {
+    pub(crate) fn and_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_and(phl);
     }
 
-    pub fn and_n8(&mut self) {
+    pub(crate) fn and_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_and(fetch);
     }
 
-    pub fn cp_r8(&mut self, src: R8) {
+    pub(crate) fn cp_r8(&mut self, src: R8) {
         self.alu_cp(self.r8_get(src));
     }
 
-    pub fn cp_phl(&mut self) {
+    pub(crate) fn cp_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_cp(phl);
     }
 
-    pub fn cp_n8(&mut self) {
+    pub(crate) fn cp_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_cp(fetch);
     }
 
-    pub fn dec_r8(&mut self, dst: R8) {
+    pub(crate) fn dec_r8(&mut self, dst: R8) {
         let result = self.generic_dec(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn dec_phl(&mut self) {
+    pub(crate) fn dec_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_dec(phl);
         self.phl_set(result);
     }
 
-    pub fn inc_r8(&mut self, dst: R8) {
+    pub(crate) fn inc_r8(&mut self, dst: R8) {
         let result = self.generic_inc(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn inc_phl(&mut self) {
+    pub(crate) fn inc_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_inc(phl);
         self.phl_set(result);
     }
 
-    pub fn or_r8(&mut self, src: R8) {
+    pub(crate) fn or_r8(&mut self, src: R8) {
         self.alu_or(self.r8_get(src));
     }
 
-    pub fn or_phl(&mut self) {
+    pub(crate) fn or_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_or(phl);
     }
 
-    pub fn or_n8(&mut self) {
+    pub(crate) fn or_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_or(fetch);
     }
 
-    pub fn sbc_r8(&mut self, src: R8) {
+    pub(crate) fn sbc_r8(&mut self, src: R8) {
         self.alu_sbc(self.r8_get(src), self.flag_get(Flag::C));
     }
 
-    pub fn sbc_phl(&mut self) {
+    pub(crate) fn sbc_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_sbc(phl, self.flag_get(Flag::C));
     }
 
-    pub fn sbc_n8(&mut self) {
+    pub(crate) fn sbc_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_sbc(fetch, self.flag_get(Flag::C));
     }
 
-    pub fn sub_r8(&mut self, src: R8) {
+    pub(crate) fn sub_r8(&mut self, src: R8) {
         self.alu_sbc(self.r8_get(src), false);
     }
 
-    pub fn sub_phl(&mut self) {
+    pub(crate) fn sub_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_sbc(phl, false);
     }
 
-    pub fn sub_n8(&mut self) {
+    pub(crate) fn sub_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_sbc(fetch, false);
     }
 
-    pub fn xor_r8(&mut self, src: R8) {
+    pub(crate) fn xor_r8(&mut self, src: R8) {
         self.alu_xor(self.r8_get(src));
     }
 
-    pub fn xor_phl(&mut self) {
+    pub(crate) fn xor_phl(&mut self) {
         let phl = self.phl_get();
         self.alu_xor(phl);
     }
 
-    pub fn xor_n8(&mut self) {
+    pub(crate) fn xor_n8(&mut self) {
         let fetch = self.fetch();
         self.alu_xor(fetch);
     }
 
-    pub fn add_hl_r16(&mut self, src: R16) {
+    pub(crate) fn add_hl_r16(&mut self, src: R16) {
         let hl = self.r16_get(R16::HL) as u32;
         let src = self.r16_get(src) as u32;
         let result = hl + src;
@@ -151,262 +151,262 @@ impl Interpreter {
         self.tick(Cycles::M(1));
     }
 
-    pub fn dec_r16(&mut self, dst: R16) {
+    pub(crate) fn dec_r16(&mut self, dst: R16) {
         self.r16_set(dst, self.r16_get(dst).wrapping_sub(1));
     }
 
-    pub fn inc_r16(&mut self, dst: R16) {
+    pub(crate) fn inc_r16(&mut self, dst: R16) {
         self.r16_set(dst, self.r16_get(dst).wrapping_add(1));
     }
 
-    pub fn bit_r8(&mut self, bit: Bit, src: R8) {
+    pub(crate) fn bit_r8(&mut self, bit: Bit, src: R8) {
         self.generic_bit(bit, self.r8_get(src));
     }
 
-    pub fn bit_phl(&mut self, bit: Bit) {
+    pub(crate) fn bit_phl(&mut self, bit: Bit) {
         let phl = self.phl_get();
         self.generic_bit(bit, phl);
     }
 
-    pub fn res_r8(&mut self, bit: Bit, dst: R8) {
+    pub(crate) fn res_r8(&mut self, bit: Bit, dst: R8) {
         let result = self.generic_res(bit, self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn res_phl(&mut self, bit: Bit) {
+    pub(crate) fn res_phl(&mut self, bit: Bit) {
         let phl = self.phl_get();
         let result = self.generic_res(bit, phl);
         self.phl_set(result);
     }
 
-    pub fn set_r8(&mut self, bit: Bit, dst: R8) {
+    pub(crate) fn set_r8(&mut self, bit: Bit, dst: R8) {
         let result = self.generic_set(bit, self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn set_phl(&mut self, bit: Bit) {
+    pub(crate) fn set_phl(&mut self, bit: Bit) {
         let phl = self.phl_get();
         let result = self.generic_set(bit, phl);
         self.phl_set(result);
     }
 
-    pub fn swap_r8(&mut self, dst: R8) {
+    pub(crate) fn swap_r8(&mut self, dst: R8) {
         let result = self.generic_swap(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn swap_phl(&mut self) {
+    pub(crate) fn swap_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_swap(phl);
         self.phl_set(result);
     }
 
-    pub fn rl_r8(&mut self, dst: R8) {
+    pub(crate) fn rl_r8(&mut self, dst: R8) {
         let result = self.generic_rl(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn rl_phl(&mut self) {
+    pub(crate) fn rl_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_rl(phl);
         self.phl_set(result);
     }
 
-    pub fn rla(&mut self) {
+    pub(crate) fn rla(&mut self) {
         let result = self.generic_rl(self.r8_get(R8::A));
         self.r8_set(R8::A, result);
         self.flag_set(Flag::Z, false);
     }
 
-    pub fn rlc_r8(&mut self, dst: R8) {
+    pub(crate) fn rlc_r8(&mut self, dst: R8) {
         let result = self.generic_rlc(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn rlc_phl(&mut self) {
+    pub(crate) fn rlc_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_rlc(phl);
         self.phl_set(result);
     }
 
-    pub fn rlca(&mut self) {
+    pub(crate) fn rlca(&mut self) {
         let result = self.generic_rlc(self.r8_get(R8::A));
         self.r8_set(R8::A, result);
         self.flag_set(Flag::Z, false);
     }
 
-    pub fn rr_r8(&mut self, dst: R8) {
+    pub(crate) fn rr_r8(&mut self, dst: R8) {
         let result = self.generic_rr(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn rr_phl(&mut self) {
+    pub(crate) fn rr_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_rr(phl);
         self.phl_set(result);
     }
 
-    pub fn rra(&mut self) {
+    pub(crate) fn rra(&mut self) {
         let result = self.generic_rr(self.r8_get(R8::A));
         self.r8_set(R8::A, result);
         self.flag_set(Flag::Z, false);
     }
 
-    pub fn rrc_r8(&mut self, dst: R8) {
+    pub(crate) fn rrc_r8(&mut self, dst: R8) {
         let result = self.generic_rrc(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn rrc_phl(&mut self) {
+    pub(crate) fn rrc_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_rrc(phl);
         self.phl_set(result);
     }
 
-    pub fn rrca(&mut self) {
+    pub(crate) fn rrca(&mut self) {
         let result = self.generic_rrc(self.r8_get(R8::A));
         self.r8_set(R8::A, result);
         self.flag_set(Flag::Z, false);
     }
 
-    pub fn sla_r8(&mut self, dst: R8) {
+    pub(crate) fn sla_r8(&mut self, dst: R8) {
         let result = self.generic_sla(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn sla_phl(&mut self) {
+    pub(crate) fn sla_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_sla(phl);
         self.phl_set(result);
     }
 
-    pub fn sra_r8(&mut self, dst: R8) {
+    pub(crate) fn sra_r8(&mut self, dst: R8) {
         let result = self.generic_sra(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn sra_phl(&mut self) {
+    pub(crate) fn sra_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_sra(phl);
         self.phl_set(result);
     }
 
-    pub fn srl_r8(&mut self, dst: R8) {
+    pub(crate) fn srl_r8(&mut self, dst: R8) {
         let result = self.generic_srl(self.r8_get(dst));
         self.r8_set(dst, result);
     }
 
-    pub fn srl_phl(&mut self) {
+    pub(crate) fn srl_phl(&mut self) {
         let phl = self.phl_get();
         let result = self.generic_srl(phl);
         self.phl_set(result);
     }
 
-    pub fn ld_r8_r8(&mut self, dst: R8, src: R8) {
+    pub(crate) fn ld_r8_r8(&mut self, dst: R8, src: R8) {
         self.r8_set(dst, self.r8_get(src));
     }
 
-    pub fn ld_r8_n8(&mut self, dst: R8) {
+    pub(crate) fn ld_r8_n8(&mut self, dst: R8) {
         let fetch = self.fetch();
         self.r8_set(dst, fetch);
     }
 
-    pub fn ld_r16_n16(&mut self, dst: R16) {
+    pub(crate) fn ld_r16_n16(&mut self, dst: R16) {
         let fetch = self.fetch16();
         self.r16_set(dst, fetch);
     }
 
-    pub fn ld_phl_r8(&mut self, src: R8) {
+    pub(crate) fn ld_phl_r8(&mut self, src: R8) {
         self.phl_set(self.r8_get(src));
     }
 
-    pub fn ld_phl_n8(&mut self) {
+    pub(crate) fn ld_phl_n8(&mut self) {
         let fetch = self.fetch();
         self.phl_set(fetch);
     }
 
-    pub fn ld_r8_phl(&mut self, dst: R8) {
+    pub(crate) fn ld_r8_phl(&mut self, dst: R8) {
         let phl = self.phl_get();
         self.r8_set(dst, phl);
     }
 
-    pub fn ld_pr16_a(&mut self, dst: R16) {
+    pub(crate) fn ld_pr16_a(&mut self, dst: R16) {
         let ptr = self.r16_get(dst);
         self.mem_write(ptr, self.r8_get(R8::A));
     }
 
-    pub fn ld_pn16_a(&mut self) {
+    pub(crate) fn ld_pn16_a(&mut self) {
         let ptr = self.fetch16();
         self.mem_write(ptr, self.r8_get(R8::A));
     }
 
-    pub fn ldh_pn8_a(&mut self) {
+    pub(crate) fn ldh_pn8_a(&mut self) {
         let ptr = 0xFF00 | self.fetch() as u16;
         self.mem_write(ptr, self.r8_get(R8::A));
     }
 
-    pub fn ldh_pc_a(&mut self) {
+    pub(crate) fn ldh_pc_a(&mut self) {
         let ptr = 0xFF00 | self.r8_get(R8::C) as u16;
         self.mem_write(ptr, self.r8_get(R8::A));
     }
 
-    pub fn ld_a_pr16(&mut self, src: R16) {
+    pub(crate) fn ld_a_pr16(&mut self, src: R16) {
         let read = self.mem_read(self.r16_get(src));
         self.r8_set(R8::A, read);
     }
 
-    pub fn ld_a_pn16(&mut self) {
+    pub(crate) fn ld_a_pn16(&mut self) {
         let fetch = self.fetch16();
         let read = self.mem_read(fetch);
         self.r8_set(R8::A, read);
     }
 
-    pub fn ldh_a_pn8(&mut self) {
+    pub(crate) fn ldh_a_pn8(&mut self) {
         let adr = 0xFF00 | self.fetch() as u16;
         let read = self.mem_read(adr);
         self.r8_set(R8::A, read);
     }
 
-    pub fn ldh_a_pc(&mut self) {
+    pub(crate) fn ldh_a_pc(&mut self) {
         let adr = 0xFF00 | self.r8_get(R8::C) as u16;
         let read = self.mem_read(adr);
         self.r8_set(R8::A, read);
     }
 
-    pub fn ld_phli_a(&mut self) {
+    pub(crate) fn ld_phli_a(&mut self) {
         let hl = self.r16_get(R16::HL);
         self.r16_set(R16::HL, hl.wrapping_add(1));
         self.mem_write(hl, self.r8_get(R8::A));
     }
 
-    pub fn ld_phld_a(&mut self) {
+    pub(crate) fn ld_phld_a(&mut self) {
         let hl = self.r16_get(R16::HL);
         self.r16_set(R16::HL, hl.wrapping_sub(1));
         self.mem_write(hl, self.r8_get(R8::A));
     }
 
-    pub fn ld_a_phli(&mut self) {
+    pub(crate) fn ld_a_phli(&mut self) {
         let hl = self.r16_get(R16::HL);
         self.r16_set(R16::HL, hl.wrapping_add(1));
         let read = self.mem_read(hl);
         self.r8_set(R8::A, read);
     }
 
-    pub fn ld_a_phld(&mut self) {
+    pub(crate) fn ld_a_phld(&mut self) {
         let hl = self.r16_get(R16::HL);
         self.r16_set(R16::HL, hl.wrapping_sub(1));
         let read = self.mem_read(hl);
         self.r8_set(R8::A, read);
     }
 
-    pub fn call(&mut self) {
+    pub(crate) fn call(&mut self) {
         self.push(self.pc_get());
         let adr = self.fetch16();
         self.pc_set(adr);
         self.tick(Cycles::M(1));
     }
 
-    pub fn call_cc(&mut self, cc: CC) {
+    pub(crate) fn call_cc(&mut self, cc: CC) {
         let adr = self.fetch16();
         if self.check_cond(cc) {
             self.push(self.pc_get());
@@ -415,17 +415,17 @@ impl Interpreter {
         }
     }
 
-    pub fn jp_hl(&mut self) {
+    pub(crate) fn jp_hl(&mut self) {
         self.pc_set(self.r16_get(R16::HL));
     }
 
-    pub fn jp(&mut self) {
+    pub(crate) fn jp(&mut self) {
         let adr = self.fetch16();
         self.pc_set(adr);
         self.tick(Cycles::M(1));
     }
 
-    pub fn jp_cc(&mut self, cc: CC) {
+    pub(crate) fn jp_cc(&mut self, cc: CC) {
         let adr = self.fetch16();
         if self.check_cond(cc) {
             self.pc_set(adr);
@@ -433,14 +433,14 @@ impl Interpreter {
         }
     }
 
-    pub fn jr(&mut self) {
+    pub(crate) fn jr(&mut self) {
         let imm = self.fetch() as i8 as i16;
         let pc = self.pc_get();
         self.pc_set(pc.wrapping_add_signed(imm) as u16);
         self.tick(Cycles::M(1));
     }
 
-    pub fn jr_cc(&mut self, cc: CC) {
+    pub(crate) fn jr_cc(&mut self, cc: CC) {
         let imm = self.fetch() as i8 as i16;
         if self.check_cond(cc) {
             let pc = self.pc_get();
@@ -449,31 +449,31 @@ impl Interpreter {
         }
     }
 
-    pub fn ret_cc(&mut self, cc: CC) {
+    pub(crate) fn ret_cc(&mut self, cc: CC) {
         if self.check_cond(cc) {
             self.ret()
         }
         self.tick(Cycles::M(1));
     }
 
-    pub fn ret(&mut self) {
+    pub(crate) fn ret(&mut self) {
         let adr = self.pop();
         self.pc_set(adr);
         self.tick(Cycles::M(1));
     }
 
-    pub fn reti(&mut self) {
+    pub(crate) fn reti(&mut self) {
         self.ret();
         self.ei();
     }
 
-    pub fn rst(&mut self, vec: RSTVec) {
+    pub(crate) fn rst(&mut self, vec: RSTVec) {
         self.push(self.pc_get());
         self.pc_set(vec as u16);
         self.tick(Cycles::M(1));
     }
 
-    pub fn add_hl_sp(&mut self) {
+    pub(crate) fn add_hl_sp(&mut self) {
         let hl = self.r16_get(R16::HL) as u32;
         let sp = self.sp_get() as u32;
         let result = hl + sp;
@@ -484,7 +484,7 @@ impl Interpreter {
         self.tick(Cycles::M(1));
     }
 
-    pub fn add_sp_e8(&mut self) {
+    pub(crate) fn add_sp_e8(&mut self) {
         let imm = self.fetch();
         let sp = self.sp_get();
         let sp_lo = sp as u8;
@@ -497,29 +497,29 @@ impl Interpreter {
         self.sp_set(result);
     }
 
-    pub fn dec_sp(&mut self) {
+    pub(crate) fn dec_sp(&mut self) {
         let sp = self.sp_get();
         self.sp_set(sp.wrapping_sub(1));
     }
 
-    pub fn inc_sp(&mut self) {
+    pub(crate) fn inc_sp(&mut self) {
         let sp = self.sp_get();
         self.sp_set(sp.wrapping_add(1));
     }
 
-    pub fn ld_sp_n16(&mut self) {
+    pub(crate) fn ld_sp_n16(&mut self) {
         let fetch = self.fetch16();
         self.sp_set(fetch);
     }
 
-    pub fn ld_pn16_sp(&mut self) {
+    pub(crate) fn ld_pn16_sp(&mut self) {
         let adr = self.fetch16();
         let sp = self.sp_get();
         self.mem_write(adr, sp as u8);
         self.mem_write(adr.wrapping_add(1), (sp >> 8) as u8);
     }
 
-    pub fn ld_hl_sp_e8(&mut self) {
+    pub(crate) fn ld_hl_sp_e8(&mut self) {
         let imm = self.fetch();
         let sp = self.sp_get();
         let cmp = imm as u16;
@@ -531,32 +531,32 @@ impl Interpreter {
         self.tick(Cycles::M(1));
     }
 
-    pub fn ld_sp_hl(&mut self) {
+    pub(crate) fn ld_sp_hl(&mut self) {
         self.sp_set(self.r16_get(R16::HL));
     }
 
-    pub fn pop_r16(&mut self, dst: R16) {
+    pub(crate) fn pop_r16(&mut self, dst: R16) {
         let val = self.pop();
         self.r16_set(dst, val);
     }
 
-    pub fn push_r16(&mut self, src: R16) {
+    pub(crate) fn push_r16(&mut self, src: R16) {
         self.push(self.r16_get(src));
     }
 
-    pub fn ccf(&mut self) {
+    pub(crate) fn ccf(&mut self) {
         self.flag_set(Flag::N, false);
         self.flag_set(Flag::H, false);
         self.flag_set(Flag::C, !self.flag_get(Flag::C))
     }
 
-    pub fn cpl(&mut self) {
+    pub(crate) fn cpl(&mut self) {
         self.r8_set(R8::A, !self.r8_get(R8::A));
         self.flag_set(Flag::N, true);
         self.flag_set(Flag::H, true);
     }
 
-    pub fn daa(&mut self) {
+    pub(crate) fn daa(&mut self) {
         let c = self.flag_get(Flag::C);
         let n = self.flag_get(Flag::N);
         let h = self.flag_get(Flag::H);
@@ -583,27 +583,29 @@ impl Interpreter {
         self.flag_set(Flag::H, false);
     }
 
-    pub fn di(&mut self) {
+    pub(crate) fn di(&mut self) {
         todo!()
     }
 
-    pub fn ei(&mut self) {
+    pub(crate) fn ei(&mut self) {
         todo!()
     }
 
-    pub fn halt(&mut self) {
+    pub(crate) fn halt(&mut self) {
         todo!()
     }
 
-    pub fn nop(&mut self) {}
+    pub(crate) fn nop(&mut self) {}
 
-    pub fn scf(&mut self) {
+    pub(crate) fn scf(&mut self) {
         self.flag_set(Flag::N, false);
         self.flag_set(Flag::H, false);
         self.flag_set(Flag::C, true);
     }
 
-    pub fn stop(&mut self) {
+    pub(crate) fn stop(&mut self) {
         logger::fatal!("Attempted to execute STOP instruction!");
     }
+
+    fn cb(&mut self) {}
 }

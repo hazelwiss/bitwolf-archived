@@ -1,9 +1,9 @@
 pub mod decode;
-#[cfg(test)]
-mod test;
 
 use crate::registers::{R16, R8};
 use decode::{RSTVec, CC};
+
+use self::decode::Bit;
 
 #[derive(Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
@@ -115,4 +115,31 @@ pub enum Unprefixed {
     CP_PHL,
 
     INVALID,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
+pub enum Prefixed {
+    RLC(R8),
+    RLC_PHL,
+    RRC(R8),
+    RRC_PHL,
+    RL(R8),
+    RL_PHL,
+    RR(R8),
+    RR_PHL,
+    SLA(R8),
+    SLA_PHL,
+    SRA(R8),
+    SRA_PHL,
+    SWAP(R8),
+    SWAP_PHL,
+    SRL(R8),
+    SRL_PHL,
+    BIT(Bit, R8),
+    BIT_PHL(Bit),
+    RES(Bit, R8),
+    RES_PHL(Bit),
+    SET(Bit, R8),
+    SET_PHL(Bit),
 }

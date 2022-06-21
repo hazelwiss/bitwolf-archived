@@ -2,7 +2,7 @@ mod defs;
 mod generic;
 mod helper;
 
-use super::Interpreter;
+use crate::Interpreter;
 use cpu::instrutions::Unprefixed;
 
 impl Interpreter {
@@ -29,7 +29,7 @@ impl Interpreter {
             Unprefixed::EI => self.ei(),
             Unprefixed::CALL => self.call(),
             Unprefixed::ADD_SP_I => self.add_sp_e8(),
-            Unprefixed::CB => self.nop(), // temporary
+            Unprefixed::CB => self.cb(),
             Unprefixed::RST(vec) => self.rst(vec),
             Unprefixed::PUSH(src) => self.push_r16(src),
             Unprefixed::POP(dst) => self.pop_r16(dst),
