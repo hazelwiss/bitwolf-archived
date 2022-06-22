@@ -59,7 +59,7 @@ impl Interpreter {
     #[inline(always)]
     pub(crate) fn check_cond(&self, cc: CC) -> bool {
         match cc {
-            CC::NZ => !self.flag_get(Flag::N),
+            CC::NZ => !self.flag_get(Flag::Z),
             CC::Z => self.flag_get(Flag::Z),
             CC::NC => !self.flag_get(Flag::C),
             CC::C => self.flag_get(Flag::C),
@@ -106,7 +106,7 @@ impl Interpreter {
         let sp = self.sp_get();
         self.sp_set(sp.wrapping_add(2));
         val |= self.mem_read(sp) as u16;
-        val |= self.mem_read(sp.wrapping_add(1)) as u16;
+        val |= (self.mem_read(sp.wrapping_add(1)) as u16) << 8;
         val
     }
 

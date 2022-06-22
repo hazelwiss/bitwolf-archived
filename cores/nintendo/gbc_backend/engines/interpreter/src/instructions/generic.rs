@@ -21,8 +21,11 @@ impl Interpreter {
         let result = a.wrapping_sub(src).wrapping_sub(carry as u8);
         self.flag_set(Flag::Z, result as u8 == 0);
         self.flag_set(Flag::N, true);
-        self.flag_set(Flag::H, a & 0x0F < (src & 0x0F) + carry as u8);
-        self.flag_set(Flag::C, a < src + carry as u8);
+        self.flag_set(Flag::H, (a & 0x0F) < (src & 0x0F) + carry as u8);
+        self.flag_set(
+            Flag::C,
+            (a as u16) < (src as u16).wrapping_add(carry as u16),
+        );
         self.r8_set(R8::A, result);
     }
 
@@ -168,7 +171,7 @@ impl Interpreter {
     pub(crate) fn generic_dec(&mut self, src: u8) -> u8 {
         let result = src.wrapping_sub(1);
         self.flag_set(Flag::N, true);
-        self.flag_set(Flag::H, (result & 0x0F) != 0);
+        self.flag_set(Flag::H, (src & 0x0F) == 0);
         self.flag_set(Flag::Z, result == 0);
         result
     }
@@ -176,8 +179,8 @@ impl Interpreter {
     #[inline(always)]
     pub(crate) fn generic_inc(&mut self, src: u8) -> u8 {
         let result = src.wrapping_add(1);
-        self.flag_set(Flag::N, true);
-        self.flag_set(Flag::H, (result & 0x0F) == 0x0F);
+        self.flag_set(Flag::N, false);
+        self.flag_set(Flag::H, (src & 0x0F) == 0x0F);
         self.flag_set(Flag::Z, result == 0);
         result
     }

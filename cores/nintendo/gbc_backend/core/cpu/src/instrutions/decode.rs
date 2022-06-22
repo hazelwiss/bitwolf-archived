@@ -22,7 +22,7 @@ pub enum RSTVec {
     V38 = 0x38,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum Bit {
     B0 = 0b1,

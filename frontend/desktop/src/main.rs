@@ -15,7 +15,7 @@ fn main() {
     } = proc_flags::env_from_flags();
 
     // Asynchronous file reader.
-    let mut file_reader = file_reader::FileReader::<backend_types::Types>::new(100);
+    let mut file_reader = file_reader::FileReader::<backend_types::Types>::new(5);
 
     // Start imgui rendering window event loop.
     ctx.run(

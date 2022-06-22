@@ -157,10 +157,10 @@ impl RegisterFile {
     #[inline]
     pub fn read_r16(&self, src: R16) -> u16 {
         match src {
-            R16::AF => (self.a as u16) << 8 | self.f.as_u8() as u16,
-            R16::BC => (self.b as u16) << 8 | self.c as u16,
-            R16::DE => (self.d as u16) << 8 | self.d as u16,
-            R16::HL => (self.h as u16) << 8 | (self.l as u16),
+            R16::AF => ((self.a as u16) << 8) | self.f.as_u8() as u16,
+            R16::BC => ((self.b as u16) << 8) | self.c as u16,
+            R16::DE => ((self.d as u16) << 8) | self.e as u16,
+            R16::HL => ((self.h as u16) << 8) | self.l as u16,
         }
     }
 

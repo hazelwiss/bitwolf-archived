@@ -13,7 +13,6 @@ impl Core<Interpreter> {
     }
 
     pub fn step(&mut self) {
-        println!("hello!");
-        //self.engine.step();
+        self.engine.step();
     }
 }

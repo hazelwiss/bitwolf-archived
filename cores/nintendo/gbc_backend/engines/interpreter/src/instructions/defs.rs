@@ -403,8 +403,8 @@ impl Interpreter {
     }
 
     pub(crate) fn call(&mut self) {
-        self.push(self.pc_get());
         let adr = self.fetch16();
+        self.push(self.pc_get());
         self.pc_set(adr);
         self.tick(Cycles::M(1));
     }
@@ -479,9 +479,9 @@ impl Interpreter {
     pub(crate) fn add_hl_sp(&mut self) {
         let hl = self.r16_get(R16::HL) as u32;
         let sp = self.sp_get() as u32;
-        let result = hl + sp;
+        let result = hl.wrapping_add(sp);
         self.flag_set(Flag::N, false);
-        self.flag_set(Flag::H, (hl & 0x0FFF) + (sp & 0x0FFF) < 0x0FFF);
+        self.flag_set(Flag::H, (hl & 0x0FFF) + (sp & 0x0FFF) > 0x0FFF);
         self.flag_set(Flag::C, result > 0xFFFF);
         self.r16_set(R16::HL, result as u16);
         self.tick(Cycles::M(1));

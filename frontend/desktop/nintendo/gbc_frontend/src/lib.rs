@@ -6,6 +6,8 @@ use std::{fmt::Display, path::Path};
 #[derive(Debug)]
 pub enum Error {
     UnableToReadFile,
+    UnableToReadBootrom,
+    InvalidBootromSize(u64),
 }
 
 impl Display for Error {
@@ -27,12 +29,21 @@ pub struct GBC {
 
 impl GBC {
     pub fn new(path: &Path) -> Result<Self, Error> {
+        let bootrom = std::fs::read("/home/nibble/Downloads/dmg_boot.bin")
+            .or_else(|_| Err(Error::UnableToReadBootrom))?;
         let rom = std::fs::read(path).or_else(|_| Err(Error::UnableToReadFile))?;
+        if bootrom.len() != 256 {
+            return Err(Error::InvalidBootromSize(bootrom.len() as u64));
+        }
+        let bootrom = {
+            let mut arr = [0; 256];
+            for i in 0..256 {
+                arr[i] = bootrom[i];
+            }
+            arr
+        };
         let backend = Engine::Interpreter(Core::<engines::interpreter::Interpreter>::new(
-            engines::interpreter::Builder {
-                rom,
-                bootrom: [0; 256],
-            },
+            engines::interpreter::Builder { rom, bootrom },
         ));
         Ok(Self { backend })
     }

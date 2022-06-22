@@ -20,7 +20,12 @@ impl Bus {
     }
 
     #[inline]
-    fn read_rom0(&self, offset: usize) -> u8 {
+    fn read_rom0(&mut self, offset: usize) -> u8 {
+        if offset == 0x100 {
+            for i in 0..256 {
+                self.rom0[i] = self.rom_256bytes[i];
+            }
+        }
         self.rom0[offset]
     }
 

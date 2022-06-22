@@ -1,6 +1,5 @@
 mod defs;
 mod generic;
-mod helper;
 
 use crate::Interpreter;
 use cpu::instrutions::Unprefixed;
