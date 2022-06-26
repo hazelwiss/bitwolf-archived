@@ -1,3 +1,3 @@
-mod btree;
+mod pqueu;
 
-pub use btree::BTree;
+pub type Scheduler<Slot> = pqueu::PQueue<u64, Slot>;

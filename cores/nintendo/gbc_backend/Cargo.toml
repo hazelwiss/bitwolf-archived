@@ -9,8 +9,5 @@ edition = "2021"
 # Logger crate.
 logger = {path = "../../../logger"}
 
-# Interpreter engine.
-interpreter = {path = "engines/interpreter"}
-
-# JIT engine.
-jit = {path = "engines/jit"}
+# Core crate.
+core = {path = "core"}
