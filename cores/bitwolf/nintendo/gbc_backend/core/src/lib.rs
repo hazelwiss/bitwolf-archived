@@ -10,7 +10,7 @@ pub mod ppu;
 mod binder;
 mod events;
 
-use common_backend::framebuffer;
+use common_core::framebuffer;
 use engines::Engine;
 
 type FrameBuffer = framebuffer::AccessW<framebuffer::textures::TextBGRA<160, 144>>;

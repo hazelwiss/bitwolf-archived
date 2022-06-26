@@ -3,7 +3,7 @@ mod config;
 mod frontend;
 
 use anyhow::{anyhow, Result};
-use common_backend::framebuffer::{self, textures::TextBGRA};
+use common_core::framebuffer::{self, textures::TextBGRA};
 use gbc_backend::Builder;
 use std::path::Path;
 

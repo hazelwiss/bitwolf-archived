@@ -25,5 +25,5 @@ imgui = {path = "imgui"}
 common-frontend = {path = "common-frontend"}
 
 # GBC frontend crate.
-gbc_frontend = {path = "frontends/nintendo/gbc_frontend"}
+gbc_frontend = {path = "bitwolf/nintendo/gbc_frontend"}
 

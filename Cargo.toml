@@ -1,9 +1,9 @@
 [workspace]
 members = [
     # Shared utility between backends.
-    "cores/common-backend",
+    "cores/common-core",
     # The different backend cores.
-    "cores/nintendo/*",
+    "cores/bitwolf/nintendo/*",
     # Frontend crates.
     "frontend/*",
     # Utility crate.

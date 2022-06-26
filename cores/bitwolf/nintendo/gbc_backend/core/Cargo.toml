@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # Logging crate for debug output.
-logger = {path = "../../../../logger"}
+logger = {path = "../../../../../logger"}
 
 # Backends common utility crate.
-common-backend = {path = "../../../common-backend"}
+common-core = {path = "../../../../common-core"}

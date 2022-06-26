@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # Logger crate.
-logger = {path = "../../../logger"}
+logger = {path = "../../../../logger"}
 
 # Core crate.
 core = {path = "core"}

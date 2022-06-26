@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 # Backend crate.
-gbc_backend = {path = "../../../../../cores/nintendo/gbc_backend"}
+gbc_backend = {path = "../../../../../cores/bitwolf/nintendo/gbc_backend"}
 
 # Backend crate.
-common-backend = {path = "../../../../../cores/common-backend"}
+common-core = {path = "../../../../../cores/common-core"}
 
 # Generic frontend implementation.
 common-frontend = {path = "../../../common-frontend"}

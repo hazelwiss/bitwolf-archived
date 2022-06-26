@@ -3,7 +3,7 @@ mod io;
 mod memory_map;
 
 use crate::{cpu::interrupt::InterruptBit, emu::event_slots::Slot};
-use common_backend::schedulers::Scheduler;
+use common_core::schedulers::Scheduler;
 
 pub struct Bus {
     ppu: crate::ppu::PPU,
