@@ -60,15 +60,17 @@ pub struct Environment {
 pub fn env_from_flags() -> Environment {
     let ProcFlags { target } = argh::from_env();
 
+    // Create imgui rendering window.
+    let mut ctx = imgui::Context::spawn_with_window();
+
     // Frontend object.
     let frontend = if let Some(target) = target {
-        FrontendBox::from_box(frontend_creator::spawn(target.target, &target.rom).expect(""))
+        FrontendBox::from_box(
+            frontend_creator::spawn(target.target, &target.rom, ctx.wgpu_ctx()).expect(""),
+        )
     } else {
         FrontendBox::new(default_backend::EmptyFrontend::new())
     };
-
-    // Create imgui rendering window.
-    let ctx = imgui::Context::spawn_with_window();
 
     Environment {
         imgui_ctx: ctx,

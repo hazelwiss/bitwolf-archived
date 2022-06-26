@@ -1,0 +1,25 @@
+[package]
+name = "gbc_frontend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Backend crate.
+gbc_backend = {path = "../../../../../cores/nintendo/gbc_backend"}
+
+# Backend crate.
+common-backend = {path = "../../../../../cores/common-backend"}
+
+# Generic frontend implementation.
+common-frontend = {path = "../../../common-frontend"}
+
+# Utility crate.
+util = {path = "../../../../../util"}
+
+# Makes error handling of multiple error types easier.
+anyhow = "1.0.13"
+
+# Imgui crate.
+imgui = {path = "../../../imgui"}

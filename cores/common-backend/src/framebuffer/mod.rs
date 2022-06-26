@@ -1,3 +1,5 @@
+pub mod textures;
+
 use std::{
     marker::PhantomData,
     sync::{
@@ -26,30 +28,6 @@ pub trait Canvas: Sized {
     fn empty() -> Self;
 
     fn pitch(&self) -> usize;
-}
-
-#[repr(C, packed)]
-#[derive(Clone, Copy)]
-struct RGBAPixel(u8, u8, u8, u8);
-
-#[repr(C, packed)]
-pub struct TextRGBA<const WIDTH: usize, const HEIGHT: usize> {
-    text: [[RGBAPixel; WIDTH]; HEIGHT],
-}
-
-impl<const WIDTH: usize, const HEIGHT: usize> Canvas for TextRGBA<WIDTH, HEIGHT> {
-    const HEIGHT: usize = HEIGHT;
-    const WIDTH: usize = WIDTH;
-
-    fn empty() -> Self {
-        Self {
-            text: [[RGBAPixel(0xFF, 0xFF, 0xFF, 0xFF); WIDTH]; HEIGHT],
-        }
-    }
-
-    fn pitch(&self) -> usize {
-        WIDTH * std::mem::size_of::<RGBAPixel>()
-    }
 }
 
 pub struct Reader<'a, C: Canvas> {
@@ -82,7 +60,7 @@ impl<'a, C: Canvas> Writer<'a, C> {
 
 impl<'a, C: Canvas> Drop for Writer<'a, C> {
     fn drop(&mut self) {
-        todo!()
+        unsafe { (*self.buf).writer_drop() }
     }
 }
 
@@ -109,7 +87,7 @@ impl<C: Canvas> TrippleBuffering<C> {
             buf: [Canvas::empty(), Canvas::empty(), Canvas::empty()],
             reader_index: AtomicUsize::new(0),
             writer_index: AtomicUsize::new(1),
-            interm_index: AtomicUsize::new(3),
+            interm_index: AtomicUsize::new(2),
         }
     }
 }
@@ -153,6 +131,8 @@ impl<C: Canvas> AccessW<C> {
     }
 }
 
+unsafe impl<C: Canvas> Send for AccessW<C> {}
+
 pub struct AccessR<C: Canvas> {
     buffer_ptr: Arc<dyn Buffer<C>>,
 }
@@ -165,3 +145,5 @@ impl<C: Canvas> AccessR<C> {
         }
     }
 }
+
+unsafe impl<C: Canvas> Send for AccessR<C> {}

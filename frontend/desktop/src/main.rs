@@ -21,10 +21,12 @@ fn main() {
     ctx.run(
         // Ran on each draw.
         move |draw_ctx| {
+            // Receive files from message queue.
+            msg_receiver::files::receive(&mut file_reader, &mut frontend, draw_ctx.resources());
             // Draws main menu bar.
             menu::menu(draw_ctx, &mut file_reader, &mut frontend);
-            // Receive files from message queue.
-            msg_receiver::files::receive(&mut file_reader, &mut frontend);
+            // Draws the frontend.
+            frontend.draw(draw_ctx);
             // Update backend.
             frontend.update();
         },

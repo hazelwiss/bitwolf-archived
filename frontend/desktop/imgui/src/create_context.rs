@@ -1,9 +1,9 @@
-use super::colour::BGRA;
 use imgui::{FontSource, Ui};
 use imgui_wgpu::{Renderer, RendererConfig};
 use imgui_winit_support::{HiDpiMode, WinitPlatform};
 use pollster::block_on;
 use std::time::Instant;
+use util::colour::BGRA;
 use util::memory::to_byte_slice;
 use wgpu::{FilterMode, SamplerDescriptor};
 use winit::event::{Event, WindowEvent};

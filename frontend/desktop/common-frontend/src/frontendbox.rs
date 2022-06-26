@@ -1,4 +1,5 @@
 use crate::Frontend;
+use imgui::WGPUContext;
 use std::ops::{Deref, DerefMut};
 
 pub struct FrontendBox {
@@ -16,7 +17,8 @@ impl FrontendBox {
         Self { inner: frontend }
     }
 
-    pub fn swap(&mut self, other: Box<dyn Frontend>) {
+    pub fn swap(&mut self, other: Box<dyn Frontend>, wgpu_ctx: &mut WGPUContext) {
+        self.inner.destroy(wgpu_ctx);
         self.inner = other;
     }
 }

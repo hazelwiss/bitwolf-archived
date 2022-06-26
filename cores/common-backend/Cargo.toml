@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 # Priority queue, mainly for schedulers.
 priority-queue = "1.2.2"
+
+# Utility crate.
+util = {path = "../../util"}
