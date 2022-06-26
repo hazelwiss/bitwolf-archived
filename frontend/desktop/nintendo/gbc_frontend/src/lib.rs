@@ -1,6 +1,6 @@
 mod frontend;
 
-use gbc_backend::{engines, Core};
+use gbc_backend::{Builder, Core, Interpreter, JIT};
 use std::{fmt::Display, path::Path};
 
 #[derive(Debug)]
@@ -19,8 +19,8 @@ impl Display for Error {
 impl std::error::Error for Error {}
 
 enum Engine {
-    Interpreter(Core<engines::interpreter::Interpreter>),
-    _JIT(Core<engines::jit::JIT>),
+    Interpreter(Core<Interpreter>),
+    _JIT(Core<JIT>),
 }
 
 pub struct GBC {
@@ -42,9 +42,7 @@ impl GBC {
             }
             arr
         };
-        let backend = Engine::Interpreter(Core::<engines::interpreter::Interpreter>::new(
-            engines::interpreter::Builder { rom, bootrom },
-        ));
+        let backend = Engine::Interpreter(Core::<Interpreter>::new(Builder { rom, bootrom }));
         Ok(Self { backend })
     }
 }

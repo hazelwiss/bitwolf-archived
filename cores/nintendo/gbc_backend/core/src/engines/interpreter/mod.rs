@@ -1,38 +1,14 @@
-
 mod instructions;
 
-use std::ops::{Deref, DerefMut};
+use crate::{Emu, Engine};
 
-pub struct Builder {
-    pub rom: Vec<u8>,
-    pub bootrom: [u8; 256],
+pub struct Interpreter;
+
+impl Engine for Interpreter {
+    type EngineData = ();
 }
 
-pub struct Interpreter {
-    emu: core::Emu,
-}
-
-impl Deref for Interpreter {
-    type Target = core::Emu;
-
-    fn deref(&self) -> &Self::Target {
-        &self.emu
-    }
-}
-
-impl DerefMut for Interpreter {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.emu
-    }
-}
-
-impl Interpreter {
-    pub fn new(builder: Builder) -> Self {
-        Self {
-            emu: core::Emu::new(builder.bootrom, builder.rom),
-        }
-    }
-
+impl Emu<Interpreter> {
     pub fn step(&mut self) {
         //let pc = self.cpu.regs().read_pc();
         //let sp = self.cpu.regs().read_sp();
@@ -47,7 +23,7 @@ impl Interpreter {
         //println!(
         //    "PC -> {pc:04X} : SP: {sp:04X}, BC: {bc:04X}, DE: {de:04X}, HL: {hl:04X}, A: {a:02X}, Z:{} N:{} H:{} C:{}", z as u8, n as u8, h as u8, c as u8
         //);
-        self.emu.interrupt_handler();
+        self.interrupt_handler();
         self.fetch_decode_execute();
     }
 }

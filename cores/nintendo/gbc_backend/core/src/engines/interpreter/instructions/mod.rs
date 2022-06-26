@@ -1,12 +1,12 @@
 mod defs;
 mod generic;
 
-use crate::Interpreter;
-use core::cpu::instrutions::Unprefixed;
+use super::Interpreter;
+use crate::{cpu::instrutions::Unprefixed, Emu};
 
-impl Interpreter {
+impl Emu<Interpreter> {
     pub(crate) fn fetch_decode_execute(&mut self) {
-        let val = Unprefixed::from_byte(self.emu.fetch());
+        let val = Unprefixed::from_byte(self.fetch());
         match val {
             Unprefixed::NOP => self.nop(),
             Unprefixed::STOP => self.stop(),

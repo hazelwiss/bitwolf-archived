@@ -1,5 +1,5 @@
-use crate::Interpreter;
-use core::{
+use super::Interpreter;
+use crate::{
     cpu::{
         instrutions::{
             decode::{Bit, RSTVec, CC},
@@ -9,9 +9,10 @@ use core::{
     },
     cycles::Cycles,
     emu::event_slots::Slot,
+    Emu,
 };
 
-impl Interpreter {
+impl Emu<Interpreter> {
     pub(crate) fn adc_r8(&mut self, src: R8) {
         self.alu_adc(self.r8_get(src), self.flag_get(Flag::C));
     }
