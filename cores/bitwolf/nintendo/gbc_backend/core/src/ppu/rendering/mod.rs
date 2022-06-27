@@ -1,4 +1,4 @@
-mod mixer;
-mod pixel_fetcher;
-mod scanline;
-mod shift_register;
+pub(super) mod mixer;
+pub(super) mod pixel_fetcher;
+pub(super) mod scanline;
+pub(super) mod shift_register;

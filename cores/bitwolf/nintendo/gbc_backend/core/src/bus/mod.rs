@@ -20,7 +20,7 @@ pub struct Bus {
 }
 
 impl Bus {
-    pub fn new(bootrom: [u8; 256], rom: Vec<u8>) -> Self {
+    pub fn new(bootrom: [u8; 256], rom: Vec<u8>, fb: crate::FrameBuffer) -> Self {
         if rom.len() > 0x8000 {
             logger::fatal!("ROM too large!");
         }
@@ -47,7 +47,7 @@ impl Bus {
             rom1[i - 0x4000] = rom[i];
         }
         Self {
-            ppu: crate::ppu::PPU::new(),
+            ppu: crate::ppu::PPU::new(fb),
             scheduler: Scheduler::new(),
             cycle_counter: 0,
             rom0,
@@ -78,6 +78,7 @@ impl Bus {
     #[inline(always)]
     pub fn tick(&mut self, t_cycles: u64) {
         self.cycle_counter += t_cycles;
+        self.ppu.tick(t_cycles as u32);
     }
 
     #[inline(always)]

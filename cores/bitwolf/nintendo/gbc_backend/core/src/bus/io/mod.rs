@@ -18,7 +18,6 @@ pub(crate) enum IOReg {
 impl IOReg {
     pub fn from_index(index: u8) -> Self {
         match index {
-            0xFF => Self::IE,
             0x01 => Self::Serial(SerialReg::SB),
             0x02 => Self::Serial(SerialReg::SC),
             0x04 => Self::Timer(TimerReg::DIV),
@@ -26,7 +25,15 @@ impl IOReg {
             0x06 => Self::Timer(TimerReg::TMA),
             0x07 => Self::Timer(TimerReg::TAC),
             0x0F => Self::IF,
+            0x40 => Self::PPUReg(PPUReg::LCDC),
+            0x41 => Self::PPUReg(PPUReg::LCDS),
+            0x42 => Self::PPUReg(PPUReg::SCY),
+            0x43 => Self::PPUReg(PPUReg::SCX),
             0x44 => Self::PPUReg(PPUReg::LY),
+            0x45 => Self::PPUReg(PPUReg::LYC),
+            0x4A => Self::PPUReg(PPUReg::WY),
+            0x4B => Self::PPUReg(PPUReg::WX),
+            0xFF => Self::IE,
             index => Self::Invalid(index),
         }
     }

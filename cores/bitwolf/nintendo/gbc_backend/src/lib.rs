@@ -1,6 +1,6 @@
 pub use core::{
     engines::{interpreter::Interpreter, jit::JIT},
-    Builder, Emu,
+    Builder, Emu, Texture,
 };
 
 use core::engines::Engine;

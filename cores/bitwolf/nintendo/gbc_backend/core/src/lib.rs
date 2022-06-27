@@ -13,7 +13,8 @@ mod events;
 use common_core::framebuffer;
 use engines::Engine;
 
-type FrameBuffer = framebuffer::AccessW<framebuffer::textures::TextBGRA<160, 144>>;
+pub type Texture = framebuffer::textures::TextBGRA<160, 144>;
+type FrameBuffer = framebuffer::AccessW<Texture>;
 
 pub struct Builder {
     pub rom: Vec<u8>,
@@ -25,7 +26,6 @@ pub struct Emu<E: Engine> {
     _data: E::EngineData,
     cpu: cpu::CPU,
     bus: bus::Bus,
-    fb: FrameBuffer,
 }
 
 impl<E: Engine> Emu<E> {
@@ -33,8 +33,7 @@ impl<E: Engine> Emu<E> {
         Self {
             _data: E::EngineData::default(),
             cpu: cpu::CPU::new(),
-            bus: bus::Bus::new(builder.bootrom, builder.rom),
-            fb: builder.fb,
+            bus: bus::Bus::new(builder.bootrom, builder.rom, builder.fb),
         }
     }
 }

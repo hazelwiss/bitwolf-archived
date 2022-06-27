@@ -3,12 +3,11 @@ mod config;
 mod frontend;
 
 use anyhow::{anyhow, Result};
-use common_core::framebuffer::{self, textures::TextBGRA};
+use common_core::framebuffer;
 use gbc_backend::Builder;
 use std::path::Path;
 
-type Texture = TextBGRA<160, 144>;
-type FrameBuffer = framebuffer::AccessR<Texture>;
+type FrameBuffer = framebuffer::AccessR<gbc_backend::Texture>;
 
 pub struct GBC {
     fb: FrameBuffer,
@@ -20,7 +19,7 @@ impl GBC {
         let rom =
             std::fs::read(path).or_else(|_| Err(anyhow!("Unabel to read rom path {path:?}")))?;
         let bootrom = config::bootrom::load_bootrom()?;
-        let (reader, writer) = framebuffer::fb_3b::<Texture>();
+        let (reader, writer) = framebuffer::fb_3b::<gbc_backend::Texture>();
         std::thread::spawn(move || {
             backend::run(Builder {
                 rom,
