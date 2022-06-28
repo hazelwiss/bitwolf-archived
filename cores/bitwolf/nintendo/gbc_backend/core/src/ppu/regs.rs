@@ -17,6 +17,15 @@ pub(super) enum TileMapArea {
     A9C00_9FFF = 1,
 }
 
+impl TileMapArea {
+    pub fn get_map_base_adr(&self) -> u16 {
+        match self {
+            TileMapArea::A9800_9BFF => 0x9800,
+            TileMapArea::A9C00_9FFF => 0x9C00,
+        }
+    }
+}
+
 #[repr(u8)]
 #[derive(Clone, Copy)]
 pub(super) enum TileDataArea {

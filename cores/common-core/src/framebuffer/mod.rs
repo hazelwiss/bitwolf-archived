@@ -7,8 +7,9 @@ use std::{
         Arc,
     },
 };
+use textures::TextureInfo;
 
-pub fn fb_3b<T: Canvas + 'static>() -> (AccessR<T>, AccessW<T>) {
+pub fn fb_3b<T: TextureInfo + 'static>() -> (AccessR<T>, AccessW<T>) {
     let triple = TrippleBuffering::<T>::new();
     let arc = Arc::new(triple);
     (
@@ -21,70 +22,61 @@ pub fn fb_3b<T: Canvas + 'static>() -> (AccessR<T>, AccessW<T>) {
     )
 }
 
-pub trait Canvas: Sized {
-    const WIDTH: usize;
-    const HEIGHT: usize;
-
-    fn empty() -> Self;
-
-    fn pitch(&self) -> usize;
-}
-
-pub struct Reader<'a, C: Canvas> {
-    buf: *mut dyn Buffer<C>,
+pub struct Reader<'a, T: TextureInfo> {
+    buf: *mut dyn Buffer<T>,
     _p: PhantomData<&'a ()>,
 }
 
-impl<'a, C: Canvas> Reader<'a, C> {
-    pub fn read(&self) -> &'a C {
+impl<'a, T: TextureInfo> Reader<'a, T> {
+    pub fn read(&self) -> &'a T {
         unsafe { (*self.buf).read() }
     }
 }
 
-impl<'a, C: Canvas> Drop for Reader<'a, C> {
+impl<'a, T: TextureInfo> Drop for Reader<'a, T> {
     fn drop(&mut self) {
         unsafe { (*self.buf).reader_drop() }
     }
 }
 
-pub struct Writer<'a, C: Canvas> {
-    buf: *mut dyn Buffer<C>,
+pub struct Writer<'a, T: TextureInfo> {
+    buf: *mut dyn Buffer<T>,
     _p: PhantomData<&'a ()>,
 }
 
-impl<'a, C: Canvas> Writer<'a, C> {
-    pub fn write(&self) -> &'a mut C {
+impl<'a, T: TextureInfo> Writer<'a, T> {
+    pub fn write(&self) -> &'a mut T {
         unsafe { (*self.buf).write() }
     }
 }
 
-impl<'a, C: Canvas> Drop for Writer<'a, C> {
+impl<'a, T: TextureInfo> Drop for Writer<'a, T> {
     fn drop(&mut self) {
         unsafe { (*self.buf).writer_drop() }
     }
 }
 
-trait Buffer<C: Canvas> {
-    fn read(&mut self) -> &C;
+trait Buffer<T: TextureInfo> {
+    fn read(&mut self) -> &T;
 
     fn reader_drop(&mut self);
 
-    fn write(&mut self) -> &mut C;
+    fn write(&mut self) -> &mut T;
 
     fn writer_drop(&mut self);
 }
 
-pub struct TrippleBuffering<C: Canvas> {
-    buf: [C; 3],
+pub struct TrippleBuffering<T: TextureInfo> {
+    buf: [T; 3],
     reader_index: AtomicUsize,
     writer_index: AtomicUsize,
     interm_index: AtomicUsize,
 }
 
-impl<C: Canvas> TrippleBuffering<C> {
+impl<T: TextureInfo> TrippleBuffering<T> {
     fn new() -> Self {
         Self {
-            buf: [Canvas::empty(), Canvas::empty(), Canvas::empty()],
+            buf: [T::default(), T::default(), T::default()],
             reader_index: AtomicUsize::new(0),
             writer_index: AtomicUsize::new(1),
             interm_index: AtomicUsize::new(2),
@@ -92,8 +84,8 @@ impl<C: Canvas> TrippleBuffering<C> {
     }
 }
 
-impl<C: Canvas> Buffer<C> for TrippleBuffering<C> {
-    fn read(&mut self) -> &C {
+impl<T: TextureInfo> Buffer<T> for TrippleBuffering<T> {
+    fn read(&mut self) -> &T {
         &self.buf[self.reader_index.load(Ordering::Relaxed)]
     }
 
@@ -105,7 +97,7 @@ impl<C: Canvas> Buffer<C> for TrippleBuffering<C> {
         );
     }
 
-    fn write(&mut self) -> &mut C {
+    fn write(&mut self) -> &mut T {
         &mut self.buf[self.writer_index.load(Ordering::Relaxed)]
     }
 
@@ -118,12 +110,12 @@ impl<C: Canvas> Buffer<C> for TrippleBuffering<C> {
     }
 }
 
-pub struct AccessW<C: Canvas> {
-    buffer_ptr: Arc<dyn Buffer<C>>,
+pub struct AccessW<T: TextureInfo> {
+    buffer_ptr: Arc<dyn Buffer<T>>,
 }
 
-impl<C: Canvas> AccessW<C> {
-    pub fn get(&self) -> Writer<C> {
+impl<T: TextureInfo> AccessW<T> {
+    pub fn get(&self) -> Writer<T> {
         Writer {
             buf: self.buffer_ptr.as_ref() as *const _ as *mut _,
             _p: PhantomData::default(),
@@ -131,14 +123,14 @@ impl<C: Canvas> AccessW<C> {
     }
 }
 
-unsafe impl<C: Canvas> Send for AccessW<C> {}
+unsafe impl<T: TextureInfo> Send for AccessW<T> {}
 
-pub struct AccessR<C: Canvas> {
-    buffer_ptr: Arc<dyn Buffer<C>>,
+pub struct AccessR<T: TextureInfo> {
+    buffer_ptr: Arc<dyn Buffer<T>>,
 }
 
-impl<C: Canvas> AccessR<C> {
-    pub fn get(&self) -> Reader<C> {
+impl<T: TextureInfo> AccessR<T> {
+    pub fn get(&self) -> Reader<T> {
         Reader {
             buf: self.buffer_ptr.as_ref() as *const _ as *mut _,
             _p: PhantomData::default(),
@@ -146,4 +138,4 @@ impl<C: Canvas> AccessR<C> {
     }
 }
 
-unsafe impl<C: Canvas> Send for AccessR<C> {}
+unsafe impl<T: TextureInfo> Send for AccessR<T> {}

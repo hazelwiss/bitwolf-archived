@@ -10,11 +10,9 @@ pub mod ppu;
 mod binder;
 mod events;
 
-use common_core::framebuffer;
-use engines::Engine;
+pub use ppu::lcd::{FrameBuffer, TextCol, Texture};
 
-pub type Texture = framebuffer::textures::TextBGRA<160, 144>;
-type FrameBuffer = framebuffer::AccessW<Texture>;
+use engines::Engine;
 
 pub struct Builder {
     pub rom: Vec<u8>,

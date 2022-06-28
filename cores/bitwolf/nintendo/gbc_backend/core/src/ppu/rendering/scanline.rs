@@ -1,7 +1,6 @@
-mod bg_win;
-mod sprites;
-
 use crate::ppu::PPU;
+
+use super::palette::Colour;
 
 const DOTS_PER_SCANLINE: u32 = 456;
 
@@ -38,12 +37,14 @@ impl PPU {
 
     fn scanline_done(&mut self) {
         self.scanline_dot_count = 0;
+        self.lcd_x = 0;
         self.regs.ly += 1;
         if self.regs.ly < 144 {
             self.change_mode(Mode::OAMScan);
         } else {
             if self.regs.ly == 144 {
                 self.change_mode(Mode::VBlank);
+                self.on_vblank();
             } else if self.regs.ly == 154 {
                 self.change_mode(Mode::OAMScan);
                 self.regs.ly = 0;
@@ -57,22 +58,34 @@ impl PPU {
     }
 
     fn oam_scan(&mut self) {
-        if self.scanline_dot_count == 80 {
+        if self.scanline_dot_count >= 80 - 1 {
             self.change_mode(Mode::Drawing);
         }
     }
 
+    fn on_vblank(&mut self) {
+        self.fb.get().write().text = self.frame.text;
+    }
+
     fn drawing(&mut self) {
-        if self.scanline_dot_count == 172 {
+        if self.scanline_dot_count >= 172 - 1 {
             self.change_mode(Mode::HBlank);
         } else {
-            // Render part of the scanline.
-            if self.regs.lcdc.bg_and_window_enable {
-                self.draw_bg();
-                if self.regs.lcdc.window_enable {
-                    self.draw_window();
+            println!(
+                "dot: {}, ly: {}, fetcher: {:?}",
+                self.scanline_dot_count, self.regs.ly, self.pixel_fetcher,
+            );
+            self.progress_pixel_fetcher();
+            if self.bg_win_sr.len() >= 8 {
+                for _ in 0..8 {
+                    let colour = self.sr_mix_pixel();
+                    self.push_to_lcd(colour);
                 }
             }
         }
+    }
+
+    fn sr_mix_pixel(&mut self) -> Colour {
+        self.bg_win_sr.pop()
     }
 }

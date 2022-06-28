@@ -11,3 +11,6 @@ logger = {path = "../../../../../logger"}
 
 # Backends common utility crate.
 common-core = {path = "../../../../common-core"}
+
+# Utility crate.
+util = {path = "../../../../../util"}

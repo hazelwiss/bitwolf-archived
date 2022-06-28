@@ -1,3 +1,5 @@
+pub(crate) mod address_space;
+
 mod access;
 mod io;
 mod memory_map;
