@@ -1,59 +1,27 @@
-pub struct ROM0(u16);
+#[derive(Clone, Copy)]
+pub struct AddressSpace<const RB: u16, const RE: u16>(u16);
 
-impl ROM0 {
-    pub fn new(adr: u16) -> Self {}
+impl<const RB: u16, const RE: u16> AddressSpace<RB, RE> {
+    pub fn new(adr: u16) -> Self {
+        debug_assert!(
+            (RB..=RE).contains(&adr),
+            "{adr:04X} is not contained within range {RB:04X} ..= {RE:04X}"
+        );
+        Self(adr - RB)
+    }
+
+    pub fn get(&self) -> usize {
+        self.0 as usize
+    }
 }
 
-pub struct ROM1(u16);
-
-impl ROM1 {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct VRAM(u16);
-
-impl VRAM {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct ERAM(u16);
-
-impl ERAM {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct WRAM0(u16);
-
-impl WRAM0 {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct WRAM1(u16);
-
-impl WRAM1 {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct MIRROR(u16);
-
-impl MIRROR {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct OAM(u16);
-
-impl OAM {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct Unusable(u16);
-
-impl Unusable {
-    pub fn new(adr: u16) -> Self {}
-}
-
-pub struct HRAM(u16);
-
-impl HRAM {
-    pub fn new(adr: u16) -> Self {}
-}
+pub type ROM0 = AddressSpace<0x0000, 0x3FFF>;
+pub type ROM1 = AddressSpace<0x4000, 0x7FFF>;
+pub type VRAM = AddressSpace<0x8000, 0x9FFF>;
+pub type ERAM = AddressSpace<0xA000, 0xBFFF>;
+pub type WRAM0 = AddressSpace<0xC000, 0xCFFF>;
+pub type WRAM1 = AddressSpace<0xD000, 0xDFFF>;
+pub type MIRROR = AddressSpace<0xE000, 0xFDFF>;
+pub type OAM = AddressSpace<0xFE00, 0xFE9F>;
+pub type Unusable = AddressSpace<0xFEA0, 0xFEFF>;
+pub type HRAM = AddressSpace<0xFF80, 0xFFFE>;

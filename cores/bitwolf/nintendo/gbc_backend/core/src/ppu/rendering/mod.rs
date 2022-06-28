@@ -5,8 +5,10 @@ pub(super) mod pixel_fetcher;
 pub(super) mod scanline;
 pub(super) mod shift_register;
 
+use crate::bus::address_space::VRAM;
+
 impl super::PPU {
-    fn vram_access(&self, offset: u16) -> u8 {
-        self.vram[offset as usize]
+    fn vram_access(&self, offset: VRAM) -> u8 {
+        self.vram[offset.get()]
     }
 }

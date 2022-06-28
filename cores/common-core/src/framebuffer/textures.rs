@@ -36,6 +36,6 @@ impl<Col: Default + Copy, const WIDTH: usize, const HEIGHT: usize> Default
 impl<Col: Default + Copy, const WIDTH: usize, const HEIGHT: usize> TextureInfo
     for Texture<Col, WIDTH, HEIGHT>
 {
-    const HEIGHT: usize = WIDTH;
-    const WIDTH: usize = HEIGHT;
+    const HEIGHT: usize = HEIGHT;
+    const WIDTH: usize = WIDTH;
 }

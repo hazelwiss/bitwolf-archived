@@ -4,34 +4,34 @@ impl Bus {
     pub fn read(&mut self, adr: u16) -> u8 {
         let section = Section::from_adr(adr);
         match section {
-            Section::ROM0(offset) => self.read_rom0(offset as usize),
-            Section::ROM1(offset) => self.read_rom1(offset as usize),
-            Section::VRAM(offset) => self.read_vram(offset as usize),
-            Section::ERAM(offset) => self.read_eram(offset as usize),
-            Section::WRAM0(offset) => self.read_wram0(offset as usize),
-            Section::WRAM1(offset) => self.read_wram1(offset as usize),
-            Section::MIRROR(offset) => self.read_mirror(offset as usize),
-            Section::OAM(offset) => self.read_oam(offset as usize),
-            Section::Unusable(offset) => self.read_unusable(offset as usize),
-            Section::IO(index) => self.read_io(IOReg::from_index(index)),
-            Section::HRAM(offset) => self.read_hram(offset as usize),
-            Section::Invalid(offset) => logger::fatal!("read to invalid memory {offset:04X}"),
+            Section::ROM0 => self.read_rom0(address_space::ROM0::new(adr)),
+            Section::ROM1 => self.read_rom1(address_space::ROM1::new(adr)),
+            Section::VRAM => self.read_vram(address_space::VRAM::new(adr)),
+            Section::ERAM => self.read_eram(address_space::ERAM::new(adr)),
+            Section::WRAM0 => self.read_wram0(address_space::WRAM0::new(adr)),
+            Section::WRAM1 => self.read_wram1(address_space::WRAM1::new(adr)),
+            Section::MIRROR => self.read_mirror(address_space::MIRROR::new(adr)),
+            Section::OAM => self.read_oam(address_space::OAM::new(adr)),
+            Section::Unusable => self.read_unusable(address_space::Unusable::new(adr)),
+            Section::IO => self.read_io(IOReg::from_index((adr & 0xFF) as u8)),
+            Section::HRAM => self.read_hram(address_space::HRAM::new(adr)),
+            Section::Invalid => logger::fatal!("read to invalid memory address {adr:04X}"),
         }
     }
 
     #[inline]
     fn read_rom0(&mut self, offset: address_space::ROM0) -> u8 {
-        if offset == 0x100 {
+        if offset.get() == 0x100 {
             for i in 0..256 {
                 self.rom0[i] = self.rom_256bytes[i];
             }
         }
-        self.rom0[offset]
+        self.rom0[offset.get()]
     }
 
     #[inline]
     fn read_rom1(&self, offset: address_space::ROM1) -> u8 {
-        self.rom1[offset]
+        self.rom1[offset.get()]
     }
 
     #[inline]
@@ -41,17 +41,17 @@ impl Bus {
 
     #[inline]
     fn read_eram(&self, offset: address_space::ERAM) -> u8 {
-        self.eram[offset]
+        self.eram[offset.get()]
     }
 
     #[inline]
     fn read_wram0(&self, offset: address_space::WRAM0) -> u8 {
-        self.wram0[offset]
+        self.wram0[offset.get()]
     }
 
     #[inline]
     fn read_wram1(&self, offset: address_space::WRAM1) -> u8 {
-        self.wram1[offset]
+        self.wram1[offset.get()]
     }
 
     #[inline]
@@ -66,11 +66,14 @@ impl Bus {
 
     #[inline]
     fn read_unusable(&self, offset: address_space::Unusable) -> u8 {
-        logger::fatal!("Attempting to read from unusable section 0x{offset:04X}")
+        logger::fatal!(
+            "Attempting to read from unusable section 0x{:04X}",
+            offset.get()
+        )
     }
 
     #[inline]
     fn read_hram(&self, offset: address_space::HRAM) -> u8 {
-        self.hram[offset]
+        self.hram[offset.get()]
     }
 }

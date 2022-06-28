@@ -1,4 +1,6 @@
-use crate::ppu::PPU;
+use common_core::framebuffer::textures::TextureInfo;
+
+use crate::{ppu::PPU, Texture};
 
 use super::palette::Colour;
 
@@ -68,12 +70,10 @@ impl PPU {
     }
 
     fn drawing(&mut self) {
-        if self.scanline_dot_count >= 172 - 1 {
-            self.change_mode(Mode::HBlank);
-        } else {
+        if self.pixel_fetcher.x < Texture::WIDTH as u8 / 8 {
             println!(
-                "dot: {}, ly: {}, fetcher: {:?}",
-                self.scanline_dot_count, self.regs.ly, self.pixel_fetcher,
+                "dot: {}, x: {}, ly: {}, fetcher: {:?}",
+                self.scanline_dot_count, self.lcd_x, self.regs.ly, self.pixel_fetcher,
             );
             self.progress_pixel_fetcher();
             if self.bg_win_sr.len() >= 8 {
@@ -82,6 +82,9 @@ impl PPU {
                     self.push_to_lcd(colour);
                 }
             }
+        } else {
+            self.change_mode(Mode::HBlank);
+            self.pixel_fetcher.x = 0;
         }
     }
 

@@ -7,7 +7,7 @@ use common_core::framebuffer;
 use gbc_backend::Builder;
 use std::path::Path;
 
-type FrameBuffer = framebuffer::AccessR<gbc_backend::Texture>;
+type FrameBuffer = framebuffer::access::AccessR<gbc_backend::Texture>;
 
 pub struct GBC {
     fb: FrameBuffer,
@@ -19,7 +19,7 @@ impl GBC {
         let rom =
             std::fs::read(path).or_else(|_| Err(anyhow!("Unabel to read rom path {path:?}")))?;
         let bootrom = config::bootrom::load_bootrom()?;
-        let (reader, writer) = framebuffer::fb_3b::<gbc_backend::Texture>();
+        let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
         std::thread::spawn(move || {
             backend::run(Builder {
                 rom,

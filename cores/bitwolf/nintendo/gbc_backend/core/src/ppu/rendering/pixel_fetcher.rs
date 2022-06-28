@@ -1,6 +1,5 @@
-use crate::ppu::PPU;
-
 use super::palette::Colour;
+use crate::{bus::address_space::VRAM, ppu::PPU};
 
 #[derive(Debug)]
 enum Mode {
@@ -75,8 +74,7 @@ impl PPU {
             self.pixel_fetcher.fetcherx = x;
             self.pixel_fetcher.fetchery = y;
             // offset to VRAM.
-            self.pixel_fetcher.tile_adr =
-                map_adr + (x as u16) * (y as u16) * 64/* 32 * 2*/ - 0x8000;
+            self.pixel_fetcher.tile_adr = map_adr + ((x as u16 % 32) + (y as u16 % 32) * 32) * 2;
         } else {
             self.pixel_fetcher.change_mode(Mode::DataLo);
         }
@@ -84,7 +82,7 @@ impl PPU {
 
     fn pixel_fetcher_fetch_tile_data_lo(&mut self, progress: u8) {
         if progress == 0 {
-            let index = self.vram_access(self.pixel_fetcher.tile_adr);
+            let index = self.vram_access(VRAM::new(self.pixel_fetcher.tile_adr));
             self.pixel_fetcher.tile_data_lo = self.vram_tile_data(index);
         } else {
             self.pixel_fetcher.change_mode(Mode::DataHi);
@@ -93,7 +91,7 @@ impl PPU {
 
     fn pixel_fetcher_fetch_tile_data_hi(&mut self, progress: u8) {
         if progress == 0 {
-            let index = self.vram_access(self.pixel_fetcher.tile_adr + 1);
+            let index = self.vram_access(VRAM::new(self.pixel_fetcher.tile_adr + 1));
             self.pixel_fetcher.tile_data_hi = self.vram_tile_data(index);
         } else {
             self.pixel_fetcher.change_mode(Mode::Sleep);
@@ -126,7 +124,7 @@ impl PPU {
                 (0x9000 + ((index as i8 as i32) * 16)) as u16
             }
             crate::ppu::regs::TileDataArea::A8000_8FFF => 0x8000 + index as u16 * 16,
-        } - 0x8000;
-        self.vram_access(adr)
+        };
+        self.vram_access(VRAM::new(adr))
     }
 }
