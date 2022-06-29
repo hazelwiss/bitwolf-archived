@@ -1,4 +1,5 @@
 pub(crate) mod address_space;
+pub(crate) mod debug;
 
 mod access;
 mod io;

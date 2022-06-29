@@ -1,8 +1,8 @@
-use gbc_backend::{Builder, Core, Interpreter};
+use gbc_backend::{engines::interpreter, Builder, Core};
 
 pub fn run(builder: Builder) {
-    let mut backend = Core::<Interpreter>::new(builder);
+    let mut backend = Core::<interpreter::Interpreter>::new(builder);
     loop {
-        backend.step()
+        interpreter::step(&mut backend);
     }
 }

@@ -7,7 +7,6 @@ pub mod emu;
 pub mod engines;
 pub mod ppu;
 
-mod binder;
 mod events;
 
 pub use ppu::lcd::{FrameBuffer, TextCol, Texture};

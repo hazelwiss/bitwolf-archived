@@ -1,4 +1,5 @@
-pub mod regs;
+pub(crate) mod debug;
+pub(crate) mod regs;
 
 mod access;
 mod rendering;

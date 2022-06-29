@@ -1,4 +1,3 @@
-#![feature(map_first_last)]
-
+pub mod disassembly;
 pub mod framebuffer;
 pub mod schedulers;
