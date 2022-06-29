@@ -1,4 +1,5 @@
+mod debug;
 mod destroy;
 mod draw;
-mod menu;
+mod emulation;
 mod update;

@@ -73,7 +73,6 @@ impl PPU {
             };
             self.pixel_fetcher.fetcherx = x;
             self.pixel_fetcher.fetchery = y;
-            // offset to VRAM.
             self.pixel_fetcher.tile_adr = map_adr + ((x as u16 % 32) + (y as u16 % 32) * 32) * 2;
         } else {
             self.pixel_fetcher.change_mode(Mode::DataLo);

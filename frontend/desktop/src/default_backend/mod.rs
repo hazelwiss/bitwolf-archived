@@ -1,4 +1,6 @@
-use common_frontend::{destroy::Destroy, draw::Draw, menubar::MenuBar, update::Update};
+use common_frontend::{
+    debuggable::Debuggable, destroy::Destroy, draw::Draw, emulation::Emulation, update::Update,
+};
 
 impl Update for EmptyFrontend {
     fn update(&mut self) {}
@@ -12,18 +14,28 @@ impl EmptyFrontend {
     }
 }
 
-impl MenuBar for EmptyFrontend {
-    fn debug(&mut self, _: &mut imgui::DrawContext) {}
-
-    fn emulation(&mut self, _: &mut imgui::DrawContext) {}
-}
-
 impl Draw for EmptyFrontend {
     fn draw(&mut self, _: &mut imgui::DrawContext) {}
 }
 
 impl Destroy for EmptyFrontend {
     fn destroy(&mut self, _: &mut imgui::WGPUContext) {}
+}
+
+impl Debuggable for EmptyFrontend {
+    fn debuggable(&self) -> bool {
+        false
+    }
+
+    fn menu_debug(&mut self, _: &mut imgui::DrawContext) {}
+}
+
+impl Emulation for EmptyFrontend {
+    fn emulatable(&self) -> bool {
+        false
+    }
+
+    fn menu_emulation(&mut self, _: &mut imgui::DrawContext) {}
 }
 
 impl common_frontend::Frontend for EmptyFrontend {}

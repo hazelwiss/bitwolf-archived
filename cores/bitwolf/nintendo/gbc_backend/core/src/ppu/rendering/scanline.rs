@@ -71,10 +71,10 @@ impl PPU {
 
     fn drawing(&mut self) {
         if self.pixel_fetcher.x < Texture::WIDTH as u8 / 8 {
-            println!(
-                "dot: {}, x: {}, ly: {}, fetcher: {:?}",
-                self.scanline_dot_count, self.lcd_x, self.regs.ly, self.pixel_fetcher,
-            );
+            //println!(
+            //    "dot: {}, x: {}, ly: {}, fetcher: {:?}",
+            //    self.scanline_dot_count, self.lcd_x, self.regs.ly, self.pixel_fetcher,
+            //);
             self.progress_pixel_fetcher();
             if self.bg_win_sr.len() >= 8 {
                 for _ in 0..8 {

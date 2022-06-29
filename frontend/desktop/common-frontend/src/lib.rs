@@ -1,10 +1,14 @@
+pub mod debuggable;
 pub mod destroy;
 pub mod draw;
-pub mod menubar;
+pub mod emulation;
 pub mod update;
 
 mod frontendbox;
 
 pub use frontendbox::FrontendBox;
 
-pub trait Frontend: menubar::MenuBar + update::Update + draw::Draw + destroy::Destroy {}
+pub trait Frontend:
+    debuggable::Debuggable + emulation::Emulation + update::Update + draw::Draw + destroy::Destroy
+{
+}

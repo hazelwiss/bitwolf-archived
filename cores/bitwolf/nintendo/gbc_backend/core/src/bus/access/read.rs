@@ -25,6 +25,8 @@ impl Bus {
             for i in 0..256 {
                 self.rom0[i] = self.rom_256bytes[i];
             }
+            println!("TEMPORARY STOPPING!");
+            loop {}
         }
         self.rom0[offset.get()]
     }

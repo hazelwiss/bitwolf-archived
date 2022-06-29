@@ -14,13 +14,19 @@ pub fn menu(
         draw_ctx
             .ui()
             .menu("File", || file::menu(draw_ctx, file_reader, frontend));
-        draw_ctx
-            .ui()
-            .menu("Emulation", || frontend.emulation(draw_ctx));
+        if frontend.emulatable() {
+            draw_ctx
+                .ui()
+                .menu("Emulation", || frontend.menu_emulation(draw_ctx));
+        }
+        if frontend.debuggable() {
+            draw_ctx
+                .ui()
+                .menu("Debug", || frontend.menu_debug(draw_ctx));
+        }
         draw_ctx
             .ui()
             .menu("Options", || options::menu(draw_ctx, frontend));
-        draw_ctx.ui().menu("Debug", || frontend.debug(draw_ctx));
         draw_ctx
             .ui()
             .menu("Help", || help::menu(draw_ctx, frontend));
