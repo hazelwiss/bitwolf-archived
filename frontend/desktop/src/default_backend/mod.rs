@@ -1,4 +1,4 @@
-use common_frontend::{
+use common_frontend::constraints::{
     debuggable::Debuggable, destroy::Destroy, draw::Draw, emulation::Emulation, update::Update,
 };
 

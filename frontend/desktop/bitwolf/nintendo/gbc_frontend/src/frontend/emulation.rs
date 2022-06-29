@@ -1,5 +1,5 @@
 use crate::GBC;
-use common_frontend::emulation::Emulation;
+use common_frontend::constraints::emulation::Emulation;
 
 impl Emulation for GBC {
     fn menu_emulation(&mut self, draw_ctx: &mut imgui::DrawContext) {

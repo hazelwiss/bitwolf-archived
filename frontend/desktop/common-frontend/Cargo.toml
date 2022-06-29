@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 # Imgui draw crate .
 imgui = {path = "../imgui"}
+
+# Backend crate.
+common-core = {path = "../../../cores/common-core"}

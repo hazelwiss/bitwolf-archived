@@ -21,7 +21,7 @@ pub fn debug_write(_emu: &mut Emu<Interpreter>, _adr: u16, _val: u8) {
     todo!()
 }
 
-pub fn disassemle_adr(
+pub fn disassemle(
     emu: &Emu<Interpreter>,
     adr: u16,
 ) -> common_core::disassembly::DisassembledOutput {

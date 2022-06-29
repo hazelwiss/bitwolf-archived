@@ -8,6 +8,14 @@ impl Bus {
             IOReg::Serial(reg) => self.write_serial(reg, val),
             IOReg::Timer(reg) => self.write_timer(reg, val),
             IOReg::PPUReg(reg) => self.ppu.write_reg(reg, val),
+            IOReg::BootromToggle => {
+                self.io.bootrom_toggle = val;
+                if val != 0 {
+                    for i in 0..256 {
+                        self.rom0[i] = self.rom_256bytes[i];
+                    }
+                }
+            }
             IOReg::Invalid(index) => {
                 logger::warning!("Write to unknown IO register 0x{index:02X}.");
             }

@@ -21,13 +21,6 @@ impl Bus {
 
     #[inline]
     fn read_rom0(&mut self, offset: address_space::ROM0) -> u8 {
-        if offset.get() == 0x100 {
-            for i in 0..256 {
-                self.rom0[i] = self.rom_256bytes[i];
-            }
-            println!("TEMPORARY STOPPING!");
-            loop {}
-        }
         self.rom0[offset.get()]
     }
 

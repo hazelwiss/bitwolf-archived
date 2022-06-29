@@ -9,6 +9,7 @@ use timer::TimerReg;
 pub(crate) enum IOReg {
     IE,
     IF,
+    BootromToggle,
     Serial(SerialReg),
     Timer(TimerReg),
     PPUReg(PPUReg),
@@ -33,6 +34,7 @@ impl IOReg {
             0x45 => Self::PPUReg(PPUReg::LYC),
             0x4A => Self::PPUReg(PPUReg::WY),
             0x4B => Self::PPUReg(PPUReg::WX),
+            0x50 => Self::BootromToggle,
             0xFF => Self::IE,
             index => Self::Invalid(index),
         }
@@ -42,6 +44,7 @@ impl IOReg {
 pub(crate) struct IO {
     ie_f: u8,
     if_f: u8,
+    bootrom_toggle: u8,
     serial: serial::Serial,
     timer: timer::Timer,
 }
@@ -51,6 +54,7 @@ impl IO {
         Self {
             ie_f: 0,
             if_f: 0,
+            bootrom_toggle: 0,
             serial: serial::Serial::new(),
             timer: timer::Timer::new(),
         }

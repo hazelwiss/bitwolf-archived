@@ -8,6 +8,7 @@ impl Bus {
             IOReg::Serial(reg) => self.read_serial(reg),
             IOReg::Timer(reg) => self.read_timer(reg),
             IOReg::PPUReg(reg) => self.ppu.read_reg(reg),
+            IOReg::BootromToggle => self.io.bootrom_toggle,
             IOReg::Invalid(index) => {
                 logger::warning!("Read from unknown IO register 0x{index:02X}.");
                 0xFF
