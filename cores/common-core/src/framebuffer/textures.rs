@@ -1,5 +1,6 @@
 use util::colour::BGRA;
 
+#[derive(Clone, Debug)]
 pub struct Texture<Col, const WIDTH: usize, const HEIGHT: usize> {
     pub text: [[Col; WIDTH]; HEIGHT],
 }

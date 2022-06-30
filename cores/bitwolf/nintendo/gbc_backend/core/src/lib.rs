@@ -9,14 +9,13 @@ pub mod ppu;
 
 mod events;
 
-pub use ppu::lcd::{FrameBuffer, TextCol, Texture};
+pub use ppu::lcd::{TextCol, Texture};
 
 use engines::Engine;
 
 pub struct Builder {
     pub rom: Vec<u8>,
     pub bootrom: [u8; 256],
-    pub fb: FrameBuffer,
 }
 
 pub struct Emu<E: Engine> {
@@ -30,7 +29,7 @@ impl<E: Engine> Emu<E> {
         Self {
             _data: E::EngineData::default(),
             cpu: cpu::CPU::new(),
-            bus: bus::Bus::new(builder.bootrom, builder.rom, builder.fb),
+            bus: bus::Bus::new(builder.bootrom, builder.rom),
         }
     }
 }

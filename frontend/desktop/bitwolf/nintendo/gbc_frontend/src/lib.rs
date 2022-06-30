@@ -1,6 +1,8 @@
 mod backend;
 mod config;
-mod frontend;
+mod constraints;
+mod messages;
+mod state;
 
 use anyhow::{anyhow, Result};
 use common_core::framebuffer;
@@ -12,6 +14,7 @@ type FrameBuffer = framebuffer::access::AccessR<gbc_backend::Texture>;
 pub struct GBC {
     fb: FrameBuffer,
     display_texture: imgui::gui::TextureId,
+    bdq: util::bdq::Bdq<messages::CtoF, messages::FtoC>,
 }
 
 impl GBC {
@@ -20,17 +23,13 @@ impl GBC {
             std::fs::read(path).or_else(|_| Err(anyhow!("Unabel to read rom path {path:?}")))?;
         let bootrom = config::bootrom::load_bootrom()?;
         let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
-        std::thread::spawn(move || {
-            backend::run(Builder {
-                rom,
-                bootrom,
-                fb: writer,
-            })
-        });
+        let (bdq, bdq_backend) = util::bdq::new_pair(100);
+        std::thread::spawn(move || backend::run(Builder { rom, bootrom }, bdq_backend, writer));
         let display_texture = wgpu_ctx.create_texture([[util::colour::BGRA::WHITE; 160]; 144]);
         Ok(Self {
             fb: reader,
             display_texture,
+            bdq,
         })
     }
 }

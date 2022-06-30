@@ -5,7 +5,6 @@ use super::palette::Colour;
 
 pub type TextCol = util::colour::BGRA;
 pub type Texture = framebuffer::textures::Texture<TextCol, 160, 144>;
-pub type FrameBuffer = framebuffer::access::AccessW<Texture>;
 
 impl PPU {
     pub(super) fn push_to_lcd(&mut self, col: Colour) {

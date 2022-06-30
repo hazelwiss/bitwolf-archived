@@ -6,8 +6,6 @@ mod rendering;
 
 pub(crate) use rendering::lcd;
 
-use lcd::FrameBuffer;
-
 pub struct PPU {
     vram: [u8; 0x2000],
     oam: [u8; 0xA0],
@@ -17,13 +15,13 @@ pub struct PPU {
     bg_win_sr: rendering::shift_register::ShiftRegister,
     sprite_sr: rendering::shift_register::ShiftRegister,
     pixel_fetcher: rendering::pixel_fetcher::PixelFetcher,
-    fb: FrameBuffer,
     frame: crate::Texture,
+    frame_ready: bool,
     lcd_x: usize,
 }
 
 impl PPU {
-    pub fn new(fb: FrameBuffer) -> Self {
+    pub fn new() -> Self {
         Self {
             vram: [0; 0x2000],
             oam: [0; 0xA0],
@@ -33,9 +31,24 @@ impl PPU {
             bg_win_sr: rendering::shift_register::ShiftRegister::new(),
             sprite_sr: rendering::shift_register::ShiftRegister::new(),
             pixel_fetcher: rendering::pixel_fetcher::PixelFetcher::new(),
-            fb,
             frame: crate::Texture::default(),
+            frame_ready: false,
             lcd_x: 0,
         }
+    }
+
+    /// retrieve frame from PPU if frame is ready.
+    #[inline(always)]
+    pub fn present_frame(&self) -> Option<&crate::Texture> {
+        if self.frame_ready {
+            Some(&self.frame)
+        } else {
+            None
+        }
+    }
+
+    #[inline(always)]
+    pub fn invalidate_frame(&mut self) {
+        self.frame_ready = false;
     }
 }

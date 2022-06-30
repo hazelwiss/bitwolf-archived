@@ -9,7 +9,7 @@ use crate::{cpu::interrupt::InterruptBit, emu::event_slots::Slot};
 use common_core::schedulers::Scheduler;
 
 pub struct Bus {
-    ppu: crate::ppu::PPU,
+    pub(crate) ppu: crate::ppu::PPU,
     scheduler: Scheduler<Slot>,
     cycle_counter: u64,
     rom_256bytes: [u8; 256],
@@ -23,7 +23,7 @@ pub struct Bus {
 }
 
 impl Bus {
-    pub fn new(bootrom: [u8; 256], rom: Vec<u8>, fb: crate::FrameBuffer) -> Self {
+    pub fn new(bootrom: [u8; 256], rom: Vec<u8>) -> Self {
         if rom.len() > 0x8000 {
             logger::fatal!("ROM too large!");
         }
@@ -50,7 +50,7 @@ impl Bus {
             rom1[i - 0x4000] = rom[i];
         }
         Self {
-            ppu: crate::ppu::PPU::new(fb),
+            ppu: crate::ppu::PPU::new(),
             scheduler: Scheduler::new(),
             cycle_counter: 0,
             rom0,

@@ -45,11 +45,9 @@ impl PPU {
             self.change_mode(Mode::OAMScan);
         } else {
             if self.regs.ly == 144 {
-                self.change_mode(Mode::VBlank);
                 self.on_vblank();
             } else if self.regs.ly == 154 {
-                self.change_mode(Mode::OAMScan);
-                self.regs.ly = 0;
+                self.on_new_frame();
             }
         }
     }
@@ -66,7 +64,14 @@ impl PPU {
     }
 
     fn on_vblank(&mut self) {
-        self.fb.get().write().text = self.frame.text;
+        self.change_mode(Mode::VBlank);
+        self.frame_ready = true;
+    }
+
+    fn on_new_frame(&mut self) {
+        self.change_mode(Mode::OAMScan);
+        self.regs.ly = 0;
+        self.frame_ready = false;
     }
 
     fn drawing(&mut self) {
