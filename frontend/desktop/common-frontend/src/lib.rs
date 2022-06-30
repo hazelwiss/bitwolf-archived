@@ -1,4 +1,5 @@
 pub mod constraints;
+pub mod framebuffer;
 pub mod subwindows;
 
 mod frontendbox;

@@ -2,7 +2,7 @@ use util::colour::BGRA;
 
 #[derive(Clone, Debug)]
 pub struct Texture<Col, const WIDTH: usize, const HEIGHT: usize> {
-    pub text: [[Col; WIDTH]; HEIGHT],
+    pub data: [[Col; WIDTH]; HEIGHT],
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> Texture<BGRA, WIDTH, HEIGHT> {
@@ -29,7 +29,7 @@ impl<Col: Default + Copy, const WIDTH: usize, const HEIGHT: usize> Default
 {
     fn default() -> Self {
         Self {
-            text: [[Default::default(); WIDTH]; HEIGHT],
+            data: [[Default::default(); WIDTH]; HEIGHT],
         }
     }
 }

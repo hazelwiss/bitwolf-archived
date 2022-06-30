@@ -1,4 +1,4 @@
-use common_core::framebuffer::textures::TextureInfo;
+use common_core::textures::TextureInfo;
 
 use crate::{ppu::PPU, Texture};
 

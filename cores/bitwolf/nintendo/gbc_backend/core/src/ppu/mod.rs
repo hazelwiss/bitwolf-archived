@@ -47,6 +47,7 @@ impl PPU {
         }
     }
 
+    /// invalidate ppu frame, preferably after use.
     #[inline(always)]
     pub fn invalidate_frame(&mut self) {
         self.frame_ready = false;

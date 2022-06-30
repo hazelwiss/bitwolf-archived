@@ -1,10 +1,10 @@
 use crate::ppu::PPU;
-use common_core::framebuffer::{self, textures::TextureInfo};
+use common_core::textures::{self, TextureInfo};
 
 use super::palette::Colour;
 
 pub type TextCol = util::colour::BGRA;
-pub type Texture = framebuffer::textures::Texture<TextCol, 160, 144>;
+pub type Texture = textures::Texture<TextCol, 160, 144>;
 
 impl PPU {
     pub(super) fn push_to_lcd(&mut self, col: Colour) {
@@ -25,6 +25,6 @@ impl PPU {
             Colour::C2 => TextCol::new(0x00, 0x00, 0xFF, 0xFF),
             Colour::C3 => TextCol::new(0x44, 0x88, 0xCC, 0xFF),
         };
-        self.frame.text[y][x] = colour;
+        self.frame.data[y][x] = colour;
     }
 }

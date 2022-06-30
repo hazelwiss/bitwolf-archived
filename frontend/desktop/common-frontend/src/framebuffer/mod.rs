@@ -1,8 +1,7 @@
 pub mod access;
 pub mod buffers;
-pub mod textures;
 
-use textures::TextureInfo;
+use common_core::textures::TextureInfo;
 
 trait Buffer<T: TextureInfo> {
     fn read(&mut self) -> &T;

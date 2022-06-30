@@ -1,4 +1,5 @@
-use super::{textures::TextureInfo, Buffer};
+use super::Buffer;
+use common_core::textures::TextureInfo;
 use std::{marker::PhantomData, sync::Arc};
 
 pub struct Reader<'a, T: TextureInfo> {

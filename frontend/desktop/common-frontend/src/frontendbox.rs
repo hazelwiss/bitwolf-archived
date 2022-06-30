@@ -17,9 +17,9 @@ impl FrontendBox {
         Self { inner: frontend }
     }
 
-    pub fn swap(&mut self, other: Box<dyn Frontend>, wgpu_ctx: &mut WGPUContext) {
-        self.inner.destroy(wgpu_ctx);
-        self.inner = other;
+    pub fn swap(&mut self, mut other: Box<dyn Frontend>, wgpu_ctx: &mut WGPUContext) {
+        std::mem::swap(&mut other, &mut self.inner);
+        other.destroy(wgpu_ctx);
     }
 }
 
