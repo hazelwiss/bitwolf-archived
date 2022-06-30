@@ -1,3 +1,4 @@
+pub mod disassemble;
 pub mod memory;
 pub mod registers;
 pub mod step;
