@@ -16,7 +16,7 @@ pub struct GBC {
     fb: FrameBuffer,
     state: state::State,
     resources: resources::Resources,
-    bdq: util::bdq::Bdq<messages::CtoF, messages::FtoC>,
+    bdq: util::bdq::Bdq<backend::messages::CtoF, messages::FtoC>,
 }
 
 impl GBC {

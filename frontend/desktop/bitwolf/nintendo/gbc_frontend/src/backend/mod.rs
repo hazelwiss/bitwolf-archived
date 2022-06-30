@@ -1,10 +1,12 @@
-mod messages;
-mod state;
+pub mod messages;
 
-use crate::messages::{CtoF, FtoC};
+mod state;
+mod sync;
+
+use crate::messages::FtoC;
 use common_frontend::framebuffer;
 use gbc_backend::{engines::interpreter, Builder, Core};
-use std::time::Duration;
+use messages::CtoF;
 use util::bdq::Bdq;
 
 type FrameBuffer = framebuffer::access::AccessW<gbc_backend::Texture>;
@@ -20,9 +22,10 @@ pub fn run(builder: Builder, mut bdq: MsgQ, fb: FrameBuffer) {
             |frame, emu| {
                 // Receive from message queue.
                 messages::msgq_recv(emu, &mut state, &mut bdq);
+                // Sync with frontend.
+                sync::sync(emu, &mut bdq);
                 // Presents frame.
                 fb.get().write().data = frame.data;
-                std::thread::sleep(Duration::from_millis(17));
             },
         );
     }

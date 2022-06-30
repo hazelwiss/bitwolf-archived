@@ -7,5 +7,6 @@ impl Draw for GBC {
     fn draw(&mut self, draw_ctx: &mut imgui::DrawContext) {
         windows::display::draw(self, draw_ctx);
         windows::disassembly::draw(self, draw_ctx);
+        windows::cpu_reg_view::draw(self, draw_ctx);
     }
 }

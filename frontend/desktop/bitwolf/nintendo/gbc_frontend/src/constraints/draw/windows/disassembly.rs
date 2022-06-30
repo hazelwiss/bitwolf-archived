@@ -3,7 +3,7 @@ use common_frontend::subwindows::disassembler;
 
 impl disassembler::DisassemblyHook for GBC {
     fn pc_value(&self) -> u64 {
-        0
+        self.state.reg_file.pc as u64
     }
 
     fn disassemle_adr(&self, adr: u64) -> common_core::disassembly::DisassembledOutput {
