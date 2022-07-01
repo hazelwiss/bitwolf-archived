@@ -1,4 +1,5 @@
 #![feature(mixed_integer_ops)]
+#![feature(let_chains)]
 
 pub mod bus;
 pub mod cpu;

@@ -2,7 +2,7 @@ use crate::GBC;
 use imgui::gui::TableFlags;
 
 // TODO: Make window stretchable
-pub fn draw(gbc: &mut GBC, draw_ctx: &mut imgui::DrawContext) {
+pub fn draw(gbc: &mut GBC, draw_ctx: &imgui::DrawContext) {
     let ui = draw_ctx.ui();
     imgui::gui::Window::new("CPU Register Window")
         .always_auto_resize(true)

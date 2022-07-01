@@ -6,16 +6,16 @@ impl disassembler::DisassemblyHook for GBC {
         self.state.reg_file.pc as u64
     }
 
-    fn disassemle_adr(&self, adr: u64) -> common_core::disassembly::DisassembledOutput {
-        common_core::disassembly::DisassembledOutput::Instr {
-            string_repr: "".to_string(),
-            byte_repr: vec![],
-            comment: None,
-        }
+    fn is_breakpoint(&self, adr: u64) -> bool {
+        self.state.ctrl.breakpoints.contains(&(adr as u16))
     }
 
-    fn is_breakpoint(&self, adr: u64) -> bool {
-        false
+    fn get_start_adr(&self) -> u64 {
+        0x00
+    }
+
+    fn get_disassembly_output(&self) -> &Vec<common_core::disassembly::DisassembledOutput> {
+        &self.state.disasm.rom
     }
 }
 

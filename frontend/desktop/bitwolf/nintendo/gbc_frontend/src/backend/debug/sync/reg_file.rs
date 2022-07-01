@@ -1,6 +1,8 @@
-use super::{frontend_state, interpreter, Emu, Interpreter};
+use super::Emu;
+use crate::state::substates;
+use gbc_backend::engines::interpreter::{self, Interpreter};
 
-pub(super) fn get(emu: &mut Emu<Interpreter>) -> frontend_state::RegisterFile {
+pub(super) fn get(emu: &mut Emu<Interpreter>) -> substates::RegisterFile {
     use interpreter::debug::registers::{Flag, R16};
     let pc = interpreter::debug::registers::get_pc(emu);
     let sp = interpreter::debug::registers::get_sp(emu);
@@ -12,7 +14,7 @@ pub(super) fn get(emu: &mut Emu<Interpreter>) -> frontend_state::RegisterFile {
     let n = interpreter::debug::registers::get_flag(emu, Flag::N);
     let h = interpreter::debug::registers::get_flag(emu, Flag::H);
     let c = interpreter::debug::registers::get_flag(emu, Flag::C);
-    frontend_state::RegisterFile {
+    substates::RegisterFile {
         pc,
         sp,
         af,

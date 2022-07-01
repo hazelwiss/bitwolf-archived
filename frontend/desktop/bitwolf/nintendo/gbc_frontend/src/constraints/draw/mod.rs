@@ -8,5 +8,6 @@ impl Draw for GBC {
         windows::display::draw(self, draw_ctx);
         windows::disassembly::draw(self, draw_ctx);
         windows::cpu_reg_view::draw(self, draw_ctx);
+        windows::control_panel::draw(self, draw_ctx);
     }
 }

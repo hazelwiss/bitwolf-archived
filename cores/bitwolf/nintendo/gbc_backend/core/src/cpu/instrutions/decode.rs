@@ -9,7 +9,7 @@ pub enum CC {
     C,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
 pub enum RSTVec {
     V00 = 0x00,

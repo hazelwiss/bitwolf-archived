@@ -11,12 +11,13 @@ use gbc_backend::Builder;
 use std::path::Path;
 
 type FrameBuffer = framebuffer::access::AccessR<gbc_backend::Texture>;
+type MsgQ = util::bdq::Bdq<backend::debug::messages::CtoF, messages::FtoC>;
 
 pub struct GBC {
     fb: FrameBuffer,
     state: state::State,
     resources: resources::Resources,
-    bdq: util::bdq::Bdq<backend::messages::CtoF, messages::FtoC>,
+    msgq: MsgQ,
 }
 
 impl GBC {
@@ -26,12 +27,14 @@ impl GBC {
         let bootrom = config::bootrom::load_bootrom()?;
         let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
         let (bdq, bdq_backend) = util::bdq::new_pair(100);
-        std::thread::spawn(move || backend::run(Builder { rom, bootrom }, bdq_backend, writer));
+        std::thread::spawn(move || {
+            backend::debug::run(Builder { rom, bootrom }, bdq_backend, writer)
+        });
         Ok(Self {
             fb: reader,
             state: state::State::default(),
             resources: resources::Resources::new(wgpu_ctx),
-            bdq,
+            msgq: bdq,
         })
     }
 }

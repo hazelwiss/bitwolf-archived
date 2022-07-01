@@ -14,16 +14,16 @@ pub fn menu(
         draw_ctx
             .ui()
             .menu("File", || file::menu(draw_ctx, file_reader, frontend));
-        if frontend.emulatable() {
+        draw_ctx.ui().enabled(frontend.emulatable(), || {
             draw_ctx
                 .ui()
                 .menu("Emulation", || frontend.menu_emulation(draw_ctx));
-        }
-        if frontend.debuggable() {
+        });
+        draw_ctx.ui().enabled(frontend.debuggable(), || {
             draw_ctx
                 .ui()
                 .menu("Debug", || frontend.menu_debug(draw_ctx));
-        }
+        });
         draw_ctx
             .ui()
             .menu("Options", || options::menu(draw_ctx, frontend));
