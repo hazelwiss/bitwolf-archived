@@ -9,8 +9,8 @@ pub type Texture = textures::Texture<TextCol, 160, 144>;
 impl PPU {
     pub(super) fn push_to_lcd(&mut self, col: Colour) {
         let y = self.regs.ly as usize;
-        let x = self.lcd_x;
-        self.lcd_x += 1;
+        let x = self.scanline_state.lcd_x;
+        self.scanline_state.lcd_x += 1;
         debug_assert!(
             y < Texture::HEIGHT,
             "Cannot push to lcd with ly values above 144!"

@@ -32,17 +32,26 @@ impl PPU {
             Mode::Drawing => self.drawing(),
         }
         self.lyc_check();
-        self.scanline_dot_count += 1;
-        if self.scanline_dot_count >= DOTS_PER_SCANLINE {
-            self.scanline_done()
+        self.scanline_state.dot_count += 1;
+        if self.scanline_state.dot_count >= DOTS_PER_SCANLINE {
+            self.on_new_scanline()
+        }
+    }
+
+    fn check_window(&mut self) {
+        if !self.scanline_state.window_drawing && self.regs.lcdc.window_enable {
+            let win_x = self.regs.wx - 7;
+            let win_y = self.regs.wy;
+            self.scanline_state.window_drawing =
+                self.pixel_fetcher.x >= win_x / 8 && self.regs.ly >= win_y;
         }
     }
 
     fn lyc_check(&mut self) {
         if self.regs.ly == self.regs.lyc {
-            if self.regs.lcds.lyc_sis && !self.lyc_interrupt_fired {
+            if self.regs.lcds.lyc_sis && !self.scanline_state.lyc_interrupt_fired {
                 self.if_stat = true;
-                self.lyc_interrupt_fired = true;
+                self.scanline_state.lyc_interrupt_fired = true;
             }
             self.regs.lcds.lyc_flag = true;
         } else {
@@ -50,10 +59,11 @@ impl PPU {
         }
     }
 
-    fn scanline_done(&mut self) {
-        self.scanline_dot_count = 0;
-        self.lcd_x = 0;
-        self.lyc_interrupt_fired = false;
+    fn on_new_scanline(&mut self) {
+        if self.scanline_state.window_drawing {
+            self.frame_state.window_ly += 1;
+        }
+        self.scanline_state.reset();
         self.regs.ly += 1;
         if self.regs.ly < 144 {
             self.change_mode(Mode::OAMScan);
@@ -90,43 +100,58 @@ impl PPU {
     }
 
     fn oam_scan(&mut self) {
-        if self.scanline_dot_count >= 80 - 1 {
+        if self.scanline_state.dot_count >= 80 - 1 {
+            self.bg_win_sr.discard((self.regs.scx % 8) as usize);
             self.change_mode(Mode::Drawing);
         }
     }
 
     fn on_vblank(&mut self) {
-        self.if_vblank = true;
         self.change_mode(Mode::VBlank);
-        self.frame_ready = true;
+        self.if_vblank = true;
+        self.frame_state.frame_ready = true;
     }
 
     fn on_new_frame(&mut self) {
         self.change_mode(Mode::OAMScan);
+        self.frame_state.reset();
         self.regs.ly = 0;
-        self.frame_ready = false;
     }
 
     fn drawing(&mut self) {
         if self.pixel_fetcher.x < Texture::WIDTH as u8 / 8 {
             //println!(
             //    "dot: {}, x: {}, ly: {}, fetcher: {:?}",
-            //    self.scanline_dot_count, self.lcd_x, self.regs.ly, self.pixel_fetcher,
+            //    self.scanline_state.dot_count,
+            //    self.scanline_state.lcd_x,
+            //    self.regs.ly,
+            //    self.pixel_fetcher,
             //);
+            self.check_window();
             self.progress_pixel_fetcher();
-            if self.bg_win_sr.len() >= 8 {
-                for _ in 0..8 {
-                    let colour = self.sr_mix_pixel();
-                    self.push_to_lcd(colour);
-                }
-            }
+            self.empty_fifos();
         } else {
             self.change_mode(Mode::HBlank);
             self.pixel_fetcher.x = 0;
         }
     }
 
-    fn sr_mix_pixel(&mut self) -> Colour {
-        self.bg_win_sr.pop()
+    fn empty_fifos(&mut self) {
+        while let Some(colour) = self.sr_mix_pixel() {
+            self.push_to_lcd(colour);
+        }
+    }
+
+    fn sr_mix_pixel(&mut self) -> Option<Colour> {
+        if self.bg_win_sr.len() > 0 {
+            let colour = self.bg_win_sr.pop();
+            if self.regs.lcdc.bg_and_window_enable {
+                Some(colour)
+            } else {
+                Some(Colour::C0)
+            }
+        } else {
+            None
+        }
     }
 }
