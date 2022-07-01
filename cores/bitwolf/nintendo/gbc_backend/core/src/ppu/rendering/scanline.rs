@@ -31,15 +31,29 @@ impl PPU {
             Mode::OAMScan => self.oam_scan(),
             Mode::Drawing => self.drawing(),
         }
+        self.lyc_check();
         self.scanline_dot_count += 1;
         if self.scanline_dot_count >= DOTS_PER_SCANLINE {
             self.scanline_done()
         }
     }
 
+    fn lyc_check(&mut self) {
+        if self.regs.ly == self.regs.lyc {
+            if self.regs.lcds.lyc_sis && !self.lyc_interrupt_fired {
+                self.if_stat = true;
+                self.lyc_interrupt_fired = true;
+            }
+            self.regs.lcds.lyc_flag = true;
+        } else {
+            self.regs.lcds.lyc_flag = false;
+        }
+    }
+
     fn scanline_done(&mut self) {
         self.scanline_dot_count = 0;
         self.lcd_x = 0;
+        self.lyc_interrupt_fired = false;
         self.regs.ly += 1;
         if self.regs.ly < 144 {
             self.change_mode(Mode::OAMScan);
@@ -53,6 +67,24 @@ impl PPU {
     }
 
     fn change_mode(&mut self, new_mode: Mode) {
+        match new_mode {
+            Mode::HBlank => {
+                if self.regs.lcds.hblank_sis {
+                    self.if_stat = true;
+                }
+            }
+            Mode::VBlank => {
+                if self.regs.lcds.vblank_sis {
+                    self.if_stat = true;
+                }
+            }
+            Mode::OAMScan => {
+                if self.regs.lcds.oam_sis {
+                    self.if_stat = true;
+                }
+            }
+            Mode::Drawing => {}
+        }
         self.regs.lcds.mode = new_mode;
         self.cur_mode = new_mode;
     }
@@ -64,6 +96,7 @@ impl PPU {
     }
 
     fn on_vblank(&mut self) {
+        self.if_vblank = true;
         self.change_mode(Mode::VBlank);
         self.frame_ready = true;
     }

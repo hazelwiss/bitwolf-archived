@@ -1,7 +1,6 @@
 use crate::{
     cpu::{
         instrutions::decode::CC,
-        interrupt::InterruptBit,
         registers::{Flag, R16, R8},
     },
     cycles::Cycles,
@@ -142,17 +141,13 @@ impl<E: Engine> Emu<E> {
     }
 
     pub(super) fn interrupt_handler(&mut self) {
-        let ie_f = self.bus.ie_get();
-        let if_f = self.bus.if_get();
-        let bits = ie_f & if_f & 0x1F;
-        if bits != 0 {
+        if let Some(interrupt) = self.bus.interrupt_pending() {
             self.halted_set(false);
             if self.ime_get() {
                 self.tick(crate::cycles::Cycles::M(3));
                 self.push(self.cpu.regs().pc_read());
-                let (interrupt, vec) = InterruptBit::from_bits(bits);
-                self.pc_set(vec as u16);
-                self.bus.if_set(if_f & !(interrupt as u8));
+                self.pc_set(interrupt.vec() as u16);
+                self.bus.if_toggle(interrupt);
                 self.ime_set(false);
             }
         }

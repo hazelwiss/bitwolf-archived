@@ -1,4 +1,5 @@
 mod access;
+mod ie;
 mod serial;
 mod timer;
 
@@ -42,8 +43,10 @@ impl IOReg {
 }
 
 pub(crate) struct IO {
-    ie_f: u8,
-    if_f: u8,
+    pub(super) ie: ie::IE,
+    pub(super) if_timer: bool,
+    pub(super) if_serial: bool,
+    pub(super) if_joypad: bool,
     bootrom_toggle: u8,
     serial: serial::Serial,
     timer: timer::Timer,
@@ -52,23 +55,13 @@ pub(crate) struct IO {
 impl IO {
     pub fn new() -> Self {
         Self {
-            ie_f: 0,
-            if_f: 0,
+            ie: ie::IE(0),
+            if_timer: false,
+            if_serial: false,
+            if_joypad: false,
             bootrom_toggle: 0,
             serial: serial::Serial::new(),
             timer: timer::Timer::new(),
         }
-    }
-
-    pub fn ie_get(&self) -> u8 {
-        self.ie_f
-    }
-
-    pub fn if_get(&self) -> u8 {
-        self.if_f
-    }
-
-    pub fn if_set(&mut self, val: u8) {
-        self.if_f = val;
     }
 }

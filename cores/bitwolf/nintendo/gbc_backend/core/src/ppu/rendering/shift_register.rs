@@ -23,7 +23,7 @@ impl ShiftRegister {
             "Cannot pop from shift register when it's empty!"
         );
         let col = self.buffer[self.cur_index];
-        self.buffer[self.cur_index] = Colour::C0;
+        //self.buffer[self.cur_index] = Colour::C0;
         self.increment_index();
         self.len -= 1;
         col

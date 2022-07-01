@@ -20,10 +20,10 @@ impl PPU {
             "Cannot fetch pixels with x coordinate of 160 and above!"
         );
         let colour = match col {
-            Colour::C0 => TextCol::new(0xFF, 0x00, 0x00, 0xFF),
-            Colour::C1 => TextCol::new(0x00, 0xFF, 0x00, 0xFF),
-            Colour::C2 => TextCol::new(0x00, 0x00, 0xFF, 0xFF),
-            Colour::C3 => TextCol::new(0x44, 0x88, 0xCC, 0xFF),
+            Colour::C0 => TextCol::new(0xFF, 0xFF, 0xFF, 0xFF),
+            Colour::C1 => TextCol::new(0xCC, 0xCC, 0xCC, 0xFF),
+            Colour::C2 => TextCol::new(0x66, 0x66, 0x66, 0xFF),
+            Colour::C3 => TextCol::new(0x00, 0x00, 0x00, 0xFF),
         };
         self.frame.data[y][x] = colour;
     }

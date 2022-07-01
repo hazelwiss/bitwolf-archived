@@ -7,6 +7,8 @@ mod rendering;
 pub(crate) use rendering::lcd;
 
 pub struct PPU {
+    pub(crate) if_stat: bool,
+    pub(crate) if_vblank: bool,
     vram: [u8; 0x2000],
     oam: [u8; 0xA0],
     regs: regs::Regs,
@@ -18,11 +20,14 @@ pub struct PPU {
     frame: crate::Texture,
     frame_ready: bool,
     lcd_x: usize,
+    lyc_interrupt_fired: bool,
 }
 
 impl PPU {
     pub fn new() -> Self {
         Self {
+            if_stat: false,
+            if_vblank: false,
             vram: [0; 0x2000],
             oam: [0; 0xA0],
             regs: regs::Regs::new(),
@@ -34,6 +39,7 @@ impl PPU {
             frame: crate::Texture::default(),
             frame_ready: false,
             lcd_x: 0,
+            lyc_interrupt_fired: false,
         }
     }
 

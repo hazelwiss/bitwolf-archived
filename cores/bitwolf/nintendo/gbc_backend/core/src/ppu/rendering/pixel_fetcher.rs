@@ -15,7 +15,7 @@ pub struct PixelFetcher {
     pub(super) x: u8,
     fetcherx: u8,
     fetchery: u8,
-    tile_adr: u16,
+    tile_index: u8,
     tile_data_lo: u8,
     tile_data_hi: u8,
     mode: Mode,
@@ -28,7 +28,7 @@ impl PixelFetcher {
             x: 0,
             fetcherx: 0,
             fetchery: 0,
-            tile_adr: 0,
+            tile_index: 0,
             tile_data_hi: 0,
             tile_data_lo: 0,
             mode: Mode::Index,
@@ -61,10 +61,7 @@ impl PPU {
                 && self.regs.ly >= self.regs.wy
                 && self.regs.lcdc.window_enable;
             let (map_adr, x, y) = if window {
-                let map_adr = self.regs.lcdc.window_tile_map_area.get_map_base_adr();
-                let x = self.pixel_fetcher.x - self.regs.wx / 8;
-                let y = (self.regs.ly - self.regs.wy) / 8;
-                (map_adr, x, y)
+                todo!();
             } else {
                 let map_adr = self.regs.lcdc.bg_tile_map_area.get_map_base_adr();
                 let x = self.pixel_fetcher.x + self.regs.scx / 8;
@@ -73,7 +70,8 @@ impl PPU {
             };
             self.pixel_fetcher.fetcherx = x;
             self.pixel_fetcher.fetchery = y;
-            self.pixel_fetcher.tile_adr = map_adr + ((x as u16 % 32) + (y as u16 % 32) * 32) * 2;
+            let tile_index_adr = map_adr + (x as u16 % 32) + (y as u16 % 32) * 32;
+            self.pixel_fetcher.tile_index = self.vram_access(VRAM::new(tile_index_adr));
         } else {
             self.pixel_fetcher.change_mode(Mode::DataLo);
         }
@@ -81,8 +79,8 @@ impl PPU {
 
     fn pixel_fetcher_fetch_tile_data_lo(&mut self, progress: u8) {
         if progress == 0 {
-            let index = self.vram_access(VRAM::new(self.pixel_fetcher.tile_adr));
-            self.pixel_fetcher.tile_data_lo = self.vram_tile_data(index);
+            let adr = self.compute_tile_address();
+            self.pixel_fetcher.tile_data_lo = self.vram_access(VRAM::new(adr));
         } else {
             self.pixel_fetcher.change_mode(Mode::DataHi);
         }
@@ -90,8 +88,8 @@ impl PPU {
 
     fn pixel_fetcher_fetch_tile_data_hi(&mut self, progress: u8) {
         if progress == 0 {
-            let index = self.vram_access(VRAM::new(self.pixel_fetcher.tile_adr + 1));
-            self.pixel_fetcher.tile_data_hi = self.vram_tile_data(index);
+            let adr = self.compute_tile_address();
+            self.pixel_fetcher.tile_data_hi = self.vram_access(VRAM::new(adr + 1));
         } else {
             self.pixel_fetcher.change_mode(Mode::Sleep);
         }
@@ -105,10 +103,10 @@ impl PPU {
 
     fn pixel_fetcher_push(&mut self, _progress: u8) {
         const COLOUR_LUT: [Colour; 4] = [Colour::C0, Colour::C1, Colour::C2, Colour::C3];
-        let sr_len = self.bg_win_sr.len();
-        for c in sr_len..8 {
-            let lo = (self.pixel_fetcher.tile_data_lo >> (7 - c) != 0) as u8;
-            let hi = (self.pixel_fetcher.tile_data_hi >> (7 - c) != 0) as u8;
+        for c in 0..8 {
+            let bit = 1 << (7 - c);
+            let lo = (self.pixel_fetcher.tile_data_lo & bit != 0) as u8;
+            let hi = (self.pixel_fetcher.tile_data_hi & bit != 0) as u8;
             let index = (lo | (hi << 1)) as usize;
             let colour = COLOUR_LUT[index];
             self.bg_win_sr.push(colour);
@@ -117,13 +115,15 @@ impl PPU {
         self.pixel_fetcher.change_mode(Mode::Index);
     }
 
-    fn vram_tile_data(&self, index: u8) -> u8 {
+    fn compute_tile_address(&self) -> u16 {
+        let index = self.pixel_fetcher.tile_index;
+        let offset = ((self.regs.scy.wrapping_add(self.regs.ly)) % 8) * 2;
         let adr = match self.regs.lcdc.bg_and_window_tile_data_area {
             crate::ppu::regs::TileDataArea::A8800_97FF => {
                 (0x9000 + ((index as i8 as i32) * 16)) as u16
             }
             crate::ppu::regs::TileDataArea::A8000_8FFF => 0x8000 + index as u16 * 16,
         };
-        self.vram_access(VRAM::new(adr))
+        adr + offset as u16
     }
 }

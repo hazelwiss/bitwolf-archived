@@ -74,6 +74,7 @@ impl Bus {
         self.scheduler.dispatch(self.cycle_counter)
     }
 
+    #[inline(always)]
     pub fn unschedule_event(&mut self, s: Slot) {
         self.scheduler.deschedule(s);
     }
@@ -85,22 +86,31 @@ impl Bus {
     }
 
     #[inline(always)]
-    pub fn ie_get(&self) -> u8 {
-        self.io.ie_get()
+    pub fn interrupt_pending(&self) -> Option<InterruptBit> {
+        let ie = &self.io.ie;
+        if self.ppu.if_vblank && ie.vblank() {
+            Some(InterruptBit::VBlank)
+        } else if self.ppu.if_stat && ie.stat() {
+            Some(InterruptBit::LCDStat)
+        } else if self.io.if_timer && ie.timer() {
+            Some(InterruptBit::Timer)
+        } else if self.io.if_serial && ie.serial() {
+            Some(InterruptBit::Serial)
+        } else if self.io.if_joypad && ie.joypad() {
+            Some(InterruptBit::Joypad)
+        } else {
+            None
+        }
     }
 
     #[inline(always)]
-    pub fn if_get(&self) -> u8 {
-        self.io.if_get()
-    }
-
-    #[inline(always)]
-    pub fn if_set(&mut self, val: u8) {
-        self.io.if_set(val);
-    }
-
     pub fn if_toggle(&mut self, bit: InterruptBit) {
-        let if_f = self.io.if_get();
-        self.io.if_set(if_f | bit as u8);
+        match bit {
+            InterruptBit::VBlank => self.ppu.if_vblank = !self.ppu.if_vblank,
+            InterruptBit::LCDStat => self.ppu.if_stat = !self.ppu.if_stat,
+            InterruptBit::Timer => self.io.if_timer = !self.io.if_timer,
+            InterruptBit::Serial => self.io.if_serial = !self.io.if_serial,
+            InterruptBit::Joypad => self.io.if_joypad = !self.io.if_joypad,
+        }
     }
 }
