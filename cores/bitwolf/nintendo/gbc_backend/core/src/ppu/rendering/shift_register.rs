@@ -7,7 +7,6 @@ pub struct ShiftRegister {
     buffer: [Colour; BUF_LEN],
     cur_index: usize,
     len: usize,
-    discard: usize,
 }
 
 impl ShiftRegister {
@@ -16,7 +15,6 @@ impl ShiftRegister {
             buffer: [Colour::C0; BUF_LEN],
             cur_index: 0,
             len: 0,
-            discard: 0,
         }
     }
 
@@ -33,13 +31,9 @@ impl ShiftRegister {
             !self.is_full(),
             "Cannot push to shift register when it's full!"
         );
-        if self.discard > 0 {
-            self.discard -= 1;
-        } else {
-            self.buffer[self.cur_index] = col;
-            self.increment_index();
-            self.len += 1;
-        }
+        self.buffer[self.cur_index] = col;
+        self.increment_index();
+        self.len += 1;
     }
 
     pub fn len(&self) -> usize {
@@ -48,10 +42,6 @@ impl ShiftRegister {
 
     pub fn is_full(&self) -> bool {
         self.len() >= BUF_LEN
-    }
-
-    pub fn discard(&mut self, discard: usize) {
-        self.discard = discard;
     }
 
     pub fn clear(&mut self) {

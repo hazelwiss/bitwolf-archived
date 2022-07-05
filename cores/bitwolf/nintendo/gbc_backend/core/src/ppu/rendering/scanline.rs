@@ -1,5 +1,11 @@
 use super::palette::Colour;
-use crate::{ppu::PPU, Texture};
+use crate::{
+    ppu::{
+        sprites::{Sprite, SpriteFlags},
+        PPU,
+    },
+    Texture,
+};
 use common_core::textures::TextureInfo;
 
 const DOTS_PER_SCANLINE: u32 = 456;
@@ -67,6 +73,7 @@ impl PPU {
         self.pixel_fetcher.clear();
         self.regs.ly += 1;
         if self.regs.ly < 144 {
+            self.scanline_state.to_discard_bg_pixels = self.regs.scx % 8;
             self.change_mode(Mode::OAMScan);
         } else {
             if self.regs.ly == 144 {
@@ -94,9 +101,7 @@ impl PPU {
                     self.if_stat = true;
                 }
             }
-            Mode::Drawing => {
-                self.bg_win_sr.discard((self.regs.scx % 8) as usize);
-            }
+            Mode::Drawing => {}
         }
         self.regs.lcds.mode = new_mode;
         self.cur_mode = new_mode;
@@ -104,6 +109,30 @@ impl PPU {
 
     fn oam_scan(&mut self) {
         if self.scanline_state.dot_count >= 80 - 1 {
+            self.sprite_buffer.clear();
+            for i in 0..40 {
+                let index = i * 4;
+                let y_pos = self.oam[index] as i8 as i16 - 16;
+                let x_pos = self.oam[index + 1] as i8 as i16 - 8;
+                let tile_num = self.oam[index + 2];
+                let flags = self.oam[index + 3];
+                let sprite_height = 8;
+                if x_pos > 0
+                    && y_pos >= self.regs.ly as u16 as i16
+                    && y_pos < self.regs.ly as u16 as i16 + sprite_height
+                {
+                    let sprite = Sprite {
+                        y_pos: y_pos as u8,
+                        x_pos: x_pos as u8,
+                        tile_num,
+                        flags: SpriteFlags::from_byte(flags),
+                    };
+                    self.sprite_buffer.push(sprite);
+                    if self.sprite_buffer.full() {
+                        break;
+                    }
+                }
+            }
             self.change_mode(Mode::Drawing);
         }
     }
@@ -133,18 +162,23 @@ impl PPU {
 
     fn push_fifo_to_lcd(&mut self) {
         if let Some(colour) = self.sr_mix_pixel() {
-            self.push_to_lcd(colour);
+            if self.scanline_state.to_discard_bg_pixels > 0 {
+                self.scanline_state.to_discard_bg_pixels -= 1;
+            } else {
+                self.push_to_lcd(colour);
+            }
         }
     }
 
     fn sr_mix_pixel(&mut self) -> Option<Colour> {
         if self.bg_win_sr.len() > 0 {
             let colour = self.bg_win_sr.pop();
-            if self.regs.lcdc.bg_and_window_enable {
-                Some(colour)
+            let colour = if self.regs.lcdc.bg_and_window_enable {
+                colour
             } else {
-                Some(Colour::C0)
-            }
+                Colour::C0
+            };
+            Some(colour)
         } else {
             None
         }
