@@ -1,4 +1,4 @@
-use super::palette::Colour;
+use super::colour::Colour;
 
 const BUF_LEN: usize = 8;
 
@@ -19,6 +19,7 @@ impl ShiftRegister {
     }
 
     pub fn pop(&mut self) -> Colour {
+        debug_assert!(self.len > 0, "Cannot pop from an empty shift register.");
         let col = self.buffer[self.cur_index];
         self.buffer[self.cur_index] = Colour::C0;
         self.increment_index();

@@ -1,52 +1,12 @@
-use super::palette::Colour;
-use crate::{bus::address_space::VRAM, ppu::PPU};
-
-#[derive(Debug)]
-enum Mode {
-    Index,
-    DataLo,
-    DataHi,
-    Push,
-    Sleep,
-}
-
-#[derive(Debug)]
-pub struct PixelFetcher {
-    pub(super) x: u8,
-    tile_index: u8,
-    tile_data_lo: u8,
-    tile_data_hi: u8,
-    mode: Mode,
-    mode_dot_progress: u8,
-}
-
-impl PixelFetcher {
-    pub fn new() -> Self {
-        Self {
-            x: 0,
-            tile_index: 0,
-            tile_data_hi: 0,
-            tile_data_lo: 0,
-            mode: Mode::Index,
-            mode_dot_progress: 0,
-        }
-    }
-
-    pub fn clear(&mut self) {
-        *self = Self::new();
-    }
-
-    fn change_mode(&mut self, mode: Mode) {
-        self.mode_dot_progress = 0;
-        self.mode = mode;
-    }
-}
+use super::Mode;
+use crate::{
+    bus::address_space::VRAM,
+    ppu::{colour::Colour, PPU},
+};
 
 impl PPU {
-    pub(super) fn progress_pixel_fetcher(&mut self) {
-        let progress = self.pixel_fetcher.mode_dot_progress;
-        self.pixel_fetcher.mode_dot_progress += 1;
-        match self.pixel_fetcher.mode {
+    pub(super) fn progress_pixel_fetcher(&mut self, progress: u8) {
+        match self.fetcher.mode {
             Mode::Index => self.pixel_fetcher_fetch_tile_index(progress),
             Mode::DataLo => self.pixel_fetcher_fetch_tile_data_lo(progress),
             Mode::DataHi => self.pixel_fetcher_fetch_tile_data_hi(progress),
@@ -61,43 +21,43 @@ impl PPU {
             let (map_adr, x, y) = if window {
                 let map_adr = self.regs.lcdc.window_tile_map_area.get_map_base_adr();
                 let win_x = self.regs.wx - 7;
-                let x = self.pixel_fetcher.x - win_x / 8;
+                let x = self.fetcher.x - win_x / 8;
                 let y = self.frame_state.window_ly / 8;
                 (map_adr, x, y)
             } else {
                 let map_adr = self.regs.lcdc.bg_tile_map_area.get_map_base_adr();
-                let x = self.pixel_fetcher.x + self.regs.scx / 8;
+                let x = self.fetcher.x + self.regs.scx / 8;
                 let y = ((self.regs.ly as u16 + self.regs.scy as u16) / 8) as u8;
                 (map_adr, x, y)
             };
             let tile_index_adr = map_adr + (x as u16 % 32) + (y as u16 % 32) * 32;
-            self.pixel_fetcher.tile_index = self.vram_access(VRAM::new(tile_index_adr));
+            self.fetcher.tile_index = self.vram_access(VRAM::new(tile_index_adr));
         } else {
-            self.pixel_fetcher.change_mode(Mode::DataLo);
+            self.fetcher.change_mode(Mode::DataLo);
         }
     }
 
     fn pixel_fetcher_fetch_tile_data_lo(&mut self, progress: u8) {
         if progress == 0 {
             let adr = self.compute_tile_address();
-            self.pixel_fetcher.tile_data_lo = self.vram_access(VRAM::new(adr));
+            self.fetcher.tile_data_lo = self.vram_access(VRAM::new(adr));
         } else {
-            self.pixel_fetcher.change_mode(Mode::DataHi);
+            self.fetcher.change_mode(Mode::DataHi);
         }
     }
 
     fn pixel_fetcher_fetch_tile_data_hi(&mut self, progress: u8) {
         if progress == 0 {
             let adr = self.compute_tile_address();
-            self.pixel_fetcher.tile_data_hi = self.vram_access(VRAM::new(adr + 1));
+            self.fetcher.tile_data_hi = self.vram_access(VRAM::new(adr + 1));
         } else {
-            self.pixel_fetcher.change_mode(Mode::Sleep);
+            self.fetcher.change_mode(Mode::Sleep);
         }
     }
 
     fn pixel_fetcher_sleep(&mut self, progress: u8) {
         if progress >= 1 {
-            self.pixel_fetcher.change_mode(Mode::Push);
+            self.fetcher.change_mode(Mode::Push);
         }
     }
 
@@ -106,19 +66,18 @@ impl PPU {
         if self.bg_win_sr.len() == 0 {
             for c in 0..8 {
                 let bit = 1 << (7 - c);
-                let lo = (self.pixel_fetcher.tile_data_lo & bit != 0) as u8;
-                let hi = (self.pixel_fetcher.tile_data_hi & bit != 0) as u8;
+                let lo = (self.fetcher.tile_data_lo & bit != 0) as u8;
+                let hi = (self.fetcher.tile_data_hi & bit != 0) as u8;
                 let index = (lo | (hi << 1)) as usize;
                 let colour = COLOUR_LUT[index];
                 self.bg_win_sr.push(colour);
             }
-            self.pixel_fetcher.x += 1;
-            self.pixel_fetcher.change_mode(Mode::Index);
+            self.fetcher.reset();
         }
     }
 
     fn compute_tile_address(&self) -> u16 {
-        let index = self.pixel_fetcher.tile_index;
+        let index = self.fetcher.tile_index;
         let offset = if self.scanline_state.window_drawing {
             (self.frame_state.window_ly % 8) * 2
         } else {

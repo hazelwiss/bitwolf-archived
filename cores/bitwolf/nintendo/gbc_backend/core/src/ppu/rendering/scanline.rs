@@ -1,6 +1,6 @@
-use super::palette::Colour;
 use crate::{
     ppu::{
+        colour::Colour,
         sprites::{Sprite, SpriteFlags},
         PPU,
     },
@@ -47,7 +47,7 @@ impl PPU {
             let win_x = self.regs.wx - 7;
             let win_y = self.regs.wy;
             self.scanline_state.window_drawing =
-                self.pixel_fetcher.x >= win_x / 8 && self.regs.ly >= win_y;
+                self.fetcher.x >= win_x / 8 && self.regs.ly >= win_y;
         }
     }
 
@@ -70,7 +70,7 @@ impl PPU {
         self.scanline_state.reset();
         self.bg_win_sr.clear();
         self.sprite_sr.clear();
-        self.pixel_fetcher.clear();
+        self.fetcher.clear();
         self.regs.ly += 1;
         if self.regs.ly < 144 {
             self.scanline_state.to_discard_bg_pixels = self.regs.scx % 8;
@@ -118,8 +118,8 @@ impl PPU {
                 let flags = self.oam[index + 3];
                 let sprite_height = 8;
                 if x_pos > 0
-                    && y_pos >= self.regs.ly as u16 as i16
-                    && y_pos < self.regs.ly as u16 as i16 + sprite_height
+                    && (y_pos <= self.regs.ly as u16 as i16
+                        && y_pos + sprite_height > self.regs.ly as u16 as i16)
                 {
                     let sprite = Sprite {
                         y_pos: y_pos as u8,
@@ -152,11 +152,11 @@ impl PPU {
     fn drawing(&mut self) {
         if self.scanline_state.lcd_x < Texture::WIDTH {
             self.window_check();
-            self.progress_pixel_fetcher();
+            self.progress_fetcher();
             self.push_fifo_to_lcd();
         } else {
             self.change_mode(Mode::HBlank);
-            self.pixel_fetcher.x = 0;
+            self.fetcher.x = 0;
         }
     }
 
@@ -171,12 +171,17 @@ impl PPU {
     }
 
     fn sr_mix_pixel(&mut self) -> Option<Colour> {
-        if self.bg_win_sr.len() > 0 {
+        if self.bg_win_sr.len() > 0 && !self.fetcher.sprite_fetching {
             let colour = self.bg_win_sr.pop();
-            let colour = if self.regs.lcdc.bg_and_window_enable {
+            let bg_colour = if self.regs.lcdc.bg_and_window_enable {
                 colour
             } else {
                 Colour::C0
+            };
+            let colour = if self.sprite_sr.len() > 0 {
+                self.sprite_sr.pop()
+            } else {
+                bg_colour
             };
             Some(colour)
         } else {

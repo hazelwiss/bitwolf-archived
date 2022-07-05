@@ -2,8 +2,10 @@ pub(crate) mod debug;
 pub(crate) mod regs;
 
 mod access;
+mod colour;
 mod palette;
 mod rendering;
+mod shift_register;
 mod sprites;
 mod states;
 
@@ -15,9 +17,9 @@ pub struct PPU {
     vram: [u8; 0x2000],
     oam: [u8; 0xA0],
     regs: regs::Regs,
-    bg_win_sr: rendering::shift_register::ShiftRegister,
-    sprite_sr: rendering::shift_register::ShiftRegister,
-    pixel_fetcher: rendering::pixel_fetcher::PixelFetcher,
+    bg_win_sr: shift_register::ShiftRegister,
+    sprite_sr: shift_register::ShiftRegister,
+    fetcher: rendering::fetcher::Fetcher,
     sprite_buffer: sprites::SpriteBuffer,
     frame: crate::Texture,
     cur_mode: rendering::scanline::Mode,
@@ -33,9 +35,9 @@ impl PPU {
             vram: [0; 0x2000],
             oam: [0; 0xA0],
             regs: regs::Regs::new(),
-            bg_win_sr: rendering::shift_register::ShiftRegister::new(),
-            sprite_sr: rendering::shift_register::ShiftRegister::new(),
-            pixel_fetcher: rendering::pixel_fetcher::PixelFetcher::new(),
+            bg_win_sr: shift_register::ShiftRegister::new(),
+            sprite_sr: shift_register::ShiftRegister::new(),
+            fetcher: rendering::fetcher::Fetcher::new(),
             sprite_buffer: sprites::SpriteBuffer::new(),
             frame: crate::Texture::default(),
             cur_mode: rendering::scanline::Mode::OAMScan,

@@ -1,7 +1,5 @@
-use crate::ppu::PPU;
+use crate::ppu::{colour::Colour, PPU};
 use common_core::textures::{self, TextureInfo};
-
-use super::palette::Colour;
 
 pub type TextCol = util::colour::BGRA;
 pub type Texture = textures::Texture<TextCol, 160, 144>;
