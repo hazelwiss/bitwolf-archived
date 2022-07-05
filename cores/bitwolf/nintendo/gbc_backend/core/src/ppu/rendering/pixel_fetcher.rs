@@ -32,6 +32,10 @@ impl PixelFetcher {
         }
     }
 
+    pub fn clear(&mut self) {
+        *self = Self::new();
+    }
+
     fn change_mode(&mut self, mode: Mode) {
         self.mode_dot_progress = 0;
         self.mode = mode;
@@ -43,7 +47,7 @@ impl PPU {
         let progress = self.pixel_fetcher.mode_dot_progress;
         self.pixel_fetcher.mode_dot_progress += 1;
         match self.pixel_fetcher.mode {
-            Mode::Index => self.pixel_fetcher_fetch_tile_adr(progress),
+            Mode::Index => self.pixel_fetcher_fetch_tile_index(progress),
             Mode::DataLo => self.pixel_fetcher_fetch_tile_data_lo(progress),
             Mode::DataHi => self.pixel_fetcher_fetch_tile_data_hi(progress),
             Mode::Sleep => self.pixel_fetcher_sleep(progress),
@@ -51,7 +55,7 @@ impl PPU {
         }
     }
 
-    fn pixel_fetcher_fetch_tile_adr(&mut self, progress: u8) {
+    fn pixel_fetcher_fetch_tile_index(&mut self, progress: u8) {
         if progress == 0 {
             let window = self.scanline_state.window_drawing;
             let (map_adr, x, y) = if window {
@@ -99,7 +103,7 @@ impl PPU {
 
     fn pixel_fetcher_push(&mut self, _progress: u8) {
         const COLOUR_LUT: [Colour; 4] = [Colour::C0, Colour::C1, Colour::C2, Colour::C3];
-        if self.bg_win_sr.len() <= 0 {
+        if self.bg_win_sr.len() == 0 {
             for c in 0..8 {
                 let bit = 1 << (7 - c);
                 let lo = (self.pixel_fetcher.tile_data_lo & bit != 0) as u8;
@@ -115,7 +119,11 @@ impl PPU {
 
     fn compute_tile_address(&self) -> u16 {
         let index = self.pixel_fetcher.tile_index;
-        let offset = ((self.regs.scy.wrapping_add(self.regs.ly)) % 8) * 2;
+        let offset = if self.scanline_state.window_drawing {
+            (self.frame_state.window_ly % 8) * 2
+        } else {
+            ((self.regs.scy.wrapping_add(self.regs.ly)) % 8) * 2
+        };
         let adr = match self.regs.lcdc.bg_and_window_tile_data_area {
             crate::ppu::regs::TileDataArea::A8800_97FF => {
                 (0x9000 + ((index as i8 as i32) * 16)) as u16

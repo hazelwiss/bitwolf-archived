@@ -1,8 +1,6 @@
-use common_core::textures::TextureInfo;
-
-use crate::{ppu::PPU, Texture};
-
 use super::palette::Colour;
+use crate::{ppu::PPU, Texture};
+use common_core::textures::TextureInfo;
 
 const DOTS_PER_SCANLINE: u32 = 456;
 
@@ -25,20 +23,20 @@ impl PPU {
     }
 
     fn scanline(&mut self) {
+        self.lyc_check();
         match self.cur_mode {
             Mode::VBlank => {}
             Mode::HBlank => {}
             Mode::OAMScan => self.oam_scan(),
             Mode::Drawing => self.drawing(),
         }
-        self.lyc_check();
         self.scanline_state.dot_count += 1;
         if self.scanline_state.dot_count >= DOTS_PER_SCANLINE {
             self.on_new_scanline()
         }
     }
 
-    fn check_window(&mut self) {
+    fn window_check(&mut self) {
         if !self.scanline_state.window_drawing && self.regs.lcdc.window_enable {
             let win_x = self.regs.wx - 7;
             let win_y = self.regs.wy;
@@ -64,13 +62,16 @@ impl PPU {
             self.frame_state.window_ly += 1;
         }
         self.scanline_state.reset();
+        self.bg_win_sr.clear();
+        self.sprite_sr.clear();
+        self.pixel_fetcher.clear();
         self.regs.ly += 1;
         if self.regs.ly < 144 {
             self.change_mode(Mode::OAMScan);
         } else {
             if self.regs.ly == 144 {
                 self.on_vblank();
-            } else if self.regs.ly == 154 {
+            } else if self.regs.ly >= 154 {
                 self.on_new_frame();
             }
         }
@@ -93,7 +94,9 @@ impl PPU {
                     self.if_stat = true;
                 }
             }
-            Mode::Drawing => {}
+            Mode::Drawing => {
+                self.bg_win_sr.discard((self.regs.scx % 8) as usize);
+            }
         }
         self.regs.lcds.mode = new_mode;
         self.cur_mode = new_mode;
@@ -101,7 +104,6 @@ impl PPU {
 
     fn oam_scan(&mut self) {
         if self.scanline_state.dot_count >= 80 - 1 {
-            self.bg_win_sr.discard((self.regs.scx % 8) as usize);
             self.change_mode(Mode::Drawing);
         }
     }
@@ -119,25 +121,18 @@ impl PPU {
     }
 
     fn drawing(&mut self) {
-        if self.pixel_fetcher.x < Texture::WIDTH as u8 / 8 {
-            //println!(
-            //    "dot: {}, x: {}, ly: {}, fetcher: {:?}",
-            //    self.scanline_state.dot_count,
-            //    self.scanline_state.lcd_x,
-            //    self.regs.ly,
-            //    self.pixel_fetcher,
-            //);
-            self.check_window();
+        if self.scanline_state.lcd_x < Texture::WIDTH {
+            self.window_check();
             self.progress_pixel_fetcher();
-            self.empty_fifos();
+            self.push_fifo_to_lcd();
         } else {
             self.change_mode(Mode::HBlank);
             self.pixel_fetcher.x = 0;
         }
     }
 
-    fn empty_fifos(&mut self) {
-        while let Some(colour) = self.sr_mix_pixel() {
+    fn push_fifo_to_lcd(&mut self) {
+        if let Some(colour) = self.sr_mix_pixel() {
             self.push_to_lcd(colour);
         }
     }
