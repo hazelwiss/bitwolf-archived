@@ -1,6 +1,22 @@
 #[derive(Clone, Copy, Debug)]
-#[repr(u8)]
 pub(super) enum Palette {
-    OBP0 = 0,
-    OBP1 = 1,
+    BGP,
+    OBP0,
+    OBP1,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Index {
+    I0,
+    I1,
+    I2,
+    I3,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Colour {
+    C0,
+    C1,
+    C2,
+    C3,
 }

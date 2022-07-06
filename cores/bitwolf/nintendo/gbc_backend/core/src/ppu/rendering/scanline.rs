@@ -1,10 +1,12 @@
 use crate::{
     ppu::{
-        colour::Colour,
-        sprites::{Sprite, SpriteFlags},
+        palette::{self, Colour, Index, Palette},
+        regs::lcdc::OBJSize,
+        shift_register::Pixel,
+        sprites::{Sprite, SpriteFlags, SpritePriority},
         PPU,
     },
-    Texture,
+    TextCol, Texture,
 };
 use common_core::textures::TextureInfo;
 
@@ -39,15 +41,6 @@ impl PPU {
         self.scanline_state.dot_count += 1;
         if self.scanline_state.dot_count >= DOTS_PER_SCANLINE {
             self.on_new_scanline()
-        }
-    }
-
-    fn window_check(&mut self) {
-        if !self.scanline_state.window_drawing && self.regs.lcdc.window_enable {
-            let win_x = self.regs.wx - 7;
-            let win_y = self.regs.wy;
-            self.scanline_state.window_drawing =
-                self.fetcher.x >= win_x / 8 && self.regs.ly >= win_y;
         }
     }
 
@@ -112,14 +105,17 @@ impl PPU {
             self.sprite_buffer.clear();
             for i in 0..40 {
                 let index = i * 4;
-                let y_pos = self.oam[index] as i8 as i16 - 16;
-                let x_pos = self.oam[index + 1] as i8 as i16 - 8;
+                let y_pos = self.oam[index] as u16;
+                let x_pos = self.oam[index + 1] as u16;
                 let tile_num = self.oam[index + 2];
                 let flags = self.oam[index + 3];
-                let sprite_height = 8;
+                let sprite_height = match self.regs.lcdc.obj_size {
+                    OBJSize::S8x8 => 8,
+                    OBJSize::S8x16 => 16,
+                };
                 if x_pos > 0
-                    && (y_pos <= self.regs.ly as u16 as i16
-                        && y_pos + sprite_height > self.regs.ly as u16 as i16)
+                    && (self.regs.ly as u16 + 16 >= y_pos
+                        && self.regs.ly as u16 + 16 < y_pos + sprite_height)
                 {
                     let sprite = Sprite {
                         y_pos: y_pos as u8,
@@ -150,13 +146,11 @@ impl PPU {
     }
 
     fn drawing(&mut self) {
-        if self.scanline_state.lcd_x < Texture::WIDTH {
-            self.window_check();
+        if (self.scanline_state.lcd_x as usize) < Texture::WIDTH {
             self.progress_fetcher();
             self.push_fifo_to_lcd();
         } else {
             self.change_mode(Mode::HBlank);
-            self.fetcher.x = 0;
         }
     }
 
@@ -172,20 +166,41 @@ impl PPU {
 
     fn sr_mix_pixel(&mut self) -> Option<Colour> {
         if self.bg_win_sr.len() > 0 && !self.fetcher.sprite_fetching {
-            let colour = self.bg_win_sr.pop();
-            let bg_colour = if self.regs.lcdc.bg_and_window_enable {
-                colour
+            let pixel = self.bg_win_sr.pop();
+            let bg_pixel = if self.regs.lcdc.bg_and_window_enable {
+                pixel
             } else {
-                Colour::C0
+                Pixel::empty()
             };
-            let colour = if self.sprite_sr.len() > 0 {
-                self.sprite_sr.pop()
+            let bg_palette = Palette::BGP;
+            let (index, palette) = if self.sprite_sr.len() > 0 && self.regs.lcdc.obj_enable {
+                let sprite_pixel = self.sprite_sr.pop();
+                let sprite_palette = sprite_pixel.palette;
+                match sprite_pixel.bg_sprite_priority {
+                    SpritePriority::SpritePriority => match sprite_pixel.index {
+                        Index::I0 => (bg_pixel.index, bg_palette),
+                        col => (col, sprite_palette),
+                    },
+                    SpritePriority::BGPriority => match bg_pixel.index {
+                        Index::I0 => (sprite_pixel.index, sprite_palette),
+                        col => (col, bg_palette),
+                    },
+                }
             } else {
-                bg_colour
+                (bg_pixel.index, bg_palette)
             };
-            Some(colour)
+            Some(self.get_colour_from_palette(palette, index))
         } else {
             None
         }
+    }
+
+    fn get_colour_from_palette(&mut self, palette: Palette, index: Index) -> Colour {
+        let palette_reg = match palette {
+            Palette::BGP => &self.regs.bgp,
+            Palette::OBP0 => &self.regs.obp0,
+            Palette::OBP1 => &self.regs.obp1,
+        };
+        palette_reg.get_col_from_index(index)
     }
 }

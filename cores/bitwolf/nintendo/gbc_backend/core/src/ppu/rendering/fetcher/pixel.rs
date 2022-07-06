@@ -1,11 +1,15 @@
 use super::Mode;
 use crate::{
     bus::address_space::VRAM,
-    ppu::{colour::Colour, PPU},
+    ppu::{
+        palette::Index, palette::Palette, regs::lcdc::TileDataArea, shift_register::Pixel,
+        sprites::SpritePriority, PPU,
+    },
 };
 
 impl PPU {
     pub(super) fn progress_pixel_fetcher(&mut self, progress: u8) {
+        self.window_check();
         match self.fetcher.mode {
             Mode::Index => self.pixel_fetcher_fetch_tile_index(progress),
             Mode::DataLo => self.pixel_fetcher_fetch_tile_data_lo(progress),
@@ -62,17 +66,35 @@ impl PPU {
     }
 
     fn pixel_fetcher_push(&mut self, _progress: u8) {
-        const COLOUR_LUT: [Colour; 4] = [Colour::C0, Colour::C1, Colour::C2, Colour::C3];
+        const INDEX_LUT: [Index; 4] = [Index::I0, Index::I1, Index::I2, Index::I3];
         if self.bg_win_sr.len() == 0 {
             for c in 0..8 {
                 let bit = 1 << (7 - c);
                 let lo = (self.fetcher.tile_data_lo & bit != 0) as u8;
                 let hi = (self.fetcher.tile_data_hi & bit != 0) as u8;
                 let index = (lo | (hi << 1)) as usize;
-                let colour = COLOUR_LUT[index];
-                self.bg_win_sr.push(colour);
+                let index = INDEX_LUT[index];
+                self.bg_win_sr.push(Pixel {
+                    bg_sprite_priority: SpritePriority::SpritePriority,
+                    palette: Palette::OBP0,
+                    index,
+                });
             }
+            self.fetcher.x += 1;
             self.fetcher.reset();
+        }
+    }
+
+    fn window_check(&mut self) {
+        if !self.scanline_state.window_drawing && self.regs.lcdc.window_enable {
+            let win_x = (self.regs.wx as i16) - 7;
+            let win_y = self.regs.wy;
+            let window_drawing = self.fetcher.x as i16 >= win_x / 8
+                && (self.regs.ly >= win_y || self.frame_state.window_fetching);
+            if window_drawing {
+                self.scanline_state.window_drawing = true;
+                self.frame_state.window_fetching = true;
+            }
         }
     }
 
@@ -84,10 +106,8 @@ impl PPU {
             ((self.regs.scy.wrapping_add(self.regs.ly)) % 8) * 2
         };
         let adr = match self.regs.lcdc.bg_and_window_tile_data_area {
-            crate::ppu::regs::TileDataArea::A8800_97FF => {
-                (0x9000 + ((index as i8 as i32) * 16)) as u16
-            }
-            crate::ppu::regs::TileDataArea::A8000_8FFF => 0x8000 + index as u16 * 16,
+            TileDataArea::A8800_97FF => (0x9000 + ((index as i8 as i32) * 16)) as u16,
+            TileDataArea::A8000_8FFF => 0x8000 + index as u16 * 16,
         };
         adr + offset as u16
     }

@@ -3,6 +3,55 @@ use std::collections::BinaryHeap;
 
 const SPRITE_BUFFER_CAPACITY: usize = 10;
 
+#[derive(Debug)]
+struct SpriteBufferEntry {
+    sprite: Sprite,
+    index: usize,
+}
+
+impl PartialEq for SpriteBufferEntry {
+    fn eq(&self, other: &Self) -> bool {
+        let l = other.sprite.x_pos;
+        let r = self.sprite.x_pos;
+        if l == r {
+            other.index.eq(&self.index)
+        } else {
+            l.eq(&r)
+        }
+    }
+}
+
+impl Eq for SpriteBufferEntry {}
+
+impl PartialOrd for SpriteBufferEntry {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        let l = other.sprite.x_pos;
+        let r = self.sprite.x_pos;
+        if l == r {
+            other.index.partial_cmp(&self.index)
+        } else {
+            l.partial_cmp(&r)
+        }
+    }
+}
+
+impl Ord for SpriteBufferEntry {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        let l = other.sprite.x_pos;
+        let r = self.sprite.x_pos;
+        if l == r {
+            other.index.cmp(&self.index)
+        } else {
+            l.cmp(&r)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(super) struct SpriteBuffer {
+    sprites: BinaryHeap<SpriteBufferEntry>,
+}
+
 impl SpriteBuffer {
     pub fn new() -> Self {
         Self {
@@ -15,14 +64,17 @@ impl SpriteBuffer {
             self.len() < SPRITE_BUFFER_CAPACITY,
             "Attempted to add a sprite to a full sprite buffer."
         );
-        self.sprites.push(sprite);
+        self.sprites.push(SpriteBufferEntry {
+            sprite: sprite,
+            index: self.sprites.len(),
+        });
     }
 
     pub fn pop(&mut self, x: u8) -> Option<Sprite> {
         let sprite = self.sprites.peek();
         if let Some(sprite) = sprite {
-            if sprite.x_pos <= x {
-                Some(unsafe { self.sprites.pop().unwrap_unchecked() })
+            if sprite.sprite.x_pos <= x {
+                Some(unsafe { self.sprites.pop().unwrap_unchecked().sprite })
             } else {
                 None
             }
@@ -45,18 +97,17 @@ impl SpriteBuffer {
 }
 
 #[derive(Clone, Copy, Debug)]
-#[repr(u8)]
 pub(super) enum SpritePriority {
-    SpritePriority = 0,
-    BGPriority = 1,
+    SpritePriority,
+    BGPriority,
 }
 
 #[derive(Clone, Copy, Debug)]
 pub(super) struct SpriteFlags {
-    priority: SpritePriority,
-    y_flip: bool,
-    x_flip: bool,
-    palette: Palette,
+    pub priority: SpritePriority,
+    pub y_flip: bool,
+    pub x_flip: bool,
+    pub palette: Palette,
 }
 
 impl SpriteFlags {
@@ -108,29 +159,4 @@ impl Sprite {
             flags: SpriteFlags::new(),
         }
     }
-}
-
-impl PartialEq for Sprite {
-    fn eq(&self, other: &Self) -> bool {
-        other.x_pos.eq(&self.x_pos)
-    }
-}
-
-impl Eq for Sprite {}
-
-impl PartialOrd for Sprite {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.x_pos.partial_cmp(&self.x_pos)
-    }
-}
-
-impl Ord for Sprite {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.x_pos.cmp(&self.x_pos)
-    }
-}
-
-#[derive(Debug)]
-pub(super) struct SpriteBuffer {
-    sprites: BinaryHeap<Sprite>,
 }

@@ -1,10 +1,30 @@
-use super::colour::Colour;
+use super::{
+    palette::{Index, Palette},
+    sprites::SpritePriority,
+};
 
 const BUF_LEN: usize = 8;
 
+#[derive(Debug, Clone, Copy)]
+pub(super) struct Pixel {
+    pub index: Index,
+    pub bg_sprite_priority: SpritePriority,
+    pub palette: Palette,
+}
+
+impl Pixel {
+    pub fn empty() -> Self {
+        Self {
+            index: Index::I0,
+            bg_sprite_priority: SpritePriority::SpritePriority,
+            palette: Palette::OBP0,
+        }
+    }
+}
+
 #[derive(Debug)]
-pub struct ShiftRegister {
-    buffer: [Colour; BUF_LEN],
+pub(super) struct ShiftRegister {
+    buffer: [Pixel; BUF_LEN],
     cur_index: usize,
     len: usize,
 }
@@ -12,27 +32,27 @@ pub struct ShiftRegister {
 impl ShiftRegister {
     pub fn new() -> Self {
         Self {
-            buffer: [Colour::C0; BUF_LEN],
+            buffer: [Pixel::empty(); BUF_LEN],
             cur_index: 0,
             len: 0,
         }
     }
 
-    pub fn pop(&mut self) -> Colour {
+    pub fn pop(&mut self) -> Pixel {
         debug_assert!(self.len > 0, "Cannot pop from an empty shift register.");
         let col = self.buffer[self.cur_index];
-        self.buffer[self.cur_index] = Colour::C0;
+        self.buffer[self.cur_index] = Pixel::empty();
         self.increment_index();
         self.len -= 1;
         col
     }
 
-    pub fn push(&mut self, col: Colour) {
+    pub fn push(&mut self, pixel: Pixel) {
         debug_assert!(
             !self.is_full(),
             "Cannot push to shift register when it's full!"
         );
-        self.buffer[self.cur_index] = col;
+        self.buffer[self.cur_index] = pixel;
         self.increment_index();
         self.len += 1;
     }

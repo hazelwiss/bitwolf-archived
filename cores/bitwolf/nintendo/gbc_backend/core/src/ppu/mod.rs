@@ -2,7 +2,6 @@ pub(crate) mod debug;
 pub(crate) mod regs;
 
 mod access;
-mod colour;
 mod palette;
 mod rendering;
 mod shift_register;

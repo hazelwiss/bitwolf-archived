@@ -14,8 +14,8 @@ enum Mode {
 
 #[derive(Debug)]
 pub struct Fetcher {
-    pub(super) x: u8,
     pub(super) sprite_fetching: bool,
+    x: u8,
     tile_index: u8,
     tile_data_lo: u8,
     tile_data_hi: u8,
@@ -27,8 +27,8 @@ pub struct Fetcher {
 impl Fetcher {
     pub fn new() -> Self {
         Self {
-            x: 0,
             sprite_fetching: false,
+            x: 0,
             tile_index: 0,
             tile_data_hi: 0,
             tile_data_lo: 0,
@@ -43,7 +43,6 @@ impl Fetcher {
     }
 
     fn reset(&mut self) {
-        self.x += 1;
         self.change_mode(Mode::Index);
     }
 
@@ -55,9 +54,9 @@ impl Fetcher {
 
 impl PPU {
     pub(super) fn progress_fetcher(&mut self) {
+        self.detect_sprite();
         let progress = self.fetcher.mode_dot_progress;
         self.fetcher.mode_dot_progress += 1;
-        self.detect_sprite();
         if self.fetcher.sprite_fetching {
             self.progress_sprite_fetcher(progress);
         } else {
@@ -66,7 +65,14 @@ impl PPU {
     }
 
     fn detect_sprite(&mut self) {
-        if let Some(sprite) = self.sprite_buffer.pop(self.fetcher.x * 8 + 8) {
+        if self.fetcher.sprite_fetching {
+            return;
+        }
+        if let Some(sprite) = self
+            .sprite_buffer
+            .pop((self.scanline_state.lcd_x + 8) as u8)
+        {
+            self.fetcher.reset();
             self.fetcher.current_sprite = sprite;
             self.fetcher.sprite_fetching = true;
         }
