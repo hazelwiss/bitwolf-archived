@@ -74,7 +74,7 @@ impl SpriteBuffer {
         let sprite = self.sprites.peek();
         if let Some(sprite) = sprite {
             if sprite.sprite.x_pos <= x {
-                Some(unsafe { self.sprites.pop().unwrap_unchecked().sprite })
+                self.sprites.pop().map(|s| s.sprite)
             } else {
                 None
             }
