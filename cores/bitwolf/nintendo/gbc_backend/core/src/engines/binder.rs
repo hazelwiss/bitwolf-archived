@@ -1,6 +1,6 @@
 use crate::{
     cpu::{
-        instrutions::decode::CC,
+        instructions::decode::CC,
         registers::{Flag, R16, R8},
     },
     cycles::Cycles,

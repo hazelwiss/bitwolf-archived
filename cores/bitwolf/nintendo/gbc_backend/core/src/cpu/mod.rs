@@ -1,4 +1,4 @@
-pub mod instrutions;
+pub mod instructions;
 pub mod interrupt;
 pub mod registers;
 

@@ -1,7 +1,7 @@
 use super::Interpreter;
 use crate::{
     cpu::{
-        instrutions::decode::Bit,
+        instructions::decode::Bit,
         registers::{Flag, R8},
     },
     Emu,

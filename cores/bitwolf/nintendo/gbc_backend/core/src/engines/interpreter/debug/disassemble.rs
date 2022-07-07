@@ -2,7 +2,7 @@ use super::{registers::R16, Emu, Interpreter};
 use crate::{
     bus,
     cpu::{
-        instrutions::{
+        instructions::{
             decode::{Bit, RSTVec, CC},
             Prefixed, Unprefixed,
         },

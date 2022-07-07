@@ -2,7 +2,7 @@ mod defs;
 mod generic;
 
 use super::Interpreter;
-use crate::{cpu::instrutions::Unprefixed, Emu};
+use crate::{cpu::instructions::Unprefixed, Emu};
 
 impl Emu<Interpreter> {
     pub(crate) fn fetch_decode_execute(&mut self) {

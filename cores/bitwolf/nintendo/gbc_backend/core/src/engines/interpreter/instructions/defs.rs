@@ -1,7 +1,7 @@
 use super::Interpreter;
 use crate::{
     cpu::{
-        instrutions::{
+        instructions::{
             decode::{Bit, RSTVec, CC},
             Prefixed,
         },
