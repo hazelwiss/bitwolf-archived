@@ -10,7 +10,7 @@ mod proc_flags;
 fn main() {
     // Spawn the environment based on input flags to the binary.
     let proc_flags::Environment {
-        frontend_box: mut frontend,
+        frontend_box: frontend,
         imgui_ctx: ctx,
     } = proc_flags::env_from_flags();
 
@@ -19,18 +19,19 @@ fn main() {
 
     // Start imgui rendering window event loop.
     ctx.run(
+        frontend,
         // Ran on each draw.
-        move |draw_ctx| {
+        move |frontend, draw_ctx| {
             // Receive files from message queue.
-            msg_receiver::files::receive(&mut file_reader, &mut frontend, draw_ctx.resources());
+            msg_receiver::files::receive(&mut file_reader, frontend, draw_ctx.resources());
             // Draws main menu bar.
-            menu::menu(draw_ctx, &mut file_reader, &mut frontend);
+            menu::menu(draw_ctx, &mut file_reader, frontend);
             // Draws the frontend.
             frontend.draw(draw_ctx);
             // Update backend.
             frontend.update();
         },
         // Ran whenever input was received.
-        move |_input| {},
+        move |frontend, input| frontend.input(input),
     );
 }

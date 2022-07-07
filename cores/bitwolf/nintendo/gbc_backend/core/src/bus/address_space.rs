@@ -13,6 +13,10 @@ impl<const RB: u16, const RE: u16> AddressSpace<RB, RE> {
     pub fn get(&self) -> usize {
         self.0 as usize
     }
+
+    pub fn full_adr(&self) -> u16 {
+        RB + self.0
+    }
 }
 
 pub type ROM0 = AddressSpace<0x0000, 0x3FFF>;

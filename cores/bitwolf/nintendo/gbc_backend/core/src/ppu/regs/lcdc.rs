@@ -1,6 +1,6 @@
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub(in crate::ppu) enum TileMapArea {
+pub(crate) enum TileMapArea {
     A9800_9BFF = 0,
     A9C00_9FFF = 1,
 }
@@ -16,19 +16,19 @@ impl TileMapArea {
 
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub(in crate::ppu) enum TileDataArea {
+pub(crate) enum TileDataArea {
     A8800_97FF = 0,
     A8000_8FFF = 1,
 }
 
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub(in crate::ppu) enum OBJSize {
+pub(crate) enum OBJSize {
     S8x8 = 0,
     S8x16 = 1,
 }
 
-pub(in crate::ppu) struct LCDC {
+pub(crate) struct LCDC {
     pub enable: bool,
     pub window_tile_map_area: TileMapArea,
     pub window_enable: bool,

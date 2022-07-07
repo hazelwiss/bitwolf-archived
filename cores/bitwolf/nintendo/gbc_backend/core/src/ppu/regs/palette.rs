@@ -1,6 +1,6 @@
 use crate::ppu::palette::{Colour, Index};
 
-pub(in crate::ppu) struct PaletteRegister {
+pub(crate) struct PaletteRegister {
     index_0: Colour,
     index_1: Colour,
     index_2: Colour,

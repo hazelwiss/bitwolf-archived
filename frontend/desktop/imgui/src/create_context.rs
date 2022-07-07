@@ -106,9 +106,14 @@ impl WGPUImguiContext {
         }
     }
 
-    pub fn handle_events<T, F>(&mut self, event: &Event<T>, last_frame: &mut Instant, f: &mut F)
-    where
-        F: FnMut(&mut DrawContext) -> (),
+    pub fn handle_events<T, F, RunCtx>(
+        &mut self,
+        event: &Event<T>,
+        last_frame: &mut Instant,
+        ctx: &mut RunCtx,
+        f: &mut F,
+    ) where
+        F: FnMut(&mut RunCtx, &mut DrawContext) -> (),
     {
         let WGPUImguiContext { imgui, wgpu_ctx } = self;
         match event {
@@ -170,10 +175,13 @@ impl WGPUImguiContext {
                 let ui = imgui.frame();
 
                 /* Call user code. */
-                f(&mut DrawContext {
-                    ui: &ui,
-                    wgpu_ctx: wgpu_ctx,
-                });
+                f(
+                    ctx,
+                    &mut DrawContext {
+                        ui: &ui,
+                        wgpu_ctx: wgpu_ctx,
+                    },
+                );
 
                 wgpu_ctx
                     .renderer

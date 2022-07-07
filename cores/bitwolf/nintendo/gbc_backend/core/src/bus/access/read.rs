@@ -31,7 +31,7 @@ impl Bus {
 
     #[inline]
     fn read_vram(&self, offset: address_space::VRAM) -> u8 {
-        self.ppu.read_vram(offset)
+        self.ppu.vram[offset.get()]
     }
 
     #[inline]
@@ -56,15 +56,16 @@ impl Bus {
 
     #[inline]
     fn read_oam(&self, offset: address_space::OAM) -> u8 {
-        self.ppu.read_oam(offset)
+        self.ppu.oam[offset.get()]
     }
 
     #[inline]
     fn read_unusable(&self, offset: address_space::Unusable) -> u8 {
-        logger::fatal!(
+        logger::warning!(
             "Attempting to read from unusable section 0x{:04X}",
-            offset.get()
-        )
+            offset.full_adr()
+        );
+        0xFF
     }
 
     #[inline]

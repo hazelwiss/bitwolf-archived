@@ -28,7 +28,7 @@ impl Timer {
 impl Bus {
     pub(crate) fn write_timer(&mut self, reg: TimerReg, val: u8) {
         match reg {
-            TimerReg::DIV => self.io.timer.div = val,
+            TimerReg::DIV => self.io.timer.div = 0,
             TimerReg::TIMA => {
                 self.io.timer.tima = val;
                 self.recalculate_timer_event()
@@ -43,7 +43,11 @@ impl Bus {
 
     pub(crate) fn read_timer(&mut self, reg: TimerReg) -> u8 {
         match reg {
-            TimerReg::DIV => todo!(),
+            TimerReg::DIV => {
+                self.io.timer.div =
+                    (self.io.timer.div as u64).wrapping_add(self.cycle_counter / 256) as u8;
+                self.io.timer.div
+            }
             TimerReg::TIMA => todo!(),
             TimerReg::TMA => todo!(),
             TimerReg::TAC => todo!(),

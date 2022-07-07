@@ -1,4 +1,5 @@
 pub mod debug;
+pub mod input;
 
 mod instructions;
 

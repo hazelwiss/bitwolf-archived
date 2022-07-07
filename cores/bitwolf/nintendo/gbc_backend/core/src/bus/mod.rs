@@ -8,7 +8,7 @@ mod memory_map;
 use crate::{cpu::interrupt::InterruptBit, emu::event_slots::Slot};
 use common_core::schedulers::Scheduler;
 
-pub struct Bus {
+pub(crate) struct Bus {
     pub(crate) ppu: crate::ppu::PPU,
     scheduler: Scheduler<Slot>,
     cycle_counter: u64,
@@ -19,7 +19,7 @@ pub struct Bus {
     wram0: [u8; 0x1000],
     wram1: [u8; 0x1000],
     io: io::IO,
-    hram: [u8; 0x7E],
+    hram: [u8; 0x80],
 }
 
 impl Bus {
@@ -60,8 +60,12 @@ impl Bus {
             wram0: [0; 0x1000],
             wram1: [0; 0x1000],
             io: io::IO::new(),
-            hram: [0; 0x7E],
+            hram: [0; 0x80],
         }
+    }
+
+    pub fn get_joypad_mut(&mut self) -> &mut io::joypad::Joypad {
+        &mut self.io.joypad
     }
 
     #[inline(always)]

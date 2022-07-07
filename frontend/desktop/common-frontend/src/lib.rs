@@ -12,5 +12,6 @@ pub trait Frontend:
     + constraints::update::Update
     + constraints::draw::Draw
     + constraints::destroy::Destroy
+    + constraints::input::Input
 {
 }

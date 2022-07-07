@@ -1,5 +1,6 @@
 use common_frontend::constraints::{
-    debuggable::Debuggable, destroy::Destroy, draw::Draw, emulation::Emulation, update::Update,
+    debuggable::Debuggable, destroy::Destroy, draw::Draw, emulation::Emulation, input::Input,
+    update::Update,
 };
 
 impl Update for EmptyFrontend {
@@ -36,6 +37,10 @@ impl Emulation for EmptyFrontend {
     }
 
     fn menu_emulation(&mut self, _: &mut imgui::DrawContext) {}
+}
+
+impl Input for EmptyFrontend {
+    fn input(&mut self, _: imgui::Input) {}
 }
 
 impl common_frontend::Frontend for EmptyFrontend {}

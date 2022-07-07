@@ -1,12 +1,12 @@
 use crate::{
     ppu::{
-        palette::{self, Colour, Index, Palette},
+        palette::{Colour, Index, Palette},
         regs::lcdc::OBJSize,
         shift_register::Pixel,
         sprites::{Sprite, SpriteFlags, SpritePriority},
         PPU,
     },
-    TextCol, Texture,
+    Texture,
 };
 use common_core::textures::TextureInfo;
 

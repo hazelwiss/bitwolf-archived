@@ -21,17 +21,17 @@ impl Bus {
 
     #[inline]
     fn write_rom0(&mut self, _offset: address_space::ROM0, _val: u8) {
-        todo!()
+        //todo!()
     }
 
     #[inline]
     fn write_rom1(&mut self, _offset: address_space::ROM1, _val: u8) {
-        todo!()
+        //todo!()
     }
 
     #[inline]
     fn write_vram(&mut self, offset: address_space::VRAM, val: u8) {
-        self.ppu.write_vram(offset, val);
+        self.ppu.vram[offset.get()] = val;
     }
 
     #[inline]
@@ -56,14 +56,14 @@ impl Bus {
 
     #[inline]
     fn write_oam(&mut self, offset: address_space::OAM, val: u8) {
-        self.ppu.write_oam(offset, val)
+        self.ppu.oam[offset.get()] = val;
     }
 
     #[inline]
     fn write_unusable(&mut self, offset: address_space::Unusable, val: u8) {
-        logger::fatal!(
+        logger::warning!(
             "Attempting to write value 0x{val:02X} to unusable section 0x{:04X}",
-            offset.get()
+            offset.full_adr()
         );
     }
 

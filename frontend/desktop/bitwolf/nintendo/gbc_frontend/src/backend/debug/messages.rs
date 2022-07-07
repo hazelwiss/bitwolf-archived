@@ -13,7 +13,7 @@ pub enum CtoF {
 }
 
 #[inline(always)]
-pub(super) fn msgq_recv(emu: &mut Emu<Interpreter>, state: &mut State, msgq: &mut MsgQ) {
+pub(super) fn recv(emu: &mut Emu<Interpreter>, state: &mut State, msgq: &mut MsgQ) {
     while let Some(msg) = msgq.try_recv() {
         match msg {
             FtoC::SetPausedState(paused) => {

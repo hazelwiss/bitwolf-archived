@@ -1,4 +1,4 @@
-pub(in crate::ppu) struct LCDS {
+pub(crate) struct LCDS {
     pub lyc_sis: bool,
     pub oam_sis: bool,
     pub vblank_sis: bool,

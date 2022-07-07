@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub(crate) enum Section {
     ROM0,
     ROM1,
@@ -35,7 +36,7 @@ impl Section {
                 0xE000..=0xFDFF => Self::MIRROR,
                 0xFE00..=0xFE9F => Self::OAM,
                 0xFEA0..=0xFEFF => Self::Unusable,
-                0xFF00..=0xFF7E => Self::IO,
+                0xFF00..=0xFF7F => Self::IO,
                 0xFF80..=0xFFFE => Self::HRAM,
                 0xFFFF => Self::IO,
                 _ => Self::Invalid,

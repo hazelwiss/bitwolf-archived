@@ -1,7 +1,6 @@
 pub(crate) mod debug;
 pub(crate) mod regs;
 
-mod access;
 mod palette;
 mod rendering;
 mod shift_register;
@@ -10,12 +9,12 @@ mod states;
 
 pub(crate) use rendering::lcd;
 
-pub struct PPU {
+pub(crate) struct PPU {
     pub(crate) if_stat: bool,
     pub(crate) if_vblank: bool,
-    vram: [u8; 0x2000],
-    oam: [u8; 0xA0],
-    regs: regs::Regs,
+    pub(crate) regs: regs::Regs,
+    pub(crate) vram: [u8; 0x2000],
+    pub(crate) oam: [u8; 0xA0],
     bg_win_sr: shift_register::ShiftRegister,
     sprite_sr: shift_register::ShiftRegister,
     fetcher: rendering::fetcher::Fetcher,
