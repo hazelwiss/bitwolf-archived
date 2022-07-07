@@ -11,15 +11,15 @@ struct Indexes {
     swap_ready: bool,
 }
 
-pub struct TripleBuffering<T: TextureInfo> {
-    buf: [T; 3],
+pub struct TripleBuffer<T: TextureInfo> {
+    buf: Box<[T; 3]>,
     indexes: Mutex<Indexes>,
 }
 
-impl<T: TextureInfo> TripleBuffering<T> {
+impl<T: TextureInfo> TripleBuffer<T> {
     fn new() -> Self {
         Self {
-            buf: [T::default(), T::default(), T::default()],
+            buf: Box::new([T::default(), T::default(), T::default()]),
             indexes: Mutex::new(Indexes {
                 reader_index: 0,
                 writer_index: 0,
@@ -30,7 +30,7 @@ impl<T: TextureInfo> TripleBuffering<T> {
     }
 }
 
-impl<T: TextureInfo> Buffer<T> for TripleBuffering<T> {
+impl<T: TextureInfo> Buffer<T> for TripleBuffer<T> {
     fn read(&mut self) -> &T {
         let index = self.indexes.lock().unwrap().reader_index;
         &self.buf[index]
@@ -61,7 +61,7 @@ impl<T: TextureInfo> Buffer<T> for TripleBuffering<T> {
 }
 
 pub fn new<T: TextureInfo + 'static>() -> (AccessR<T>, AccessW<T>) {
-    let triple = TripleBuffering::<T>::new();
+    let triple = TripleBuffer::<T>::new();
     let arc = Arc::new(triple);
     (
         AccessR {

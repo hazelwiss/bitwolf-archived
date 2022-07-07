@@ -122,16 +122,16 @@ impl WGPUImguiContext {
                 ..
             } => {
                 let size = wgpu_ctx.window.inner_size();
-
-                let surface_desc = wgpu::SurfaceConfiguration {
-                    usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
-                    format: wgpu::TextureFormat::Bgra8UnormSrgb,
-                    width: size.width as u32,
-                    height: size.height as u32,
-                    present_mode: PRESENT_MODE,
-                };
-
-                wgpu_ctx.surface.configure(&wgpu_ctx.device, &surface_desc);
+                if size.width > 0 && size.height > 0 {
+                    let surface_desc = wgpu::SurfaceConfiguration {
+                        usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                        format: wgpu::TextureFormat::Bgra8UnormSrgb,
+                        width: size.width as u32,
+                        height: size.height as u32,
+                        present_mode: PRESENT_MODE,
+                    };
+                    wgpu_ctx.surface.configure(&wgpu_ctx.device, &surface_desc);
+                }
             }
             Event::MainEventsCleared => wgpu_ctx.window.request_redraw(),
             Event::RedrawEventsCleared => {
@@ -166,14 +166,11 @@ impl WGPUImguiContext {
                     })],
                     depth_stencil_attachment: None,
                 });
-
                 wgpu_ctx
                     .platform
                     .prepare_frame(imgui.io_mut(), &wgpu_ctx.window)
                     .expect("Failed to prepare frame");
-
                 let ui = imgui.frame();
-
                 /* Call user code. */
                 f(
                     ctx,
@@ -182,16 +179,12 @@ impl WGPUImguiContext {
                         wgpu_ctx: wgpu_ctx,
                     },
                 );
-
                 wgpu_ctx
                     .renderer
                     .render(ui.render(), &wgpu_ctx.queue, &wgpu_ctx.device, &mut rpass)
                     .expect("Rendering failed");
-
                 drop(rpass);
-
                 wgpu_ctx.queue.submit(Some(encoder.finish()));
-
                 frame.present();
             }
             _ => {}

@@ -17,7 +17,7 @@ pub fn run(
     input_recv: Receiver<interpreter::input::InputState>,
     fb: FrameBuffer,
 ) {
-    let mut backend = Core::<interpreter::Interpreter>::new(builder);
+    let mut backend = Box::new(Core::<interpreter::Interpreter>::new(builder));
     let mut state = State::default();
     // Initial sync.
     sync::sync(&mut backend, &state, &mut msgq);

@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use std::path::PathBuf;
 
 pub fn load_bootrom() -> Result<[u8; 256]> {
-    let path = PathBuf::from("/home/nibble/Downloads/dmg_boot.bin");
+    let path = PathBuf::from("C:/Users/edwin/Desktop/roms/dmg_boot.bin");
     let bootrom = std::fs::read(path.clone())
         .or_else(|_| Err(anyhow!("Unable to read bootrom '{path:?}'")))?;
     if bootrom.len() != 256 {
