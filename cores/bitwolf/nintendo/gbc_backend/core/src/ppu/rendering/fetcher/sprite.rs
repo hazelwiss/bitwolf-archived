@@ -72,7 +72,7 @@ impl PPU {
             let subtract = ((self.regs.ly + 16) - self.fetcher.current_sprite.y_pos) % (width + 1);
             (width - subtract) * 2
         } else {
-            ((self.regs.ly + 16) - self.fetcher.current_sprite.y_pos) * 2
+            ((self.regs.ly + 16) - self.fetcher.current_sprite.y_pos % (width + 1)) * 2
         };
         let adr = 0x8000 + index as u16 * 16;
         adr + offset as u16
