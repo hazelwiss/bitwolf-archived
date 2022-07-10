@@ -10,6 +10,7 @@ use common_core::schedulers::Scheduler;
 
 pub(crate) struct Bus {
     pub(crate) ppu: crate::ppu::PPU,
+    pub(crate) apu: crate::apu::APU,
     scheduler: Scheduler<Slot>,
     cycle_counter: u64,
     rom_256bytes: [u8; 256],
@@ -23,7 +24,7 @@ pub(crate) struct Bus {
 }
 
 impl Bus {
-    pub fn new(bootrom: [u8; 256], rom: Vec<u8>) -> Self {
+    pub fn new(bootrom: [u8; 256], rom: Vec<u8>, sampler: crate::apu::Sampler) -> Self {
         if rom.len() > 0x8000 {
             logger::fatal!("ROM too large!");
         }
@@ -51,6 +52,7 @@ impl Bus {
         }
         Self {
             ppu: crate::ppu::PPU::new(),
+            apu: crate::apu::APU::new(sampler),
             scheduler: Scheduler::new(),
             cycle_counter: 0,
             rom0,

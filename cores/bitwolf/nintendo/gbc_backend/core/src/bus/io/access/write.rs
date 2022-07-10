@@ -1,7 +1,4 @@
-use crate::{
-    bus::{io::IOReg, Bus},
-    cpu::interrupt::InterruptBit,
-};
+use crate::bus::{io::IOReg, Bus};
 
 impl Bus {
     pub(crate) fn write_io(&mut self, reg: IOReg, val: u8) {
@@ -13,6 +10,7 @@ impl Bus {
             IOReg::PPUReg(reg) => self.write_ppu_reg(reg, val),
             IOReg::BootromToggle => self.write_bootrom_toggle(val),
             IOReg::Joypad => self.write_joypad(val),
+            IOReg::APUReg(_) => todo!(),
             IOReg::Invalid(index) => {
                 logger::warning!("Write to unknown IO register 0x{index:02X}.");
             }

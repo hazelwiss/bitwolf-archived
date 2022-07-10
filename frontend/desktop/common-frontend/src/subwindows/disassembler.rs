@@ -19,7 +19,6 @@ pub fn disasm_subwindow(
     draw_ctx: &imgui::DrawContext,
     subwindow: imgui::gui::ChildWindow,
 ) {
-    return;
     let ui = draw_ctx.ui();
     let mut adr = hook.get_start_adr();
     let pc = hook.pc_value();

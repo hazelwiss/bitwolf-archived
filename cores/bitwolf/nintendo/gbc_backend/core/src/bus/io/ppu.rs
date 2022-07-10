@@ -1,6 +1,9 @@
 use crate::{
     bus::Bus,
-    ppu::regs::{lcdc, lcds, palette},
+    ppu::{
+        regs::{lcdc, lcds, palette},
+        PPU,
+    },
 };
 
 pub enum PPUReg {
@@ -66,6 +69,9 @@ impl Bus {
             PPUReg::LYC => self.ppu.regs.lyc = val,
             PPUReg::LCDC => {
                 let enable = val & (1 << 7) != 0;
+                if !enable {
+                    self.ppu.reset();
+                }
                 let window_tile_map_area = if val & (1 << 6) == 0 {
                     lcdc::TileMapArea::A9800_9BFF
                 } else {

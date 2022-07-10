@@ -32,7 +32,7 @@ impl PPU {
 
     fn scanline(&mut self) {
         self.lyc_check();
-        match self.cur_mode {
+        match self.regs.lcds.mode {
             Mode::VBlank => {}
             Mode::HBlank => {}
             Mode::OAMScan => self.oam_scan(),
@@ -97,7 +97,6 @@ impl PPU {
             Mode::Drawing => {}
         }
         self.regs.lcds.mode = new_mode;
-        self.cur_mode = new_mode;
     }
 
     fn oam_scan(&mut self) {

@@ -621,10 +621,6 @@ impl Emu<Interpreter> {
 
     pub(crate) fn halt(&mut self) {
         self.halted_set(true);
-        while self.halted_get() {
-            self.interrupt_handler();
-            self.tick(Cycles::M(1));
-        }
     }
 
     pub(crate) fn nop(&mut self) {}

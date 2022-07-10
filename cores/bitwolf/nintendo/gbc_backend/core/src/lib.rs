@@ -1,6 +1,7 @@
 #![feature(mixed_integer_ops)]
 #![feature(let_chains)]
 
+pub mod apu;
 pub mod bus;
 pub mod cpu;
 pub mod cycles;
@@ -10,6 +11,7 @@ pub mod ppu;
 
 mod events;
 
+pub use apu::Sampler;
 pub use ppu::lcd::{TextCol, Texture};
 
 use engines::Engine;
@@ -26,11 +28,11 @@ pub struct Emu<E: Engine> {
 }
 
 impl<E: Engine> Emu<E> {
-    pub fn new(builder: Builder) -> Self {
+    pub fn new(builder: Builder, sampler: crate::apu::Sampler) -> Self {
         Self {
             _data: E::EngineData::default(),
             cpu: cpu::CPU::new(),
-            bus: bus::Bus::new(builder.bootrom, builder.rom),
+            bus: bus::Bus::new(builder.bootrom, builder.rom, sampler),
         }
     }
 }

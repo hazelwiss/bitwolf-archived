@@ -20,7 +20,6 @@ pub(crate) struct PPU {
     fetcher: rendering::fetcher::Fetcher,
     sprite_buffer: sprites::SpriteBuffer,
     frame: crate::Texture,
-    cur_mode: rendering::scanline::Mode,
     frame_state: states::FrameState,
     scanline_state: states::ScanlineState,
 }
@@ -38,7 +37,6 @@ impl PPU {
             fetcher: rendering::fetcher::Fetcher::new(),
             sprite_buffer: sprites::SpriteBuffer::new(),
             frame: crate::Texture::default(),
-            cur_mode: rendering::scanline::Mode::OAMScan,
             frame_state: states::FrameState::new(),
             scanline_state: states::ScanlineState::new(),
         }
@@ -58,5 +56,14 @@ impl PPU {
     #[inline(always)]
     pub fn invalidate_frame(&mut self) {
         self.frame_state.frame_ready = false;
+    }
+
+    pub fn reset(&mut self) {
+        self.regs.lcds.mode = rendering::scanline::Mode::HBlank;
+        self.scanline_state.reset();
+        self.frame_state.reset();
+        self.bg_win_sr.clear();
+        self.sprite_sr.clear();
+        self.frame = crate::Texture::default();
     }
 }

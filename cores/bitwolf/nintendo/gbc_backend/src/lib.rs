@@ -1,4 +1,4 @@
-pub use core::{engines, Builder, Emu, Texture};
+pub use core::{apu::AudioBuffer, engines, Builder, Emu, Texture};
 
 use core::engines::Engine;
 use std::ops::{Deref, DerefMut};
@@ -8,9 +8,9 @@ pub struct Core<E: Engine> {
 }
 
 impl<E: Engine> Core<E> {
-    pub fn new(builder: Builder) -> Self {
+    pub fn new(builder: Builder, sampler: core::Sampler) -> Self {
         Self {
-            engine: Emu::new(builder),
+            engine: Emu::new(builder, sampler),
         }
     }
 }

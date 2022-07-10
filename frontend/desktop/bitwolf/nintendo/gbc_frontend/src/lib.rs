@@ -1,3 +1,4 @@
+mod audio;
 mod backend;
 mod config;
 mod constraints;
@@ -6,9 +7,9 @@ mod resources;
 mod state;
 
 use anyhow::{anyhow, Result};
+use audio::AudioSampler;
 use common_frontend::{framebuffer, FrontendWrapper};
 use gbc_backend::{engines::interpreter::input::InputState, Builder};
-use libaudio::AudioContext;
 use std::{
     path::Path,
     sync::{
@@ -20,7 +21,6 @@ use std::{
 
 type FrameBuffer = framebuffer::access::AccessR<gbc_backend::Texture>;
 type MsgQ = util::bdq::Bdq<backend::debug::messages::CtoF, messages::FtoC>;
-type Audio = AudioContext<f32, 32>;
 
 pub struct GBC {
     fb: FrameBuffer,
@@ -40,7 +40,7 @@ impl GBC {
         let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
         let (bdq, bdq_backend) = util::bdq::new_pair(100);
         let (sender, receiver) = sync_channel(100);
-        let audio = libaudio::AudioBuilder::new().play();
+        let audio = AudioSampler::new();
         let running = Arc::new(AtomicBool::new(true));
         let running_thread = running.clone();
         std::thread::spawn(move || {

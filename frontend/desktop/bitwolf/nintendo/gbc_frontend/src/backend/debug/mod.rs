@@ -4,7 +4,7 @@ mod input;
 mod state;
 mod sync;
 
-use crate::{backend::FrameBuffer, messages::FtoC, Audio};
+use crate::{backend::FrameBuffer, messages::FtoC, AudioSampler};
 use gbc_backend::{engines::interpreter, Builder, Core};
 use state::State;
 use std::{
@@ -24,11 +24,13 @@ pub fn run(
     mut msgq: MsgQ,
     input_recv: Receiver<interpreter::input::InputState>,
     fb: FrameBuffer,
-    audio: Audio,
+    sampler: AudioSampler,
 ) {
-    let mut backend = Box::new(Core::<interpreter::Interpreter>::new(builder));
+    let mut backend = Box::new(Core::<interpreter::Interpreter>::new(
+        builder,
+        Box::new(sampler),
+    ));
     let mut state = State::default();
-    let mut test_sample = 0.0f32;
     // Initial sync.
     sync::sync(&mut backend, &state, &mut msgq);
     while running.load(Ordering::Relaxed) {
@@ -43,19 +45,16 @@ pub fn run(
                 break;
             }
             interpreter::step(&mut backend);
+            // Receive from message queue.
+            messages::recv(&mut backend, &mut state, &mut msgq);
             interpreter::frame(
                 &mut backend,
                 #[inline(always)]
                 |frame, emu| {
-                    // Receive from message queue.
-                    messages::recv(emu, &mut state, &mut msgq);
                     // Receives input from input queue.
                     input::recv(emu, &input_recv);
                     // Presents frame.
                     fb.get().write().data = frame.data;
-                    // TEMP
-                    audio.push_sample(test_sample.sin());
-                    test_sample += 0.012;
                     // wait a little. TODO: sync with sound!
                     std::thread::sleep(std::time::Duration::from_millis(1000 / 60));
                 },

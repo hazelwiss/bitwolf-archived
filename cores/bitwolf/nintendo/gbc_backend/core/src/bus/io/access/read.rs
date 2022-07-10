@@ -10,6 +10,7 @@ impl Bus {
             IOReg::PPUReg(reg) => self.read_ppu_reg(reg),
             IOReg::BootromToggle => self.read_bootrom_toggle(),
             IOReg::Joypad => self.read_joypad(),
+            IOReg::APUReg(_) => todo!(),
             IOReg::Invalid(index) => {
                 logger::warning!("Read from unknown IO register 0x{index:02X}.");
                 0xFF
