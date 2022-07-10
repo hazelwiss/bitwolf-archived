@@ -179,11 +179,11 @@ impl PPU {
                 match sprite_pixel.bg_sprite_priority {
                     SpritePriority::SpritePriority => match sprite_pixel.index {
                         Index::I0 => (bg_pixel.index, bg_palette),
-                        col => (col, sprite_palette),
+                        index => (index, sprite_palette),
                     },
                     SpritePriority::BGPriority => match bg_pixel.index {
                         Index::I0 => (sprite_pixel.index, sprite_palette),
-                        col => (col, bg_palette),
+                        index => (index, bg_palette),
                     },
                 }
             } else {
