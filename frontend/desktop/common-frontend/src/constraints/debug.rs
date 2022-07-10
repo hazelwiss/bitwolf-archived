@@ -1,9 +1,7 @@
 use imgui::DrawContext;
 
-pub trait Debuggable {
-    fn debuggable(&self) -> bool {
-        true
-    }
-
+pub trait Debug {
     fn menu_debug(&mut self, draw_ctx: &mut DrawContext);
+
+    fn draw_debug(&mut self, draw_ctx: &mut DrawContext);
 }

@@ -20,7 +20,7 @@ pub fn menu(
     });
     if ui.button("Stop Emulation") {
         frontend.swap(
-            Box::new(crate::default_backend::EmptyFrontend::new()),
+            crate::default_backend::EmptyFrontend::new(),
             draw_ctx.resources(),
         );
     }

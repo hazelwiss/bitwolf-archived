@@ -65,11 +65,12 @@ pub fn env_from_flags() -> Environment {
 
     // Frontend object.
     let frontend = if let Some(target) = target {
-        FrontendBox::from_box(
+        FrontendBox::new(
             frontend_creator::spawn(target.target, &target.rom, ctx.wgpu_ctx()).expect(""),
+            ctx.wgpu_ctx(),
         )
     } else {
-        FrontendBox::new(default_backend::EmptyFrontend::new())
+        FrontendBox::new(default_backend::EmptyFrontend::new(), ctx.wgpu_ctx())
     };
 
     Environment {

@@ -14,15 +14,24 @@ pub fn menu(
         draw_ctx
             .ui()
             .menu("File", || file::menu(draw_ctx, file_reader, frontend));
-        draw_ctx.ui().enabled(frontend.emulatable(), || {
-            draw_ctx
-                .ui()
-                .menu("Emulation", || frontend.menu_emulation(draw_ctx));
+        draw_ctx.ui().enabled(frontend.has_emulation_submenu(), || {
+            draw_ctx.ui().menu("Emulation", || {
+                frontend.get_inner_mut().menu_emulation(draw_ctx)
+            });
         });
-        draw_ctx.ui().enabled(frontend.debuggable(), || {
-            draw_ctx
-                .ui()
-                .menu("Debug", || frontend.menu_debug(draw_ctx));
+        draw_ctx.ui().enabled(frontend.has_debug_submenu(), || {
+            draw_ctx.ui().menu("Debug", || {
+                if frontend.is_debugging() {
+                    if draw_ctx.ui().button("Stop debugging") {
+                        frontend.set_debugging(false);
+                    }
+                    frontend.get_inner_mut().menu_debug(draw_ctx)
+                } else {
+                    if draw_ctx.ui().button("Start debugging") {
+                        frontend.set_debugging(true);
+                    }
+                }
+            });
         });
         draw_ctx
             .ui()

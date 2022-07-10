@@ -9,5 +9,8 @@ edition = "2021"
 # Imgui draw crate .
 imgui = {path = "../imgui"}
 
+# Audio crate.
+libaudio = {path="../libaudio"}
+
 # Backend crate.
 common-core = {path = "../../../cores/common-core"}

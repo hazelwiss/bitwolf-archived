@@ -1,6 +1,7 @@
+mod audio;
 mod debug;
 mod destroy;
-mod draw;
 mod emulation;
-mod update;
 mod input;
+mod update;
+mod video;

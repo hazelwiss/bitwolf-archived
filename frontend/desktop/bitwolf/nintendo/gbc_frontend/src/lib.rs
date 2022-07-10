@@ -6,7 +6,7 @@ mod resources;
 mod state;
 
 use anyhow::{anyhow, Result};
-use common_frontend::framebuffer;
+use common_frontend::{framebuffer, FrontendWrapper};
 use gbc_backend::{engines::interpreter::input::InputState, Builder};
 use std::{
     path::Path,
@@ -26,24 +26,24 @@ pub struct GBC {
 }
 
 impl GBC {
-    pub fn new(path: &Path, wgpu_ctx: &mut imgui::WGPUContext) -> Result<Self> {
+    pub fn new(path: &Path, wgpu_ctx: &mut imgui::WGPUContext) -> Result<FrontendWrapper> {
         let rom =
             std::fs::read(path).or_else(|_| Err(anyhow!("Unabel to read rom path {path:?}")))?;
         let bootrom = config::bootrom::load_bootrom()?;
-        let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();        
+        let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
         let (bdq, bdq_backend) = util::bdq::new_pair(100);
         let (sender, receiver) = sync_channel(100);
         std::thread::spawn(move || {
             backend::debug::run(Builder { rom, bootrom }, bdq_backend, receiver, writer)
         });
-        Ok(Self {
+        Ok(FrontendWrapper::new(Box::new(Self {
             fb: reader,
             state: state::State::default(),
             resources: resources::Resources::new(wgpu_ctx),
             msgq: bdq,
             input: sender,
             input_state: InputState::new(),
-        })
+        })))
     }
 }
 

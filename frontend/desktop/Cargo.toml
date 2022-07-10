@@ -18,8 +18,11 @@ logger = {path = "../../logger"}
 # File reader crate.
 file_reader = {path = "file_reader"}
 
-# Frontend utility crates.
+# Frontend graphics crate.
 imgui = {path = "imgui"}
+
+# Frontend audio crate.
+libaudio = {path = "libaudio"}
 
 # Generic frontend crate. 
 common-frontend = {path = "common-frontend"}

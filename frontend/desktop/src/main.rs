@@ -2,6 +2,7 @@
 
 mod backend_types;
 mod default_backend;
+mod display;
 mod frontend_creator;
 mod menu;
 mod msg_receiver;
@@ -27,11 +28,21 @@ fn main() {
             // Draws main menu bar.
             menu::menu(draw_ctx, &mut file_reader, frontend);
             // Draws the frontend.
-            frontend.draw(draw_ctx);
+            if frontend.is_fullscreen() {
+                // Renders the fb in full picture mode.
+                display::full(frontend, draw_ctx);
+            } else {
+                // Renders the fb in a window.
+                display::window(frontend, draw_ctx);
+            }
+            // Display debug panels/windows.
+            if frontend.is_debugging() {
+                frontend.get_inner_mut().draw_debug(draw_ctx);
+            }
             // Update backend.
-            frontend.update();
+            frontend.get_inner_mut().update();
         },
         // Ran whenever input was received.
-        move |frontend, input| frontend.input(input),
+        move |frontend, input| frontend.get_inner_mut().input(input),
     );
 }

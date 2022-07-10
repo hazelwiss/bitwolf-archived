@@ -1,6 +1,7 @@
-pub mod debuggable;
+pub mod audio;
+pub mod debug;
 pub mod destroy;
-pub mod draw;
 pub mod emulation;
 pub mod input;
 pub mod update;
+pub mod video;
