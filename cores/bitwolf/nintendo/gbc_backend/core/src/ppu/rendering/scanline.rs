@@ -173,7 +173,7 @@ impl PPU {
                 Pixel::empty()
             };
             let bg_palette = Palette::BGP;
-            let (index, palette) = if self.sprite_sr.len() > 0 && self.regs.lcdc.obj_enable {
+            let (index, palette) = if self.sprite_sr.len() > 0 {
                 let sprite_pixel = self.sprite_sr.pop();
                 let sprite_palette = sprite_pixel.palette;
                 match sprite_pixel.bg_sprite_priority {

@@ -65,7 +65,7 @@ impl PPU {
     }
 
     fn detect_sprite(&mut self) {
-        if self.fetcher.sprite_fetching {
+        if self.fetcher.sprite_fetching || !self.regs.lcdc.obj_enable {
             return;
         }
         if let Some(sprite) = self
