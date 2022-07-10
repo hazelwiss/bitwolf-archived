@@ -8,13 +8,19 @@ mod state;
 use anyhow::{anyhow, Result};
 use common_frontend::{framebuffer, FrontendWrapper};
 use gbc_backend::{engines::interpreter::input::InputState, Builder};
+use libaudio::AudioContext;
 use std::{
     path::Path,
-    sync::mpsc::{sync_channel, SyncSender},
+    sync::{
+        atomic::AtomicBool,
+        mpsc::{sync_channel, SyncSender},
+        Arc,
+    },
 };
 
 type FrameBuffer = framebuffer::access::AccessR<gbc_backend::Texture>;
 type MsgQ = util::bdq::Bdq<backend::debug::messages::CtoF, messages::FtoC>;
+type Audio = AudioContext<f32, 32>;
 
 pub struct GBC {
     fb: FrameBuffer,
@@ -23,6 +29,7 @@ pub struct GBC {
     msgq: MsgQ,
     input: SyncSender<InputState>,
     input_state: InputState,
+    running: Arc<AtomicBool>,
 }
 
 impl GBC {
@@ -33,8 +40,18 @@ impl GBC {
         let (reader, writer) = framebuffer::buffers::triple::new::<gbc_backend::Texture>();
         let (bdq, bdq_backend) = util::bdq::new_pair(100);
         let (sender, receiver) = sync_channel(100);
+        let audio = libaudio::AudioBuilder::new().play();
+        let running = Arc::new(AtomicBool::new(true));
+        let running_thread = running.clone();
         std::thread::spawn(move || {
-            backend::debug::run(Builder { rom, bootrom }, bdq_backend, receiver, writer)
+            backend::debug::run(
+                Builder { rom, bootrom },
+                running_thread,
+                bdq_backend,
+                receiver,
+                writer,
+                audio,
+            )
         });
         Ok(FrontendWrapper::new(Box::new(Self {
             fb: reader,
@@ -43,6 +60,7 @@ impl GBC {
             msgq: bdq,
             input: sender,
             input_state: InputState::new(),
+            running,
         })))
     }
 }

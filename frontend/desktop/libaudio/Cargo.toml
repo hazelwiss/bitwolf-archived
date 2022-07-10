@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 cpal = "0.13.5"
+
+util = {path = "../../../util"}
+logger = {path = "../../../logger"}
