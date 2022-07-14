@@ -1,4 +1,7 @@
-use crate::bus::{io::IOReg, Bus};
+use crate::{
+    bus::{io::IOReg, Bus},
+    ppu::PPU,
+};
 
 impl Bus {
     pub(crate) fn write_io(&mut self, reg: IOReg, val: u8) {
@@ -7,7 +10,7 @@ impl Bus {
             IOReg::IF => self.write_if(val),
             IOReg::Serial(reg) => self.write_serial(reg, val),
             IOReg::Timer(reg) => self.write_timer(reg, val),
-            IOReg::PPUReg(reg) => self.write_ppu_reg(reg, val),
+            IOReg::PPUReg(reg) => PPU::write_reg(self, reg, val),
             IOReg::BootromToggle => self.write_bootrom_toggle(val),
             IOReg::Joypad => self.write_joypad(val),
             IOReg::APUReg(_) => todo!(),

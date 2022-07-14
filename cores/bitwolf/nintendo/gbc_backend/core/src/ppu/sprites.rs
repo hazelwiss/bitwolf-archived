@@ -120,11 +120,11 @@ impl SpriteFlags {
         }
     }
 
-    pub fn from_byte(byte: u8) -> Self {
-        let b7 = byte & (1 << 7) != 0;
-        let b6 = byte & (1 << 6) != 0;
-        let b5 = byte & (1 << 5) != 0;
-        let b4 = byte & (1 << 4) != 0;
+    pub fn from_u8(val: u8) -> Self {
+        let b7 = val & (1 << 7) != 0;
+        let b6 = val & (1 << 6) != 0;
+        let b5 = val & (1 << 5) != 0;
+        let b4 = val & (1 << 4) != 0;
         let priority = if b7 {
             SpritePriority::BGPriority
         } else {

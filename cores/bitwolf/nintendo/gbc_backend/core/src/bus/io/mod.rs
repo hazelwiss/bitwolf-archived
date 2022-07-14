@@ -1,15 +1,12 @@
 pub(crate) mod joypad;
 
 mod access;
-mod apu;
 mod bootrom_toggle;
 mod ie_if;
-mod ppu;
 mod serial;
 mod timer;
 
-use apu::APUReg;
-use ppu::PPUReg;
+use crate::{apu::APUReg, ppu::PPUReg};
 use serial::SerialReg;
 use timer::TimerReg;
 

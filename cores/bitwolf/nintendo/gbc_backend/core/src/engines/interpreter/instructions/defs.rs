@@ -636,7 +636,7 @@ impl Emu<Interpreter> {
     }
 
     pub(crate) fn cb(&mut self) {
-        let prefixed = Prefixed::from_byte(self.fetch());
+        let prefixed = Prefixed::from_u8(self.fetch());
         match prefixed {
             Prefixed::RLC(dst) => self.rlc_r8(dst),
             Prefixed::RLC_PHL => self.rlc_phl(),

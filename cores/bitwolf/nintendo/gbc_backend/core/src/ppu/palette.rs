@@ -6,7 +6,7 @@ pub(super) enum Palette {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum Index {
+pub(super) enum Index {
     I0,
     I1,
     I2,
@@ -14,7 +14,7 @@ pub enum Index {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum Colour {
+pub(super) enum Colour {
     C0,
     C1,
     C2,

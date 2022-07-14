@@ -36,8 +36,8 @@ pub enum Bit {
 }
 
 impl Unprefixed {
-    pub fn from_byte(byte: u8) -> Self {
-        match byte {
+    pub fn from_u8(val: u8) -> Self {
+        match val {
             0x00 => Self::NOP,
             0x01 => Self::LD_R16_NN(R16::BC),
             0x02 => Self::LD_PR16_A(R16::BC),
@@ -301,8 +301,8 @@ impl Unprefixed {
     }
 }
 impl Prefixed {
-    pub fn from_byte(byte: u8) -> Self {
-        match byte {
+    pub fn from_u8(val: u8) -> Self {
+        match val {
             0x00 => Self::RLC(R8::B),
             0x01 => Self::RLC(R8::C),
             0x02 => Self::RLC(R8::D),

@@ -1,6 +1,6 @@
 use crate::ppu::palette::{Colour, Index};
 
-pub(crate) struct PaletteRegister {
+pub(in crate::ppu) struct PaletteRegister {
     index_0: Colour,
     index_1: Colour,
     index_2: Colour,
@@ -17,12 +17,12 @@ impl PaletteRegister {
         }
     }
 
-    pub fn from_byte(byte: u8) -> Self {
+    pub fn from_u8(val: u8) -> Self {
         const COLOUR_LUT: [Colour; 4] = [Colour::C0, Colour::C1, Colour::C2, Colour::C3];
-        let index_0 = COLOUR_LUT[(byte & 0b11) as usize];
-        let index_1 = COLOUR_LUT[((byte >> 2) & 0b11) as usize];
-        let index_2 = COLOUR_LUT[((byte >> 4) & 0b11) as usize];
-        let index_3 = COLOUR_LUT[((byte >> 6) & 0b11) as usize];
+        let index_0 = COLOUR_LUT[(val & 0b11) as usize];
+        let index_1 = COLOUR_LUT[((val >> 2) & 0b11) as usize];
+        let index_2 = COLOUR_LUT[((val >> 4) & 0b11) as usize];
+        let index_3 = COLOUR_LUT[((val >> 6) & 0b11) as usize];
         Self {
             index_0,
             index_1,
@@ -31,7 +31,7 @@ impl PaletteRegister {
         }
     }
 
-    pub fn as_byte(&self) -> u8 {
+    pub fn as_u8(&self) -> u8 {
         fn colour_as_number(col: Colour) -> u8 {
             match col {
                 Colour::C0 => 0,

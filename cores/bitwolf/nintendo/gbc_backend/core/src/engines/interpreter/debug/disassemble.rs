@@ -28,7 +28,7 @@ pub fn disassemble(emu: &Emu<Interpreter>, adr: u16) -> Output {
     let opc = bus::debug::read::read(&emu.bus, adr);
     let imm0 = bus::debug::read::read(&emu.bus, adr.wrapping_add(1));
     let imm1 = bus::debug::read::read(&emu.bus, adr.wrapping_add(2));
-    let instr = Unprefixed::from_byte(opc);
+    let instr = Unprefixed::from_u8(opc);
     let b1 = vec![opc];
     let b2 = vec![opc, imm0];
     let b3 = vec![opc, imm0, imm1];
@@ -201,7 +201,7 @@ pub fn disassemble(emu: &Emu<Interpreter>, adr: u16) -> Output {
         },
         Unprefixed::CB => Output {
             output: DisassembledOutput::Instr {
-                string_repr: disassemble_prefixed(Prefixed::from_byte(imm0)),
+                string_repr: disassemble_prefixed(Prefixed::from_u8(imm0)),
                 byte_repr: b2,
                 comment,
             },

@@ -86,9 +86,10 @@ impl Bus {
     }
 
     #[inline(always)]
-    pub fn tick(&mut self, t_cycles: u64) {
-        self.cycle_counter += t_cycles;
-        self.ppu.tick(t_cycles as u32);
+    pub fn tick(&mut self, t_cycles: u32) {
+        self.cycle_counter += t_cycles as u64;
+        self.ppu.tick(t_cycles);
+        self.apu.tick(t_cycles);
     }
 
     #[inline(always)]

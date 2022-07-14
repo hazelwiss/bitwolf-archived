@@ -1,4 +1,7 @@
-use crate::bus::{address_space, io::IOReg, memory_map::Section, Bus};
+use crate::{
+    bus::{address_space, io::IOReg, memory_map::Section, Bus},
+    ppu::PPU,
+};
 
 impl Bus {
     pub fn read(&mut self, adr: u16) -> u8 {
@@ -31,7 +34,7 @@ impl Bus {
 
     #[inline]
     fn read_vram(&self, offset: address_space::VRAM) -> u8 {
-        self.ppu.vram[offset.get()]
+        PPU::read_vram(self, offset)
     }
 
     #[inline]
@@ -56,7 +59,7 @@ impl Bus {
 
     #[inline]
     fn read_oam(&self, offset: address_space::OAM) -> u8 {
-        self.ppu.oam[offset.get()]
+        PPU::read_oam(self, offset)
     }
 
     #[inline]

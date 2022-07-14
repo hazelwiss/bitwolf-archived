@@ -2,7 +2,7 @@ pub(crate) mod lcdc;
 pub(crate) mod lcds;
 pub(crate) mod palette;
 
-pub(crate) struct Regs {
+pub(in crate::ppu) struct Regs {
     pub ly: u8,
     pub scx: u8,
     pub scy: u8,
@@ -25,24 +25,8 @@ impl Regs {
             wx: 0,
             wy: 0,
             lyc: 0,
-            lcdc: lcdc::LCDC {
-                enable: false,
-                window_tile_map_area: lcdc::TileMapArea::A9800_9BFF,
-                window_enable: false,
-                bg_and_window_tile_data_area: lcdc::TileDataArea::A8800_97FF,
-                bg_tile_map_area: lcdc::TileMapArea::A9800_9BFF,
-                obj_size: lcdc::OBJSize::S8x8,
-                obj_enable: false,
-                bg_and_window_enable: false,
-            },
-            lcds: lcds::LCDS {
-                lyc_sis: false,
-                oam_sis: false,
-                vblank_sis: false,
-                hblank_sis: false,
-                lyc_flag: false,
-                mode: super::rendering::scanline::Mode::OAMScan,
-            },
+            lcdc: lcdc::LCDC::new(),
+            lcds: lcds::LCDS::new(),
             bgp: palette::PaletteRegister::new(),
             obp0: palette::PaletteRegister::new(),
             obp1: palette::PaletteRegister::new(),

@@ -9,7 +9,7 @@ impl Emu<Interpreter> {
         if self.halted_get() {
             self.tick(Cycles::M(1));
         } else {
-            let val = Unprefixed::from_byte(self.fetch());
+            let val = Unprefixed::from_u8(self.fetch());
             match val {
                 Unprefixed::NOP => self.nop(),
                 Unprefixed::STOP => self.stop(),

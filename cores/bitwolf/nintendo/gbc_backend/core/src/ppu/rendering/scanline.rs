@@ -14,7 +14,7 @@ const DOTS_PER_SCANLINE: u32 = 456;
 
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub enum Mode {
+pub(in crate::ppu) enum Mode {
     HBlank = 0b00,
     VBlank = 0b01,
     OAMScan = 0b10,
@@ -120,7 +120,7 @@ impl PPU {
                         y_pos: y_pos as u8,
                         x_pos: x_pos as u8,
                         tile_num,
-                        flags: SpriteFlags::from_byte(flags),
+                        flags: SpriteFlags::from_u8(flags),
                     };
                     self.sprite_buffer.push(sprite);
                     if self.sprite_buffer.full() {

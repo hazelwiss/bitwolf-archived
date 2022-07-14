@@ -127,8 +127,8 @@ impl<E: Engine> Emu<E> {
     pub(super) fn tick(&mut self, cycles: Cycles) {
         self.check_events();
         match cycles {
-            Cycles::T(t) => self.bus.tick(t as u64),
-            Cycles::M(m) => self.bus.tick((m as u64) << 2),
+            Cycles::T(t) => self.bus.tick(t),
+            Cycles::M(m) => self.bus.tick(m << 2),
         }
     }
 

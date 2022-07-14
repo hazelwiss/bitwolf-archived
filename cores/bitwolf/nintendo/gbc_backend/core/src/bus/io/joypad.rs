@@ -29,7 +29,7 @@ impl Joypad {
         }
     }
 
-    pub(super) fn as_byte(&self) -> u8 {
+    pub(super) fn as_u8(&self) -> u8 {
         let mut byte = 0;
         byte |= (self.select_action as u8) << 5;
         byte |= (self.select_direction as u8) << 4;
@@ -65,6 +65,6 @@ impl Bus {
     }
 
     pub(super) fn read_joypad(&mut self) -> u8 {
-        self.io.joypad.as_byte()
+        self.io.joypad.as_u8()
     }
 }

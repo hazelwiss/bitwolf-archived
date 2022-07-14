@@ -1,4 +1,7 @@
-use crate::bus::{io::IOReg, Bus};
+use crate::{
+    bus::{io::IOReg, Bus},
+    ppu::PPU,
+};
 
 impl Bus {
     pub(crate) fn read_io(&mut self, reg: IOReg) -> u8 {
@@ -7,7 +10,7 @@ impl Bus {
             IOReg::IF => self.read_if(),
             IOReg::Serial(reg) => self.read_serial(reg),
             IOReg::Timer(reg) => self.read_timer(reg),
-            IOReg::PPUReg(reg) => self.read_ppu_reg(reg),
+            IOReg::PPUReg(reg) => PPU::read_reg(self, reg),
             IOReg::BootromToggle => self.read_bootrom_toggle(),
             IOReg::Joypad => self.read_joypad(),
             IOReg::APUReg(_) => todo!(),
