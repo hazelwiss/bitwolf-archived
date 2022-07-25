@@ -1,6 +1,11 @@
-pub use core::{apu::AudioBuffer, engines, Builder, Emu, Texture};
+#![feature(mixed_integer_ops)]
+#![feature(let_chains)]
 
-use core::engines::Engine;
+mod core;
+
+pub use crate::core::{apu::AudioBuffer, engines, Builder, Emu, Texture};
+
+use crate::core::engines::Engine;
 use std::ops::{Deref, DerefMut};
 
 pub struct Core<E: Engine> {

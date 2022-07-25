@@ -9,5 +9,8 @@ edition = "2021"
 # Logger crate.
 logger = {path = "../../../../logger"}
 
-# Core crate.
-core = {path = "core"}
+# Backends common utility crate.
+common-core = {path = "../../../common-core"}
+
+# Utility crate.
+util = {path = "../../../../util"}
