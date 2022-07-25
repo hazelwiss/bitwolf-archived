@@ -1,13 +1,11 @@
 use super::Interpreter;
-use crate::core::{
-    cpu::{
-        instructions::decode::Bit,
-        registers::{Flag, R8},
-    },
-    Emu,
+use crate::core::cpu::{
+    instructions::decode::Bit,
+    registers::{Flag, R8},
+    CPU,
 };
 
-impl Emu<Interpreter> {
+impl CPU<Interpreter> {
     #[inline(always)]
     pub(crate) fn alu_adc(&mut self, src: u8, carry: bool) {
         let a = self.r8_get(R8::A) as u16;

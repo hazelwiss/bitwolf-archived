@@ -3,11 +3,11 @@ use common_frontend::subwindows::disassembler;
 
 impl disassembler::DisassemblyHook for GBC {
     fn pc_value(&self) -> u64 {
-        self.state.reg_file.pc as u64
+        self.com.state.reg_file.pc as u64
     }
 
     fn is_breakpoint(&self, adr: u64) -> bool {
-        self.state.ctrl.breakpoints.contains(&(adr as u16))
+        self.com.state.ctrl.breakpoints.contains(&(adr as u16))
     }
 
     fn get_start_adr(&self) -> u64 {
@@ -15,7 +15,7 @@ impl disassembler::DisassemblyHook for GBC {
     }
 
     fn get_disassembly_output(&self) -> &Vec<common_core::disassembly::DisassembledOutput> {
-        &self.state.disasm.rom
+        &self.com.state.disasm.rom
     }
 }
 

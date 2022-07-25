@@ -1,9 +1,11 @@
 pub mod decode;
 
-use crate::core::cpu::registers::{R16, R8};
-use decode::{RSTVec, CC};
+mod common;
+mod interpreter;
 
 use self::decode::Bit;
+use crate::core::cpu::registers::{R16, R8};
+use decode::{RSTVec, CC};
 
 #[derive(Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]

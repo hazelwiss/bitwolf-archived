@@ -1,3 +1,5 @@
+use crate::Engine;
+
 use super::CPU;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -189,7 +191,7 @@ impl RegisterFile {
     }
 }
 
-impl CPU {
+impl<E: Engine> CPU<E> {
     pub fn regs(&self) -> &RegisterFile {
         &self.reg_file
     }

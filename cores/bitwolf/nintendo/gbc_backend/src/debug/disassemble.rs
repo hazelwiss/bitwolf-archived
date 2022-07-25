@@ -1,13 +1,15 @@
-use super::{registers::R16, Emu, Interpreter};
-use crate::core::{
-    bus,
-    cpu::{
-        instructions::{
-            decode::{Bit, RSTVec, CC},
-            Prefixed, Unprefixed,
+use crate::{
+    core::{
+        bus,
+        cpu::{
+            instructions::{
+                decode::{Bit, RSTVec, CC},
+                Prefixed, Unprefixed,
+            },
+            registers::{R16, R8},
         },
-        registers::R8,
     },
+    Core, Engine,
 };
 use common_core::disassembly::DisassembledOutput;
 use std::fmt::Display;
@@ -24,10 +26,10 @@ pub struct Output {
     pub ctrl_flow: Option<ControlFlow>,
 }
 
-pub fn disassemble(emu: &Emu<Interpreter>, adr: u16) -> Output {
-    let opc = bus::debug::read::read(&emu.bus, adr);
-    let imm0 = bus::debug::read::read(&emu.bus, adr.wrapping_add(1));
-    let imm1 = bus::debug::read::read(&emu.bus, adr.wrapping_add(2));
+pub fn disassemble<E: Engine>(emu: &Core<E>, adr: u16) -> Output {
+    let opc = bus::debug::read::read(&emu.cpu.bus, adr);
+    let imm0 = bus::debug::read::read(&emu.cpu.bus, adr.wrapping_add(1));
+    let imm1 = bus::debug::read::read(&emu.cpu.bus, adr.wrapping_add(2));
     let instr = Unprefixed::from_u8(opc);
     let b1 = vec![opc];
     let b2 = vec![opc, imm0];

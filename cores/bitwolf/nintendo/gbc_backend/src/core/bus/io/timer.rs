@@ -1,4 +1,4 @@
-use crate::core::{bus::Bus, cpu::interrupt::InterruptBit, emu::event_slots::Slot, Emu, Engine};
+use crate::core::{bus::Bus, cpu::interrupt::InterruptBit, emu::event_slots::Slot};
 
 pub(crate) enum TimerReg {
     DIV,
@@ -71,10 +71,10 @@ impl Bus {
     }
 }
 
-impl<E: Engine> Emu<E> {
+impl Bus {
     pub(crate) fn timer_event(&mut self) {
-        self.bus.if_toggle(InterruptBit::Timer);
-        self.bus.io.timer.tima = self.bus.io.timer.tma;
-        self.bus.recalculate_timer_event();
+        self.if_toggle(InterruptBit::Timer);
+        self.io.timer.tima = self.io.timer.tma;
+        self.recalculate_timer_event();
     }
 }

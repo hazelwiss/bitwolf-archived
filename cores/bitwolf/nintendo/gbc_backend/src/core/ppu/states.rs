@@ -1,5 +1,4 @@
 pub(super) struct FrameState {
-    pub frame_ready: bool,
     pub window_ly: u8,
     pub window_fetching: bool,
 }
@@ -7,7 +6,6 @@ pub(super) struct FrameState {
 impl FrameState {
     pub fn new() -> Self {
         Self {
-            frame_ready: false,
             window_ly: 0,
             window_fetching: false,
         }

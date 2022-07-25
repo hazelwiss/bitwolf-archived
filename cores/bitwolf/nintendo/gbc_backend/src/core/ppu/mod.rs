@@ -12,6 +12,8 @@ mod states;
 pub(crate) use access::PPUReg;
 pub(crate) use rendering::lcd;
 
+use crate::interfaces::VideoInterface;
+
 pub(crate) struct PPU {
     pub(crate) if_stat: bool,
     pub(crate) if_vblank: bool,
@@ -25,10 +27,11 @@ pub(crate) struct PPU {
     frame: crate::Texture,
     frame_state: states::FrameState,
     scanline_state: states::ScanlineState,
+    video_interface: VideoInterface,
 }
 
 impl PPU {
-    pub fn new() -> Self {
+    pub fn new(video_interface: VideoInterface) -> Self {
         Self {
             if_stat: false,
             if_vblank: false,
@@ -42,26 +45,11 @@ impl PPU {
             frame: crate::Texture::default(),
             frame_state: states::FrameState::new(),
             scanline_state: states::ScanlineState::new(),
+            video_interface,
         }
     }
 
-    /// retrieve frame from PPU if frame is ready.
-    #[inline(always)]
-    pub fn present_frame(&self) -> Option<&crate::Texture> {
-        if self.frame_state.frame_ready {
-            Some(&self.frame)
-        } else {
-            None
-        }
-    }
-
-    /// invalidate ppu frame, preferably after use.
-    #[inline(always)]
-    pub fn invalidate_frame(&mut self) {
-        self.frame_state.frame_ready = false;
-    }
-
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.regs.lcds.mode = rendering::scanline::Mode::HBlank;
         self.scanline_state.reset();
         self.frame_state.reset();

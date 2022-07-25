@@ -1,4 +1,5 @@
-use super::Interpreter;
+mod generic;
+
 use crate::core::{
     cpu::{
         instructions::{
@@ -6,13 +7,14 @@ use crate::core::{
             Prefixed,
         },
         registers::{Flag, R16, R8},
+        CPU,
     },
     cycles::Cycles,
     emu::event_slots::Slot,
-    Emu,
 };
+use crate::Interpreter;
 
-impl Emu<Interpreter> {
+impl CPU<Interpreter> {
     pub(crate) fn adc_r8(&mut self, src: R8) {
         self.alu_adc(self.r8_get(src), self.flag_get(Flag::C));
     }

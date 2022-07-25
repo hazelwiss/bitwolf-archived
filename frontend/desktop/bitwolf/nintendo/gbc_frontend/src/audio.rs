@@ -1,11 +1,10 @@
-use gbc_backend::AudioBuffer;
 use libaudio::AudioContext;
 
-pub struct AudioSampler {
+pub struct Audio {
     ctx: AudioContext<i16, 32>,
 }
 
-impl AudioSampler {
+impl Audio {
     pub fn new() -> Self {
         Self {
             ctx: libaudio::AudioBuilder::new().play(),
@@ -13,8 +12,8 @@ impl AudioSampler {
     }
 }
 
-impl AudioBuffer for AudioSampler {
-    fn queue_sample(&self, sample: i16) {
+impl gbc_backend::interfaces::Audio for Audio {
+    fn handle_sample(&mut self, sample: i16) {
         self.ctx.push_sample(sample)
     }
 }

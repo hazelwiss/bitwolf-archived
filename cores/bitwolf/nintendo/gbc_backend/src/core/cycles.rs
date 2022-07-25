@@ -1,4 +1,4 @@
-pub(in crate::core) enum Cycles {
+pub(crate) enum Cycles {
     T(u32),
     M(u32),
 }

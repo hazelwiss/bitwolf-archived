@@ -10,7 +10,9 @@ type Colour = BGRA;
 impl Video for GBC {
     fn video_data(&self) -> VideoData {
         VideoData {
-            data: unsafe { util::memory::to_byte_slice(self.fb.get().read().data.as_slice()) },
+            data: unsafe {
+                util::memory::to_byte_slice(self.com.fb_reader.get().read().data.as_slice())
+            },
             width: WIDTH,
             height: HEIGHT,
         }

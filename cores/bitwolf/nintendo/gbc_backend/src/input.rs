@@ -1,5 +1,3 @@
-use super::{Emu, Interpreter};
-
 #[derive(Clone)]
 pub struct InputState {
     pub a: bool,
@@ -25,16 +23,4 @@ impl InputState {
             right: false,
         }
     }
-}
-
-pub fn input(emu: &mut Emu<Interpreter>, state: &InputState) {
-    let joypad = emu.bus.get_joypad_mut();
-    joypad.a = state.a;
-    joypad.b = state.b;
-    joypad.left = state.left;
-    joypad.right = state.right;
-    joypad.up = state.up;
-    joypad.down = state.down;
-    joypad.select = state.select;
-    joypad.start = state.start;
 }

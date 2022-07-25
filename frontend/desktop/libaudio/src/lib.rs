@@ -1,6 +1,6 @@
 use cpal::{
     traits::{DeviceTrait, HostTrait},
-    Device, StreamConfig,
+    Device, Sample, StreamConfig,
 };
 use std::sync::{Arc, Barrier};
 use util::ring_buffer;
@@ -27,8 +27,10 @@ impl AudioBuilder {
         Self { device, config }
     }
 
-    pub fn play<const SIZE: usize>(self) -> AudioContext<i16, SIZE> {
-        let rb = ring_buffer::MPRB::<i16, SIZE>::new();
+    pub fn play<T: Copy + Sample + Default + Send + 'static, const SIZE: usize>(
+        self,
+    ) -> AudioContext<T, SIZE> {
+        let rb = ring_buffer::MPRB::<T, SIZE>::new();
         let poper = rb.poper();
         let barrier = Arc::new(Barrier::new(2));
         let barrier_thread = barrier.clone();
@@ -37,12 +39,12 @@ impl AudioBuilder {
                 .device
                 .build_output_stream(
                     &self.config,
-                    move |data: &mut [i16], _| {
+                    move |data: &mut [T], _| {
                         for sample in data.iter_mut() {
                             *sample = if let Some(new_sample) = poper.pop() {
                                 new_sample
                             } else {
-                                0
+                                T::default()
                             };
                         }
                     },

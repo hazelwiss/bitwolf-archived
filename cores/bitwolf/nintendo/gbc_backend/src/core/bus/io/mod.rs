@@ -6,7 +6,10 @@ mod ie_if;
 mod serial;
 mod timer;
 
-use crate::core::{apu::APUReg, ppu::PPUReg};
+use crate::{
+    core::{apu::APUReg, ppu::PPUReg},
+    interfaces::InputInterface,
+};
 use serial::SerialReg;
 use timer::TimerReg;
 
@@ -64,7 +67,7 @@ pub(crate) struct IO {
 }
 
 impl IO {
-    pub fn new() -> Self {
+    pub fn new(input_interface: InputInterface) -> Self {
         Self {
             ie: ie_if::IE(0),
             if_timer: false,
@@ -73,7 +76,7 @@ impl IO {
             bootrom_toggle: 0,
             serial: serial::Serial::new(),
             timer: timer::Timer::new(),
-            joypad: joypad::Joypad::new(),
+            joypad: joypad::Joypad::new(input_interface),
         }
     }
 }

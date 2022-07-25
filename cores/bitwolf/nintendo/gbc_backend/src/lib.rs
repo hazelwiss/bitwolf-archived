@@ -1,35 +1,40 @@
 #![feature(mixed_integer_ops)]
 #![feature(let_chains)]
 
+pub mod debug;
+pub mod engines;
+pub mod input;
+pub mod interfaces;
+
 mod core;
 
-pub use crate::core::{apu::AudioBuffer, engines, Builder, Emu, Texture};
+pub use crate::core::Texture;
+pub use engines::{interpreter::Interpreter, Engine};
 
-use crate::core::engines::Engine;
-use std::ops::{Deref, DerefMut};
+pub struct Builder {
+    pub rom: Vec<u8>,
+    pub bootrom: [u8; 256],
+    pub audio_interface: interfaces::AudioInterface,
+    pub video_interface: interfaces::VideoInterface,
+    pub input_interface: interfaces::InputInterface,
+}
 
 pub struct Core<E: Engine> {
-    engine: Emu<E>,
+    _data: E::EngineData,
+    cpu: core::cpu::CPU<E>,
 }
 
-impl<E: Engine> Core<E> {
-    pub fn new(builder: Builder, sampler: core::Sampler) -> Self {
+impl<E: Engine + 'static> Core<E> {
+    pub fn new(builder: Builder) -> Self {
         Self {
-            engine: Emu::new(builder, sampler),
+            _data: E::EngineData::default(),
+            cpu: core::cpu::CPU::new(
+                builder.bootrom,
+                builder.rom,
+                builder.audio_interface,
+                builder.video_interface,
+                builder.input_interface,
+            ),
         }
-    }
-}
-
-impl<E: Engine> Deref for Core<E> {
-    type Target = Emu<E>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.engine
-    }
-}
-
-impl<E: Engine> DerefMut for Core<E> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.engine
     }
 }

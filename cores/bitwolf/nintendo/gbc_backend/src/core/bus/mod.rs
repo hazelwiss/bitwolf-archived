@@ -5,7 +5,10 @@ mod access;
 mod io;
 mod memory_map;
 
-use crate::core::{cpu::interrupt::InterruptBit, emu::event_slots::Slot};
+use crate::{
+    core::{cpu::interrupt::InterruptBit, emu::event_slots::Slot},
+    interfaces,
+};
 use common_core::schedulers::Scheduler;
 
 pub(crate) struct Bus {
@@ -24,7 +27,13 @@ pub(crate) struct Bus {
 }
 
 impl Bus {
-    pub fn new(bootrom: [u8; 256], rom: Vec<u8>, sampler: crate::core::apu::Sampler) -> Self {
+    pub fn new(
+        bootrom: [u8; 256],
+        rom: Vec<u8>,
+        audio_interface: interfaces::AudioInterface,
+        video_interface: interfaces::VideoInterface,
+        input_interface: interfaces::InputInterface,
+    ) -> Self {
         if rom.len() > 0x8000 {
             logger::fatal!("ROM too large!");
         }
@@ -51,8 +60,8 @@ impl Bus {
             rom1[i - 0x4000] = rom[i];
         }
         Self {
-            ppu: crate::core::ppu::PPU::new(),
-            apu: crate::core::apu::APU::new(sampler),
+            ppu: crate::core::ppu::PPU::new(video_interface),
+            apu: crate::core::apu::APU::new(audio_interface),
             scheduler: Scheduler::new(),
             cycle_counter: 0,
             rom0,
@@ -61,13 +70,9 @@ impl Bus {
             eram: [0; 0x2000],
             wram0: [0; 0x1000],
             wram1: [0; 0x1000],
-            io: io::IO::new(),
+            io: io::IO::new(input_interface),
             hram: [0; 0x80],
         }
-    }
-
-    pub fn get_joypad_mut(&mut self) -> &mut io::joypad::Joypad {
-        &mut self.io.joypad
     }
 
     #[inline(always)]

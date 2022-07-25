@@ -1,48 +1,35 @@
-use crate::core::bus::Bus;
+use crate::{core::bus::Bus, interfaces::InputInterface};
 
 pub struct Joypad {
-    pub up: bool,
-    pub down: bool,
-    pub left: bool,
-    pub right: bool,
-    pub start: bool,
-    pub select: bool,
-    pub b: bool,
-    pub a: bool,
-    pub select_direction: bool,
-    pub select_action: bool,
+    input_interface: InputInterface,
+    select_action: bool,
+    select_direction: bool,
 }
 
 impl Joypad {
-    pub(super) fn new() -> Self {
+    pub(super) fn new(input_interface: InputInterface) -> Self {
         Self {
-            up: false,
-            down: false,
-            left: false,
-            right: false,
-            start: false,
-            select: false,
-            b: false,
-            a: false,
-            select_direction: false,
+            input_interface,
             select_action: false,
+            select_direction: false,
         }
     }
 
     pub(super) fn as_u8(&self) -> u8 {
         let mut byte = 0;
+        let input = self.input_interface.get_input_state();
         byte |= (self.select_action as u8) << 5;
         byte |= (self.select_direction as u8) << 4;
         if self.select_action {
-            byte |= (!self.down as u8) << 3;
-            byte |= (!self.up as u8) << 2;
-            byte |= (!self.left as u8) << 1;
-            byte |= !self.right as u8;
+            byte |= (!input.down as u8) << 3;
+            byte |= (!input.up as u8) << 2;
+            byte |= (!input.left as u8) << 1;
+            byte |= !input.right as u8;
         } else if self.select_direction {
-            byte |= (!self.start as u8) << 3;
-            byte |= (!self.select as u8) << 2;
-            byte |= (!self.b as u8) << 1;
-            byte |= !self.a as u8;
+            byte |= (!input.start as u8) << 3;
+            byte |= (!input.select as u8) << 2;
+            byte |= (!input.b as u8) << 1;
+            byte |= !input.a as u8;
         }
         byte
     }

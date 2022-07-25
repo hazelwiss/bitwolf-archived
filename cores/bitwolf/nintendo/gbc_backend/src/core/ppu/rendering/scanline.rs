@@ -135,7 +135,7 @@ impl PPU {
     fn on_vblank(&mut self) {
         self.change_mode(Mode::VBlank);
         self.if_vblank = true;
-        self.frame_state.frame_ready = true;
+        self.video_interface.process_frame(&self.frame);
     }
 
     fn on_new_frame(&mut self) {
