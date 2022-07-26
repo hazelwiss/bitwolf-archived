@@ -1,20 +1,6 @@
 [workspace]
 members = [
-    # Shared utility between backends.
-    "cores/common-core",
-    # The different backend cores.
-    "cores/bitwolf/nintendo/*",
-    # Frontend desktop crates.
-    "frontend/desktop/bitwolf/nintendo/*",
-    "frontend/desktop/common-frontend",
-    "frontend/desktop/file_reader",
-    "frontend/desktop/imgui",
-    "frontend/desktop/libaudio",
-    "frontend/desktop",
-    # Utility crate.
-    "util",
-    # Logging crate.
-    "logger",
+
 ]
 # Required to determine version for wgpu
 resolver = "2"
