@@ -1,3 +1,3 @@
 pub trait Audio {
-    fn handle_sample(&mut self, sample: i16);
+    fn handle_sample(&mut self, sample: f32);
 }

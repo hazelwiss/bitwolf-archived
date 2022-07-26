@@ -27,11 +27,11 @@ impl AudioBuilder {
         Self { device, config }
     }
 
-    pub fn play<T: Copy + Sample + Default + Send + 'static, const SIZE: usize>(
+    pub fn play<T: Copy + Sample + Default + Send + Sync + 'static, const SIZE: usize>(
         self,
     ) -> AudioContext<T, SIZE> {
-        let rb = ring_buffer::MPRB::<T, SIZE>::new();
-        let poper = rb.poper();
+        use cpal::traits::StreamTrait;
+        let (pusher, poper) = ring_buffer::spawn::<T, SIZE>();
         let barrier = Arc::new(Barrier::new(2));
         let barrier_thread = barrier.clone();
         std::thread::spawn(move || {
@@ -51,13 +51,12 @@ impl AudioBuilder {
                     |err| logger::warning!("[AUDIO] error: {err:?}"),
                 )
                 .expect("[AUDIO] failed to create stream");
-            use cpal::traits::StreamTrait;
             stream.play().expect("[AUDIO] unable to play stream");
             barrier_thread.wait();
         });
 
         AudioContext {
-            rb: rb.pusher(),
+            rb: pusher,
             barrier,
         }
     }
