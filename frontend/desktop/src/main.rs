@@ -3,6 +3,7 @@
 mod backend_types;
 mod default_backend;
 mod display;
+mod file_reader;
 mod frontend_creator;
 mod menu;
 mod msg_receiver;

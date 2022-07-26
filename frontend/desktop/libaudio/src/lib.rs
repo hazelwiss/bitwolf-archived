@@ -1,6 +1,6 @@
 use cpal::{
     traits::{DeviceTrait, HostTrait},
-    Device, Sample, StreamConfig,
+    BufferSize, Device, Sample, SampleRate, StreamConfig,
 };
 use std::sync::{Arc, Barrier};
 use util::ring_buffer;
@@ -23,7 +23,9 @@ impl AudioBuilder {
             .next()
             .expect("[AUDIO] No supported config.")
             .with_max_sample_rate();
-        let config = supported_config.config();
+        let mut config = supported_config.config();
+        config.buffer_size = BufferSize::Default;
+        logger::info!("Created audio loopback: {config:?}");
         Self { device, config }
     }
 
@@ -41,11 +43,7 @@ impl AudioBuilder {
                     &self.config,
                     move |data: &mut [T], _| {
                         for sample in data.iter_mut() {
-                            *sample = if let Some(new_sample) = poper.pop() {
-                                new_sample
-                            } else {
-                                T::default()
-                            };
+                            *sample = poper.pop().unwrap_or_default();
                         }
                     },
                     |err| logger::warning!("[AUDIO] error: {err:?}"),

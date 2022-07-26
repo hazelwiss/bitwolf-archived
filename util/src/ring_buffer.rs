@@ -1,50 +1,60 @@
-use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc,
+use std::{
+    cell::UnsafeCell,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 pub struct RB<T: Copy, const SIZE: usize> {
     pop_index: AtomicUsize,
     push_index: AtomicUsize,
-    len: AtomicUsize,
-    buffer: [T; SIZE],
+    buffer: UnsafeCell<[T; SIZE]>,
 }
 
 unsafe impl<T: Copy, const SIZE: usize> Send for RB<T, SIZE> {}
+unsafe impl<T: Copy, const SIZE: usize> Sync for RB<T, SIZE> {}
 
 impl<T: Copy, const SIZE: usize> RB<T, SIZE> {
     pub fn new(val: T) -> Self {
         Self {
             pop_index: AtomicUsize::new(0),
             push_index: AtomicUsize::new(0),
-            len: AtomicUsize::new(0),
-            buffer: [val; SIZE],
+            buffer: UnsafeCell::new([val; SIZE]),
         }
     }
 
     pub fn push(&self, val: T) {
-        while self.len.load(Ordering::Acquire) == SIZE {}
-        let push_index = self.push_index.load(Ordering::Acquire);
-        self.push_index
-            .store((push_index + 1) % SIZE, Ordering::Release);
+        let push_index = self.push_index.load(Ordering::Relaxed);
+        let new_push_index = (push_index + 1) % SIZE;
+        let _ = self
+            .pop_index
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |pop_index| {
+                if pop_index == new_push_index {
+                    Some(new_push_index + 1)
+                } else {
+                    None
+                }
+            });
         unsafe {
-            let ptr = &self.buffer[push_index] as *const _ as *mut _;
-            (*ptr) = val;
+            self.buffer.get().cast::<T>().add(push_index).write(val);
         }
-
-        self.len
-            .store(self.len.load(Ordering::Acquire) + 1, Ordering::Release)
+        self.push_index.store(new_push_index, Ordering::Release);
     }
 
     pub fn pop(&self) -> Option<T> {
-        if self.len.load(Ordering::Acquire) > 0 {
-            let pop_index = self.pop_index.load(Ordering::Acquire);
+        if let Ok(pop_index) =
             self.pop_index
-                .store((pop_index + 1) % SIZE, Ordering::Release);
-            let val = self.buffer[pop_index];
-            self.len
-                .store(self.len.load(Ordering::Acquire) - 1, Ordering::Release);
-            Some(val)
+                .fetch_update(Ordering::Acquire, Ordering::Relaxed, |pop_index| {
+                    let new_pop_index = (pop_index + 1) % SIZE;
+                    if new_pop_index == self.push_index.load(Ordering::Relaxed) {
+                        None
+                    } else {
+                        Some(new_pop_index)
+                    }
+                })
+        {
+            Some(unsafe { self.buffer.get().cast::<T>().add(pop_index).read() })
         } else {
             None
         }

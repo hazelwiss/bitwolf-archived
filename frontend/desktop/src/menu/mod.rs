@@ -2,6 +2,7 @@ mod file;
 mod help;
 mod options;
 
+use crate::file_reader;
 use common_frontend::FrontendBox;
 use imgui::DrawContext;
 

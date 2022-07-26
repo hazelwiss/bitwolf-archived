@@ -7,7 +7,6 @@ members = [
     # Frontend desktop crates.
     "frontend/desktop/bitwolf/nintendo/*",
     "frontend/desktop/common-frontend",
-    "frontend/desktop/file_reader",
     "frontend/desktop/imgui",
     "frontend/desktop/libaudio",
     "frontend/desktop",

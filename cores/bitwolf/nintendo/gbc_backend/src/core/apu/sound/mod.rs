@@ -11,7 +11,7 @@ impl APU {
     pub fn tick(&mut self, t_cycles: u32) {
         //ch1_ch2::
         unsafe {
-            if cycles % 2048*4 == 0 {
+            for _ in 0..t_cycles {
                 self.audio_interface.handle_sample(TEST.sin());
                 TEST += 0.0001;
             }
