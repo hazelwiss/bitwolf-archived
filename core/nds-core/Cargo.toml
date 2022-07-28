@@ -1,0 +1,16 @@
+[package]
+name = "nds-core"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+debug-log = []
+debug-all = ["debug-log"]
+
+all = ["debug-all"]
+
+default = ["all"]
+
+[dependencies]
+core-util = {path = "../core-util"}
+bitmatch = {path = "../../bitmatch"}

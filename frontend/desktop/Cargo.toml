@@ -1,0 +1,13 @@
+[package]
+name = "desktop"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+nds-core = ["dep:nds-core"]
+core-all = ["nds-core"]
+
+default = ["core-all"]
+
+[dependencies]
+nds-core = { path = "../../core/nds-core", optional = true } 
