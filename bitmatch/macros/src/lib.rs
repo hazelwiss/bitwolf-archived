@@ -104,7 +104,7 @@ impl MatchArm {
                         i += 1;
                     }
                     'z' | 'Z' => i += 1,
-                    'a'..='x' | 'A'..='X' => {
+                    'a'..='y' | 'A'..='Y' => {
                         if let Some(var) = pat_vars.get_mut(&c) {
                             var.mask |= bit;
                             var.len += 1;
@@ -120,7 +120,7 @@ impl MatchArm {
                         }
                         i += 1
                     }
-                    '_' | '-' => {}
+                    '_' | '-' | ' ' => {}
                     _ => panic!("Invalid character '{c}' in string literal"),
                 }
             }
