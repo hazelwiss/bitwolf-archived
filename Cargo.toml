@@ -1,13 +1,12 @@
 [workspace]
 members = [
-    # bitmatch
-    "bitmatch",
-    "bitmatch/macros",
     # emulator core files.
     "core/core-util",
     "core/*",
     # emulator frontend files.
-    "frontend/*"
+    "frontend/common",
+    "frontend/cores/*",
+    "frontend/desktop",
 ]
 # Required to determine version for wgpu
 resolver = "2"

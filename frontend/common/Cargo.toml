@@ -1,7 +1,9 @@
 [package]
-name = "bitmatch"
+name = "common"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+
+
 [dependencies]
-macros = {path = "macros"}

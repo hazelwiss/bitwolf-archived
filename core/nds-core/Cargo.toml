@@ -13,4 +13,5 @@ default = ["all"]
 
 [dependencies]
 core-util = {path = "../core-util"}
-bitmatch = {path = "../../bitmatch"}
+bitmatch-proc = {git = "https://github.com/Kim-Dewelski/bitmatch-proc"}
+proc-bitfield = {version = "0.1.1", features = ["nightly"]}

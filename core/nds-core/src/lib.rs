@@ -1,6 +1,3 @@
-#![feature(stmt_expr_attributes)]
-#![feature(proc_macro_hygiene)]
-
 pub mod engine;
 
 mod arm9;

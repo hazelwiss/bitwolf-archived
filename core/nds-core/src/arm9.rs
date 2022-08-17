@@ -1,4 +1,5 @@
-mod decode;
+mod instructions;
+mod registers;
 
 use crate::engine::Engine;
 #[cfg(feature = "debug-log")]

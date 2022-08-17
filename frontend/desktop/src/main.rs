@@ -1,5 +1,5 @@
-mod common;
-#[cfg(feature = "nds-core")]
-mod nds;
+mod winow_loop;
 
-fn main() {}
+fn main() {
+    winow_loop::run();
+}
