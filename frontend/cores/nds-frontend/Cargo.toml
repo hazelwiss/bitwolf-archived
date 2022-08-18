@@ -1,9 +1,0 @@
-[package]
-name = "nds-frontend"
-version = "0.1.0"
-edition = "2021"
-
-[features]
-
-[dependencies]
-nds-core = { path = "../../../core/nds-core", features = [] } 

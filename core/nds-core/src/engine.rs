@@ -1,5 +1,5 @@
 pub trait Engine {
-    type EngineData;
+    type EngineData: Default;
 }
 
 pub struct Interpreter;

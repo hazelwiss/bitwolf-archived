@@ -4,14 +4,19 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-nds-core = ["dep:nds-frontend"]
+nds-core = ["dep:nds-core"]
 core-all = ["nds-core"]
 
-default = ["core-all"]
+logging = ["nds-core?/logging"]
+
+default = ["core-all", "logging"]
 
 [dependencies]
-# core-frontends
-nds-frontend = { path = "../cores/nds-frontend", optional = true } 
+# cores
+nds-core = { path = "../../core/nds-core", default_features = false, optional = true } 
+
+# util
+util = { path = "../../util" } 
 
 # imgui
 imgui = "0.8.0"
@@ -26,3 +31,6 @@ winit = "0.26.0"
 
 #pollster 
 pollster = "0.2.5"
+
+# File dialogue crate.
+rfd = "0.8.4"

@@ -4,9 +4,24 @@ members = [
     "core/core-util",
     "core/*",
     # emulator frontend files.
-    "frontend/common",
-    "frontend/cores/*",
     "frontend/desktop",
+    # utility.
+    "util",
 ]
-# Required to determine version for wgpu
+# Required to determine version for wgpu.
 resolver = "2"
+
+[profile.release]
+opt-level = 3
+debug = 0
+strip = "debuginfo"
+debug-assertions = false 
+lto = "fat"
+panic = "abort"
+
+[profile.dev]
+opt-level = 1
+debug = 2
+debug-assertions = true 
+panic = "unwind"
+lto = "thin"

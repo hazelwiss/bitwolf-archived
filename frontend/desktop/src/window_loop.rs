@@ -57,7 +57,66 @@ fn init_wgpu(window: &Window, imgui: &mut Context) -> WGPUInstance {
     }
 }
 
-pub fn run() {
+pub struct ImguiCtx<'a> {
+    ui: &'a imgui::Ui<'a>,
+    wgpu_instance: &'a mut WGPUInstance,
+}
+
+impl<'a> ImguiCtx<'a> {
+    pub fn ui(&self) -> &imgui::Ui<'a> {
+        self.ui
+    }
+
+    pub fn _create_texture<const WIDTH: usize, const HEIGHT: usize>(
+        &mut self,
+        //data: [[_; WIDTH]; HEIGHT],
+    ) /*-> imgui::TextureId*/
+    {
+        //let texture = imgui_wgpu::Texture::new(
+        //    &mut self.device,
+        //    &mut self.renderer,
+        //    imgui_wgpu::TextureConfig {
+        //        size: wgpu::Extent3d {
+        //            width: WIDTH as u32,
+        //            height: HEIGHT as u32,
+        //            ..Default::default()
+        //        },
+        //        sampler_desc: SamplerDescriptor {
+        //            mag_filter: FilterMode::Nearest,
+        //            min_filter: FilterMode::Nearest,
+        //            mipmap_filter: FilterMode::Nearest,
+        //            ..Default::default()
+        //        },
+        //        ..Default::default()
+        //    },
+        //);
+        //texture.write(
+        //    &mut self.queue,
+        //    unsafe { to_byte_slice(&data) },
+        //    WIDTH as u32,
+        //    HEIGHT as u32,
+        //);
+        //self.renderer.textures.insert(texture)
+    }
+
+    pub fn _update_texture(
+        &mut self,
+        //texture_id: imgui::TextureId,
+        //data: &[u8],
+        //width: u32,
+        //height: u32,
+    ) {
+        //let texture = self.renderer.textures.get_mut(texture_id).unwrap();
+        //texture.write(&mut self.queue, data, width, height);
+    }
+
+    pub fn _destroy_texture(&mut self, _texture_id: imgui::TextureId) {}
+}
+
+pub fn run<F>(mut draw_pass: F)
+where
+    F: FnMut(ImguiCtx) + 'static,
+{
     let event_loop = EventLoop::new();
     let window = Window::new(&event_loop).expect("Unable to create window using winit");
 
@@ -127,7 +186,10 @@ pub fn run() {
                     .expect("Failed to prepare frame");
                 let ui = imgui.frame();
 
-                draw_pass(&ui, &mut wgpu_instance);
+                draw_pass(ImguiCtx {
+                    ui: &ui,
+                    wgpu_instance: &mut wgpu_instance,
+                });
 
                 platform.prepare_render(&ui, &window);
                 wgpu_instance
@@ -172,8 +234,4 @@ pub fn run() {
         }
         platform.handle_event(imgui.io_mut(), &window, &event)
     });
-}
-
-fn draw_pass(ui: &imgui::Ui, wgpu_instance: &mut WGPUInstance) {
-    ui.text("TEST!");
 }

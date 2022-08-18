@@ -4,14 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-debug-log = []
-debug-all = ["debug-log"]
-
-all = ["debug-all"]
-
-default = ["all"]
+logging = []
 
 [dependencies]
-core-util = {path = "../core-util"}
-bitmatch-proc = {git = "https://github.com/Kim-Dewelski/bitmatch-proc"}
-proc-bitfield = {version = "0.1.1", features = ["nightly"]}
+core-util = { path = "../core-util" }
+util = { path = "../../util" }
+bitmatch-proc = { git = "https://github.com/Kim-Dewelski/bitmatch-proc" }
+proc-bitfield = { version = "0.1.1", features = ["nightly"] }
