@@ -7,9 +7,9 @@ edition = "2021"
 nds-core = ["dep:nds-core"]
 core-all = ["nds-core"]
 
-logging = ["nds-core?/logging"]
+log = ["nds-core?/log"]
 
-default = ["core-all", "logging"]
+default = ["core-all", "log"]
 
 [dependencies]
 # cores
@@ -23,14 +23,17 @@ imgui = "0.8.0"
 imgui-wgpu = "0.20.0"
 imgui-winit-support = { version = "0.8.2", default_features = false, features = ["winit-26"] }
 
-#wgpu
+# wgpu
 wgpu = "0.13.0"
 
-#winit
+# winit
 winit = "0.26.0"
 
-#pollster 
+# pollster, for awaiting async functions
 pollster = "0.2.5"
 
-# File dialogue crate.
+# file dialogue crate
 rfd = "0.8.4"
+
+# asyncrhonous library for message queues
+crossbeam = "0.8.2"

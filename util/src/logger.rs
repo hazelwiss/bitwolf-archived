@@ -1,7 +1,7 @@
 use colored::Colorize;
 use std::fmt::Display;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Logger {}
 
 impl Logger {

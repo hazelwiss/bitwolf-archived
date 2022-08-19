@@ -1,21 +1,52 @@
-use std::path::PathBuf;
+#![allow(unused)]
 
 mod common;
 mod cores;
 mod ui;
 mod window_loop;
 
+use std::{fmt::Display, path::PathBuf};
+
+#[derive(Copy, Clone)]
+enum CoreType {
+    Nds,
+}
+
+impl Display for CoreType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            CoreType::Nds => "Nintendo DS (NDS)",
+        })
+    }
+}
+
 enum Core {
     None,
     Core(Box<dyn common::CoreFrontend>),
+}
+
+impl Core {
+    #[inline]
+    pub fn is_none(&self) -> bool {
+        match self {
+            Self::None => true,
+            _ => false,
+        }
+    }
+
+    #[inline]
+    pub fn is_core(&self) -> bool {
+        !self.is_none()
+    }
 }
 
 struct Ctx {
     previously_loaded_files: Vec<PathBuf>,
     config_window_active: bool,
     help_window_active: bool,
-    #[cfg(feature = "logging")]
+    #[cfg(feature = "log")]
     logger: util::Logger,
+    fullscreen: bool,
 }
 
 fn main() {
@@ -24,8 +55,9 @@ fn main() {
         previously_loaded_files: vec![],
         config_window_active: false,
         help_window_active: false,
-        #[cfg(feature = "logging")]
+        #[cfg(feature = "log")]
         logger: util::Logger::new(),
+        fullscreen: false,
     };
     window_loop::run(move |mut imgui_ctx| {
         ui::main_menu(&mut imgui_ctx, &mut ctx, &mut core);
