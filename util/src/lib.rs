@@ -1,3 +1,5 @@
+pub mod dumpable;
+
 mod logger;
 
 pub use logger::Logger;

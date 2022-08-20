@@ -98,26 +98,29 @@ pub(crate) fn main_menu(imgui_ctx: &ImguiCtx, ctx: &mut Ctx, core: &mut Core) {
                     }
                 }
             });
-            ui.menu("Previously opened", || {
-                if ctx.previously_loaded_files.is_empty() {
-                    ui.enabled(false, || ui.text("(empty)"));
-                } else {
-                    for path in &ctx.previously_loaded_files {
-                        if ui.button(
-                            path.as_os_str()
-                                .to_str()
-                                .expect("Unable to convert into str"),
-                        ) {
-                            if let Ok(read) = std::fs::read(path) {
-                                todo!()
-                            } else {
-                                #[cfg(feature = "log")]
-                                ctx.logger.warning("Invalid path to ROM");
+            ui.enabled(!ctx.previously_loaded_files.is_empty(), || {
+                ui.menu("Previously opened", || {
+                    if ctx.previously_loaded_files.is_empty() {
+                        ui.enabled(false, || ui.text("(empty)"));
+                    } else {
+                        for path in &ctx.previously_loaded_files {
+                            if ui.button(
+                                path.as_os_str()
+                                    .to_str()
+                                    .expect("Unable to convert into str"),
+                            ) {
+                                if let Ok(read) = std::fs::read(path) {
+                                    todo!()
+                                } else {
+                                    #[cfg(feature = "log")]
+                                    ctx.logger.warning("Invalid path to ROM");
+                                }
                             }
                         }
                     }
-                }
+                });
             });
+
             ui.enabled(core.is_core(), || {
                 if ui.button("Close core") {
                     *core = Core::None;

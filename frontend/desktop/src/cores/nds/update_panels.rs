@@ -11,3 +11,5 @@ pub fn update_panels(nds: &mut NDSFrontend, imgui_ctx: &mut ImguiCtx) {
             });
     }
 }
+
+pub fn rom_header_info(nds: &mut NDSFrontend, imgui_ctx: &mut ImguiCtx) {}

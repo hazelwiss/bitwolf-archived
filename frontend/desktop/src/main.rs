@@ -7,6 +7,8 @@ mod window_loop;
 
 use std::{fmt::Display, path::PathBuf};
 
+use util::Logger;
+
 #[derive(Copy, Clone)]
 enum CoreType {
     Nds,
@@ -28,10 +30,7 @@ enum Core {
 impl Core {
     #[inline]
     pub fn is_none(&self) -> bool {
-        match self {
-            Self::None => true,
-            _ => false,
-        }
+        matches!(self, Self::None)
     }
 
     #[inline]
@@ -45,7 +44,7 @@ struct Ctx {
     config_window_active: bool,
     help_window_active: bool,
     #[cfg(feature = "log")]
-    logger: util::Logger,
+    logger: Logger,
     fullscreen: bool,
 }
 
@@ -56,11 +55,11 @@ fn main() {
         config_window_active: false,
         help_window_active: false,
         #[cfg(feature = "log")]
-        logger: util::Logger::new(),
+        logger: Logger::default(),
         fullscreen: false,
     };
     window_loop::run(move |mut imgui_ctx| {
-        ui::main_menu(&mut imgui_ctx, &mut ctx, &mut core);
+        ui::main_menu(&imgui_ctx, &mut ctx, &mut core);
         {
             let ui = imgui_ctx.ui();
 

@@ -56,14 +56,8 @@ impl CoreFrontend for NDSFrontend {
 
 #[cfg(feature = "log")]
 fn print_rom_info(rom: &Vec<u8>, logger: &Logger) {
-    logger.info(format!(
-        "ROM metadata.
-        \rROM size: {} B ({:.3} KiB) ({:.3} MiB)  
-        \rROM header:
-        \rROM name: \
-        ",
-        rom.len(),
-        (rom.len() as f32) / 1024.0,
-        (rom.len() as f32 / (1024.0 * 1024.0))
-    ));
+    let cartridge_header = nds_core::rom::parse_rom(rom);
+    logger.info(format!("Cartridge header:\n{}", unsafe {
+        util::dumpable::UnsafeDumpString::dump(&cartridge_header)
+    }));
 }

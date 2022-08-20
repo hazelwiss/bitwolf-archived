@@ -1,2 +1,0 @@
-mod arm;
-mod thumb;

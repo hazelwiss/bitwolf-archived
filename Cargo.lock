@@ -92,7 +92,7 @@ name = "bitmatch-proc"
 version = "0.1.0"
 source = "git+https://github.com/Kim-Dewelski/bitmatch-proc#0d50f8621b8877d9416bcc18b85d7ea040a12c31"
 dependencies = [
- "macros",
+ "macros 0.1.0 (git+https://github.com/Kim-Dewelski/bitmatch-proc)",
 ]
 
 [[package]]
@@ -832,6 +832,15 @@ dependencies = [
 [[package]]
 name = "macros"
 version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "macros"
+version = "0.1.0"
 source = "git+https://github.com/Kim-Dewelski/bitmatch-proc#0d50f8621b8877d9416bcc18b85d7ea040a12c31"
 dependencies = [
  "proc-macro2",
@@ -1437,6 +1446,7 @@ name = "util"
 version = "0.1.0"
 dependencies = [
  "colored",
+ "macros 0.1.0",
 ]
 
 [[package]]
