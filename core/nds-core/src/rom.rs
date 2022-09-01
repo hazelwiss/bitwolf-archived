@@ -1,7 +1,8 @@
+use proc_bitfield::UnsafeInto;
 use util::dumpable::UnsafeDumpString;
 
 #[repr(C, packed)]
-#[derive(UnsafeDumpString)]
+#[derive(UnsafeDumpString, Clone, Copy)]
 pub struct CartridgeHeader {
     #[dump(unsafe_cast_str)]
     game_title: [u8; 12],
@@ -58,15 +59,48 @@ pub struct CartridgeHeader {
     __3: [u8; 0xE94],
 }
 
-pub fn parse_rom(rom: &Vec<u8>) -> CartridgeHeader {
-    assert!(rom.len() >= 0x1000);
-    assert!(std::mem::size_of::<CartridgeHeader>() == 0x1000);
+impl Default for CartridgeHeader {
+    fn default() -> Self {
+        unsafe { std::mem::MaybeUninit::zeroed().assume_init() }
+    }
+}
 
+#[derive(UnsafeDumpString)]
+pub struct Cartridge {
+    pub header: CartridgeHeader,
+    #[dump(ignore)]
+    pub main_data: Vec<u8>,
+}
+
+impl Cartridge {
+    pub fn from_rom(rom: Vec<u8>) -> Self {
+        parse_rom(&rom)
+    }
+}
+
+impl Default for Cartridge {
+    fn default() -> Self {
+        Self {
+            header: Default::default(),
+            main_data: Default::default(),
+        }
+    }
+}
+
+fn parse_cartridge_header(rom: &[u8]) -> CartridgeHeader {
+    assert!(std::mem::size_of::<CartridgeHeader>() == 0x1000);
     unsafe {
-        let mut header: CartridgeHeader = std::mem::MaybeUninit::uninit().assume_init();
+        let mut header: CartridgeHeader = std::mem::MaybeUninit::zeroed().assume_init();
         let src = &rom[0] as *const u8;
         let dst = &mut header as *mut _ as *mut u8;
         src.copy_to(dst, 0x1000);
         header
     }
+}
+
+pub fn parse_rom(rom: &Vec<u8>) -> Cartridge {
+    assert!(rom.len() >= 0x7FFF);
+    let header = parse_cartridge_header(rom);
+    let main_data = rom[0x8000..rom.len()].to_vec();
+    Cartridge { header, main_data }
 }

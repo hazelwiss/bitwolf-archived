@@ -1,52 +1,61 @@
 use quote::quote;
-use syn::ItemStruct;
+use syn::{ItemStruct, Type};
 
 mod custom_tokens {
     syn::custom_keyword!(ignore);
     syn::custom_keyword!(unsafe_cast_str);
 }
 
-enum BinaryFormat {
-    B8,
-    B16,
-    B32,
-    B64,
-    B128,
-    None,
-}
 struct Dump {
-    bformat: BinaryFormat,
     name: syn::Ident,
     str_cast: bool,
+    ty: Type,
 }
 
-fn dump_to_tokens(dump: Dump, str_padding: &str) -> proc_macro2::TokenStream {
-    let (capture, capture_bin) = match &dump.bformat {
-        BinaryFormat::B8 => ("0x{:02X}", Some("0b{:08b}")),
-        BinaryFormat::B16 => ("0x{:04X}", Some("0b{:016b}")),
-        BinaryFormat::B32 => ("0x{:08X}", Some("0b{:032b}")),
-        BinaryFormat::B64 => ("0x{:016X}", None),
-        BinaryFormat::B128 => ("0x{:32X}", None),
-        BinaryFormat::None => ("{}", None),
-    };
-    let capture = if let Some(capture_bin) = capture_bin {
-        format!("{capture} ({capture_bin})")
+fn dump_to_tokens(dump: Dump, unsafe_impl: bool) -> proc_macro2::TokenStream {
+    let name = dump.name;
+    let str = format!("{}{}:{}", "{}", name, "{}");
+    let ty = dump.ty;
+    let val = if unsafe_impl {
+        quote!({
+            ::std::ptr::addr_of!((*ptr).#name) as *const #ty
+        })
     } else {
-        format!("{capture}")
+        quote!(&self.#name)
     };
-    let name = &dump.name;
-    let str = format!("{}: {}{}", name, str_padding, capture);
     let expr = if dump.str_cast {
-        quote!(std::ffi::CStr::from_ptr(&self.#name as *const _ as *const i8).to_str().unwrap())
+        quote!(::std::ffi::CStr::from_ptr(#val as *const _ as *const i8).to_str().unwrap())
     } else {
-        quote!(self.#name)
+        quote!(#val)
     };
-    let output = if capture_bin.is_some() {
-        quote!(format!(#str, {#expr}, {#expr}))
+    let initial_expr = if unsafe_impl {
+        quote!(::util::dumpable::UnsafeDumpString::dump_as_lines(#expr, depth + 1))
     } else {
-        quote!(format!(#str, {#expr}))
+        quote!(::util::dumpable::DumpString::dump_as_lines(#expr, depth + 1))
     };
-    output
+    let printable = quote! {
+        {
+            let mut printable = ::std::string::String::new();
+            let mut lines = #initial_expr;
+            if lines.len() == 1 {
+                printable = format!("{}{}", lines.pop().unwrap_unchecked().trim(), util::dumpable::__private::PAD_STR);
+            } else{
+                for line in lines{
+                    printable = format!("{}\n{}", printable, line);
+                }
+            }
+            printable
+        }
+    };
+    let pad = quote!({
+        let pad_str = ::util::dumpable::__private::PAD_STR;
+        let mut padding = ::std::string::String::new();
+        for _ in 0..depth {
+            padding.push_str(pad_str);
+        }
+        padding
+    });
+    quote!(format!(#str, #pad, #printable))
 }
 
 /// # Custom attributes:
@@ -76,82 +85,71 @@ fn dump_derive<const UNSAFE: bool>(ts: proc_macro::TokenStream) -> proc_macro::T
         let mut longest_ident = 0;
         for field in &parsed.fields {
             let mut str_cast = false;
-            if let Some(attr) = field
+            let mut skip = false;
+            let iter = field
                 .attrs
                 .iter()
-                .find(|attr| attr.path.segments.last().unwrap().ident.to_string() == "dump")
-            {
+                .filter(|attr| attr.path.segments.last().unwrap().ident == "dump");
+            for attr in iter {
                 if attr.parse_args::<custom_tokens::ignore>().is_ok() {
-                    continue;
+                    skip = true;
+                    break;
                 } else if attr.parse_args::<custom_tokens::unsafe_cast_str>().is_ok() && UNSAFE {
                     str_cast = true;
                 } else {
                     panic!("invalid dump attribute {:?}", attr.tokens.to_string());
                 }
             }
-            let bformat = match &field.ty {
-                syn::Type::Path(p) if !str_cast => {
-                    match p.path.segments.last().unwrap().ident.to_string().as_str() {
-                        "u8" => BinaryFormat::B8,
-                        "u16" => BinaryFormat::B16,
-                        "u32" => BinaryFormat::B32,
-                        "u64" => BinaryFormat::B64,
-                        "u128" => BinaryFormat::B128,
-                        _ => BinaryFormat::None,
-                    }
-                }
-                _ => BinaryFormat::None,
-            };
+            if skip {
+                continue;
+            }
             let ident = field.ident.clone().unwrap();
             longest_ident = longest_ident.max(ident.to_string().len());
             dumps.push(Dump {
-                bformat,
                 name: field.ident.clone().unwrap(),
                 str_cast,
+                ty: field.ty.clone(),
             });
         }
         let mut brackets = String::new();
         let mut tokens = vec![];
         for dump in dumps {
             brackets.push_str("{}\n");
-            let mut padding = String::with_capacity(longest_ident);
-            for _ in 0..longest_ident - dump.name.to_string().len() {
-                padding.push(' ');
-            }
-            tokens.push(dump_to_tokens(dump, &padding));
+            tokens.push(dump_to_tokens(dump, UNSAFE));
         }
         let struct_ident = &parsed.ident;
+        let dump_impl = quote! {
+            format!(
+                #brackets,
+                #(#tokens),*
+            )
+        };
+        let dump_lines_impl = quote! {
+                let mut vec = vec![];
+                #(vec.push(#tokens));*;
+                vec
+        };
         let impl_quote = if UNSAFE {
             quote!(
                 unsafe impl UnsafeDumpString for #struct_ident {
-                    unsafe fn dump(&self) -> String{
-                        format!(
-                            #brackets,
-                            #(#tokens),*
-                        )
+                    unsafe fn dump(ptr: *const Self, depth: usize) -> ::std::string::String {
+                        #dump_impl
                     }
 
-                    unsafe fn dump_as_lines(&self) -> Vec<String>{
-                        let mut vec = vec![];
-                        #(vec.push(#tokens));*;
-                        vec
+                    unsafe fn dump_as_lines(ptr: *const Self, depth: usize) -> ::std::vec::Vec<::std::string::String> {
+                        #dump_lines_impl
                     }
                 }
             )
         } else {
             quote!(
                 impl DumpString for #struct_ident {
-                    fn dump(&self) -> String{
-                        format!(
-                            #brackets,
-                            #(#tokens),*
-                        )
+                    fn dump(&self, depth: usize) -> ::std::string::String {
+                        #dump_impl
                     }
 
-                    fn dump_as_lines(&self) -> Vec<String>{
-                        let mut vec = vec![];
-                        #(vec.push(#tokens));*;
-                        vec
+                    fn dump_as_lines(&self, depth: usize) -> ::std::vec::Vec<::std::string::String> {
+                        #dump_lines_impl
                     }
                 }
             )

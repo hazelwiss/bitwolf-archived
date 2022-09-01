@@ -1,5 +1,6 @@
 #![feature(allocator_api)]
 
+pub mod debug;
 pub mod mem;
 
 #[macro_export]

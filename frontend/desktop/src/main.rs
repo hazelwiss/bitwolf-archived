@@ -1,46 +1,14 @@
 #![allow(unused)]
 
-mod common;
 mod cores;
 mod ui;
-mod window_loop;
 
+use cores::{Core, CoreType};
 use std::{fmt::Display, path::PathBuf};
-
 use util::Logger;
 
-#[derive(Copy, Clone)]
-enum CoreType {
-    Nds,
-}
-
-impl Display for CoreType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(match self {
-            CoreType::Nds => "Nintendo DS (NDS)",
-        })
-    }
-}
-
-enum Core {
-    None,
-    Core(Box<dyn common::CoreFrontend>),
-}
-
-impl Core {
-    #[inline]
-    pub fn is_none(&self) -> bool {
-        matches!(self, Self::None)
-    }
-
-    #[inline]
-    pub fn is_core(&self) -> bool {
-        !self.is_none()
-    }
-}
-
-struct Ctx {
-    previously_loaded_files: Vec<PathBuf>,
+pub struct Ctx {
+    previously_loaded_files: Vec<(PathBuf, CoreType)>,
     config_window_active: bool,
     help_window_active: bool,
     #[cfg(feature = "log")]
@@ -58,14 +26,15 @@ fn main() {
         logger: Logger::default(),
         fullscreen: false,
     };
-    window_loop::run(move |mut imgui_ctx| {
-        ui::main_menu(&imgui_ctx, &mut ctx, &mut core);
+    gui::window_loop::run(move |mut gui| {
+        let mut spawn_core = None;
+        ui::main_menu(&mut gui, &mut ctx, &mut core, &mut spawn_core);
         {
-            let ui = imgui_ctx.ui();
+            let ui = gui.ui();
 
             // Draw config subwindow.
             if ctx.config_window_active {
-                imgui::Window::new("Configurations")
+                gui::imgui::Window::new("Configurations")
                     .opened(&mut ctx.config_window_active)
                     .build(ui, || {
                         ui.text("Todo!");
@@ -74,7 +43,7 @@ fn main() {
 
             // Draw help subwindow.
             if ctx.help_window_active {
-                imgui::Window::new("Help")
+                gui::imgui::Window::new("Help")
                     .opened(&mut ctx.help_window_active)
                     .build(ui, || {
                         ui.text("Todo!");
@@ -82,10 +51,20 @@ fn main() {
             }
         }
 
+        if let Some((rom, ct)) = spawn_core {
+            fn b<T>(val: T) -> Box<T> {
+                Box::new(val)
+            }
+            let logger = &ctx.logger;
+            core = Core::Core(match ct {
+                CoreType::Nds => b(nds::new(&mut gui, rom, logger)),
+            });
+        }
+
         match &mut core {
             Core::Core(core) => {
                 core.sync_core();
-                ui::ui(&mut imgui_ctx, &mut ctx, core)
+                ui::ui(&mut gui, &mut ctx, core)
             }
             Core::None => {}
         }

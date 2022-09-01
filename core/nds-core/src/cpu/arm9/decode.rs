@@ -3,19 +3,19 @@ use proc_bitfield::bitfield;
 
 #[derive(Clone, Copy)]
 pub enum RegisterIndex {
-    GPR(u8),
-    SP,
-    LR,
-    PC,
+    Gpr(u8),
+    Sp,
+    Lr,
+    Pc,
 }
 
 impl From<u8> for RegisterIndex {
     fn from(v: u8) -> Self {
         match v & 0xF {
-            0..=12 => Self::GPR(v as u8),
-            13 => Self::SP,
-            14 => Self::LR,
-            15 => Self::PC,
+            0..=12 => Self::Gpr(v as u8),
+            13 => Self::Sp,
+            14 => Self::Lr,
+            15 => Self::Pc,
             16..=u8::MAX => panic!("wrong register index for decoding"),
         }
     }
@@ -27,7 +27,7 @@ pub mod dp {
     #[derive(Clone, Copy)]
     #[repr(u8)]
     pub enum Opcode {
-        TEMP = 0,
+        Tmp = 0,
     }
 
     impl From<u8> for Opcode {
@@ -109,7 +109,7 @@ pub mod mull {
 #[derive(Clone, Copy)]
 #[repr(u8)]
 pub enum Cond {
-    TEST = 0,
+    Test = 0,
 }
 
 impl From<u8> for Cond {

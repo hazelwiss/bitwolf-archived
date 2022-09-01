@@ -4,30 +4,37 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-nds-core = ["dep:nds-core"]
+nds-core = ["dep:nds"]
 core-all = ["nds-core"]
 
-log = ["nds-core?/log"]
+nds-debug-views = ["nds?/debug-views"]
+debug-all = ["nds-debug-views"]
 
-default = ["core-all", "log"]
+nds-log = ["nds?/log"]
+log-all = ["nds-log"]
+
+log = []
+debug-views = []
+
+default = [
+    "log",
+    "debug-views",
+    "core-all", 
+    "debug-all", 
+    "log-all"]
 
 [dependencies]
 # cores
-nds-core = { path = "../../core/nds-core", default_features = false, optional = true } 
+nds = { path = "cores/nds", default_features = false, optional = true }
+
+# common
+common = { path = "common" }
+
+#gui
+gui = { path = "gui" }
 
 # util
 util = { path = "../../util" } 
-
-# imgui
-imgui = "0.8.0"
-imgui-wgpu = "0.20.0"
-imgui-winit-support = { version = "0.8.2", default_features = false, features = ["winit-26"] }
-
-# wgpu
-wgpu = "0.13.0"
-
-# winit
-winit = "0.26.0"
 
 # pollster, for awaiting async functions
 pollster = "0.2.5"

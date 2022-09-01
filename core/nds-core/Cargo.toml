@@ -5,6 +5,7 @@ edition = "2021"
 
 [features]
 log = []
+debug = []
 
 [dependencies]
 core-util = { path = "../core-util" }

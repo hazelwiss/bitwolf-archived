@@ -1,9 +1,7 @@
 pub trait Engine {
-    type EngineData: Default;
-}
+    type ARM9Data;
+    type ARM7Data;
+    type GlobalData;
 
-pub struct Interpreter;
-
-impl Engine for Interpreter {
-    type EngineData = ();
+    fn into_data() -> (Self::ARM9Data, Self::ARM7Data, Self::GlobalData);
 }

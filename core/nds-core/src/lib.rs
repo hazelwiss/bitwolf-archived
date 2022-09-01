@@ -2,7 +2,7 @@
 
 pub mod bus;
 pub mod core;
-#[cfg(debug_assertions)]
+#[cfg(feature = "debug")]
 pub mod debug;
 pub mod engine;
 pub mod interpreter;

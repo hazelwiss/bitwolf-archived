@@ -3,3 +3,4 @@ imgui.*
 .vscode
 /cachegrind*
 /callgrind*
+run.sh

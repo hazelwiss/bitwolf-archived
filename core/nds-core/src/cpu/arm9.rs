@@ -5,7 +5,7 @@ use crate::engine::Engine;
 use util::Logger;
 
 pub struct ARM9<E: Engine> {
-    pub(crate) engine_data: E::EngineData,
+    pub(crate) arm9_data: E::ARM9Data,
     #[cfg(feature = "log")]
     pub(crate) logger: Logger,
 }
