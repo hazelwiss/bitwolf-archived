@@ -1,3 +1,6 @@
+#[cfg(feature = "nds-core")]
+pub mod nds;
+
 use std::fmt::Display;
 
 #[derive(Copy, Clone)]
@@ -15,7 +18,7 @@ impl Display for CoreType {
 
 pub enum Core {
     None,
-    Core(Box<dyn common::CoreFrontend>),
+    Core(Box<dyn crate::common::CoreFrontend>),
 }
 
 impl Core {

@@ -18,13 +18,13 @@ fn dump_to_tokens(dump: Dump, unsafe_impl: bool) -> proc_macro2::TokenStream {
     let ty = dump.ty;
     let val = if unsafe_impl {
         quote!({
-            ::std::ptr::addr_of!((*ptr).#name) as *const #ty
+            ::core::ptr::addr_of!((*ptr).#name) as *const #ty
         })
     } else {
         quote!(&self.#name)
     };
     let expr = if dump.str_cast {
-        quote!(::std::ffi::CStr::from_ptr(#val as *const _ as *const i8).to_str().unwrap())
+        quote!(::core::ffi::CStr::from_ptr(#val as *const _ as *const i8).to_str().unwrap())
     } else {
         quote!(#val)
     };
@@ -35,13 +35,13 @@ fn dump_to_tokens(dump: Dump, unsafe_impl: bool) -> proc_macro2::TokenStream {
     };
     let printable = quote! {
         {
-            let mut printable = ::std::string::String::new();
+            let mut printable = ::alloc::string::String::new();
             let mut lines = #initial_expr;
             if lines.len() == 1 {
-                printable = format!("{}{}", lines.pop().unwrap_unchecked().trim(), util::dumpable::__private::PAD_STR);
+                printable = ::alloc::format!("{}{}", lines.pop().unwrap_unchecked().trim(), util::dumpable::__private::PAD_STR);
             } else{
                 for line in lines{
-                    printable = format!("{}\n{}", printable, line);
+                    printable = ::alloc::format!("{}\n{}", printable, line);
                 }
             }
             printable
@@ -49,13 +49,13 @@ fn dump_to_tokens(dump: Dump, unsafe_impl: bool) -> proc_macro2::TokenStream {
     };
     let pad = quote!({
         let pad_str = ::util::dumpable::__private::PAD_STR;
-        let mut padding = ::std::string::String::new();
+        let mut padding = ::alloc::string::String::new();
         for _ in 0..depth {
             padding.push_str(pad_str);
         }
         padding
     });
-    quote!(format!(#str, #pad, #printable))
+    quote!(::alloc::format!(#str, #pad, #printable))
 }
 
 /// # Custom attributes:
@@ -119,24 +119,24 @@ fn dump_derive<const UNSAFE: bool>(ts: proc_macro::TokenStream) -> proc_macro::T
         }
         let struct_ident = &parsed.ident;
         let dump_impl = quote! {
-            format!(
+            ::alloc::format!(
                 #brackets,
                 #(#tokens),*
             )
         };
         let dump_lines_impl = quote! {
-                let mut vec = vec![];
+                let mut vec = ::alloc::vec![];
                 #(vec.push(#tokens));*;
                 vec
         };
         let impl_quote = if UNSAFE {
             quote!(
                 unsafe impl UnsafeDumpString for #struct_ident {
-                    unsafe fn dump(ptr: *const Self, depth: usize) -> ::std::string::String {
+                    unsafe fn dump(ptr: *const Self, depth: usize) -> ::alloc::string::String {
                         #dump_impl
                     }
 
-                    unsafe fn dump_as_lines(ptr: *const Self, depth: usize) -> ::std::vec::Vec<::std::string::String> {
+                    unsafe fn dump_as_lines(ptr: *const Self, depth: usize) -> ::alloc::vec::Vec<::alloc::string::String> {
                         #dump_lines_impl
                     }
                 }
@@ -144,11 +144,11 @@ fn dump_derive<const UNSAFE: bool>(ts: proc_macro::TokenStream) -> proc_macro::T
         } else {
             quote!(
                 impl DumpString for #struct_ident {
-                    fn dump(&self, depth: usize) -> ::std::string::String {
+                    fn dump(&self, depth: usize) -> ::alloc::string::String {
                         #dump_impl
                     }
 
-                    fn dump_as_lines(&self, depth: usize) -> ::std::vec::Vec<::std::string::String> {
+                    fn dump_as_lines(&self, depth: usize) -> ::alloc::vec::Vec<::alloc::string::String> {
                         #dump_lines_impl
                     }
                 }

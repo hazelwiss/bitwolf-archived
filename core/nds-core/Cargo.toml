@@ -12,3 +12,6 @@ core-util = { path = "../core-util" }
 util = { path = "../../util" }
 bitmatch-proc = { git = "https://github.com/Kim-Dewelski/bitmatch-proc" }
 proc-bitfield = { version = "0.1.1", features = ["nightly"] }
+
+[build-dependencies]
+bitmatch-proc = { git = "https://github.com/Kim-Dewelski/bitmatch-proc" }

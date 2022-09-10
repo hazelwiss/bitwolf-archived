@@ -5,9 +5,6 @@ members = [
     "core/*",
     # emulator frontend files.
     "frontend/desktop",
-    "frontend/desktop/common",
-    "frontend/desktop/gui",
-    "frontend/desktop/cores/*",
     # utility.
     "util",
     "util/macros",

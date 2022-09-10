@@ -1,4 +1,9 @@
+#![no_std]
 #![allow(unused)]
+#![feature(inline_const)]
+#![feature(const_maybe_uninit_zeroed)]
+
+extern crate alloc;
 
 pub mod bus;
 pub mod core;

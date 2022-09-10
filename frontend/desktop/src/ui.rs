@@ -1,12 +1,19 @@
+pub mod gfx;
+
+mod window_loop;
+
+use crate::common::CoreFrontend;
+use crate::cores;
 use crate::{
     cores::{Core, CoreType},
     Ctx,
 };
-use common::CoreFrontend;
 #[cfg(feature = "nds-core")]
-use gui::{imgui::StyleColor, window_loop::ImguiCtx};
+use imgui::StyleColor;
+use imgui::Ui;
 use rfd::FileHandle;
 use std::path::{Path, PathBuf};
+use util::Logger;
 
 struct RFDFilter {
     name: &'static str,
@@ -64,19 +71,17 @@ fn open(ctx: &mut Ctx, core_type: Option<CoreType>) -> Option<(Vec<u8>, CoreType
         Some((pollster::block_on(file.read()), core_type))
     } else {
         #[cfg(feature = "log")]
-        ctx.logger
-            .warning(format!("Unable to load file from dialogue"));
+        ctx.logger.warning("Unable to load file from dialogue");
         None
     }
 }
 
-pub fn main_menu(
-    gui: &ImguiCtx,
+fn main_menu(
+    ui: &Ui,
     ctx: &mut Ctx,
     core: &mut Core,
     spawn_core: &mut Option<(Vec<u8>, CoreType)>,
 ) {
-    let ui = gui.ui();
     ui.main_menu_bar(|| {
         let _style_col = ui.push_style_color(StyleColor::Button, [0.0, 0.0, 0.0, 0.0]);
         // File submenu.
@@ -145,7 +150,7 @@ pub fn main_menu(
             Core::Core(core) => {
                 ui.menu("Emulation", || {});
                 #[cfg(feature = "debug-views")]
-                ui.menu("Debug", || core.debug_views_menu(gui));
+                ui.menu("Debug", || core.debug_views_menu(ui));
             }
         }
         // Config subwindow.
@@ -159,20 +164,75 @@ pub fn main_menu(
     });
 }
 
-pub(crate) fn ui(imgui_ctx: &mut ImguiCtx, ctx: &mut Ctx, core: &mut Box<dyn CoreFrontend>) {
-    // Draw debug panels.
-    #[cfg(feature = "debug-views")]
-    core.debug_views(imgui_ctx);
+pub fn main() {
+    let mut core = Core::None;
+    let mut ctx = Ctx {
+        previously_loaded_files: vec![],
+        config_window_active: false,
+        help_window_active: false,
+        #[cfg(feature = "log")]
+        logger: Logger::default(),
+        fullscreen: false,
+    };
+    let window_loop = window_loop::Builder {
+        gfx_builder: gfx::Builder {},
+        clear_colour: wgpu::Color {
+            r: 0.0,
+            g: 0.0,
+            b: 0.0,
+            a: 0.0,
+        },
+    };
+    window_loop.run(move |win, ui, control_flow| {
+        let mut spawn_core = None;
+        main_menu(ui, &mut ctx, &mut core, &mut spawn_core);
+        {
+            // Draw config subwindow.
+            if ctx.config_window_active {
+                imgui::Window::new("Configurations")
+                    .opened(&mut ctx.config_window_active)
+                    .build(ui, || {
+                        ui.text("Todo!");
+                    });
+            }
 
-    let ui = imgui_ctx.ui();
+            // Draw help subwindow.
+            if ctx.help_window_active {
+                imgui::Window::new("Help")
+                    .opened(&mut ctx.help_window_active)
+                    .build(ui, || {
+                        ui.text("Todo!");
+                    });
+            }
+        }
 
-    if cfg!(debug_assertions) && !ctx.fullscreen {
-        // subwindow display.
-        gui::imgui::Window::new("Display").build(ui, || {
-            ui.text("test!");
-        });
-    } else {
-        // fullscreen display.
-        todo!()
-    }
+        if let Some((rom, ct)) = spawn_core {
+            fn b<T>(val: T) -> Box<T> {
+                Box::new(val)
+            }
+            let logger = &ctx.logger;
+            core = Core::Core(match ct {
+                CoreType::Nds => b(cores::nds::new(&mut win.gfx, rom, logger)),
+            });
+        }
+
+        match &mut core {
+            Core::Core(core) => {
+                core.sync_core();
+                // Draw debug panels.
+                #[cfg(feature = "debug-views")]
+                core.debug_views(ui);
+                if cfg!(debug_assertions) && !ctx.fullscreen {
+                    // subwindow display.
+                    imgui::Window::new("Display").build(ui, || {
+                        ui.text("test!");
+                    });
+                } else {
+                    // fullscreen display.
+                    todo!()
+                }
+            }
+            Core::None => {}
+        }
+    });
 }

@@ -4,34 +4,28 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-nds-core = ["dep:nds"]
+nds-core = ["dep:nds-core"]
 core-all = ["nds-core"]
 
-nds-debug-views = ["nds?/debug-views"]
-debug-all = ["nds-debug-views"]
+debug-views = [
+    "nds-core?/debug"
+]
+debug-all = ["debug-views"]
 
-nds-log = ["nds?/log"]
-log-all = ["nds-log"]
-
-log = []
-debug-views = []
+log = [
+    "nds-core?/log"
+]
 
 default = [
     "log",
     "debug-views",
     "core-all", 
-    "debug-all", 
-    "log-all"]
+    "debug-all"
+]
 
 [dependencies]
 # cores
-nds = { path = "cores/nds", default_features = false, optional = true }
-
-# common
-common = { path = "common" }
-
-#gui
-gui = { path = "gui" }
+nds-core = { path = "../../core/nds-core", default-features = false, optional = true }
 
 # util
 util = { path = "../../util" } 
@@ -44,3 +38,14 @@ rfd = "0.8.4"
 
 # asyncrhonous library for message queues
 crossbeam = "0.8.2"
+
+# imgui
+imgui = {version = "0.8.2", features = ["tables-api"] }
+imgui-wgpu = { git = "https://github.com/Yatekii/imgui-wgpu-rs", rev = "a6d76b4dadc895e395be4bdfebe362e55c62be3b" }
+imgui-winit-support = { version = "0.8", default-features = false, features = ["winit-26"] }
+
+# winit
+winit = { version = "0.26" }
+
+# wgpu
+wgpu = { version = "0.13" }

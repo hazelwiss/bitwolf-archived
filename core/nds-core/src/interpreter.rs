@@ -1,9 +1,6 @@
 pub mod arm9;
 
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc,
-};
+use core::sync::atomic::{AtomicBool, Ordering};
 
 pub struct Interpreter;
 
