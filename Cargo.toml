@@ -1,2 +1,11 @@
 [workspace]
-members = []
+members = [
+    # Desktop frontend.
+    "frontend/desktop",
+    # Util.
+    "util",
+    # Core utilities.
+    "cores/util/*",
+    # Nintendo DS.
+    "cores/core-nds",
+]
