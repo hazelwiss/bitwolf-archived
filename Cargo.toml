@@ -1,11 +1,12 @@
 [workspace]
 members = [
-    # Desktop frontend.
-    "frontend/desktop",
+    # Frontend code.
+    "frontend/*",
     # Util.
     "util",
     # Core utilities.
     "cores/util/*",
-    # Nintendo DS.
+    # Nintendo DS core.
     "cores/core-nds",
 ]
+resolver = "2"

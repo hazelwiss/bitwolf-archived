@@ -1,32 +1,31 @@
 pub struct Processor {}
 
-#[allow(clippy::enum_variant_names)]
 pub enum DSPMulTy {
-    SMUL { x: bool },
-    SMLA { x: bool },
-    SMULW,
-    SMLAW,
-    SMLAL { x: bool },
+    Smul { x: bool },
+    Smla { x: bool },
+    Smulw,
+    Smlaw,
+    Smlal { x: bool },
 }
 
 #[allow(clippy::enum_variant_names)]
 pub enum DPOpcTy {
-    AND,
-    EOR,
-    SUB,
-    RSB,
-    ADD,
-    ADC,
-    SBC,
-    RSC,
-    TST,
-    TEQ,
-    CMP,
-    CMN,
-    ORR,
-    MOV,
-    BIC,
-    MVN,
+    And,
+    Eor,
+    Sub,
+    Rsb,
+    Add,
+    Adc,
+    Sbc,
+    Rsc,
+    Tst,
+    Teq,
+    Cmp,
+    Cmn,
+    Orr,
+    Mov,
+    Bic,
+    Mvn,
 }
 
 #[allow(clippy::enum_variant_names)]
@@ -234,16 +233,16 @@ impl Processor {
                     let y = bits & 0b100 != 0;
                     Instr::DspMul {
                         ty: match upper {
-                            0b00 => DSPMulTy::SMLA { x },
+                            0b00 => DSPMulTy::Smla { x },
                             0b01 => {
                                 if x {
-                                    DSPMulTy::SMULW
+                                    DSPMulTy::Smulw
                                 } else {
-                                    DSPMulTy::SMLAW
+                                    DSPMulTy::Smlaw
                                 }
                             }
-                            0b10 => DSPMulTy::SMLAL { x },
-                            0b11 => DSPMulTy::SMUL { x },
+                            0b10 => DSPMulTy::Smlal { x },
+                            0b11 => DSPMulTy::Smul { x },
                             _ => panic!("unreachable"),
                         },
                         y,
@@ -272,22 +271,22 @@ impl Processor {
             let opcode = {
                 use DPOpcTy::*;
                 match (instr >> 21) & 0xF {
-                    0b0000 => AND,
-                    0b0001 => EOR,
-                    0b0010 => SUB,
-                    0b0011 => RSB,
-                    0b0100 => ADD,
-                    0b0101 => ADC,
-                    0b0110 => SBC,
-                    0b0111 => RSC,
-                    0b1000 => TST,
-                    0b1001 => TEQ,
-                    0b1010 => CMP,
-                    0b1011 => CMN,
-                    0b1100 => ORR,
-                    0b1101 => MOV,
-                    0b1110 => BIC,
-                    0b1111 => MVN,
+                    0b0000 => And,
+                    0b0001 => Eor,
+                    0b0010 => Sub,
+                    0b0011 => Rsb,
+                    0b0100 => Add,
+                    0b0101 => Adc,
+                    0b0110 => Sbc,
+                    0b0111 => Rsc,
+                    0b1000 => Tst,
+                    0b1001 => Teq,
+                    0b1010 => Cmp,
+                    0b1011 => Cmn,
+                    0b1100 => Orr,
+                    0b1101 => Mov,
+                    0b1110 => Bic,
+                    0b1111 => Mvn,
                     _ => panic!("Unreachable"),
                 }
             };
