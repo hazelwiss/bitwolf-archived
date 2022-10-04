@@ -1,6 +1,4 @@
 [package]
-name = "common-core"
+name = "nds"
 version = "0.1.0"
 edition = "2021"
-
-

@@ -1,9 +1,8 @@
 mod debug_views;
 mod gfx;
 
-use crate::{cli::CliArgs, config, emu::EmuState};
-
 use self::gfx::{imgui_ctx::ImguiCtx, window::WindowGfx};
+use crate::{cli::CliArgs, config, emu::EmuState};
 use ::imgui::Ui;
 use std::time::Instant;
 use util::log::Logger;

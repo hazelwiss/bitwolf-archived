@@ -1,5 +1,3 @@
-extern crate core_nds as nds;
-
 mod cli;
 mod config;
 mod emu;

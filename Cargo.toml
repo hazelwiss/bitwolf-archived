@@ -4,9 +4,7 @@ members = [
     "frontend/*",
     # Util.
     "util",
-    # Core utilities.
-    "cores/util/*",
     # Nintendo DS core.
-    "cores/core-nds",
+    "core",
 ]
 resolver = "2"

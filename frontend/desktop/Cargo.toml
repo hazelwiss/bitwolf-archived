@@ -22,5 +22,5 @@ clap = {version = "4.0.9", features = ["derive"]}
 [dependencies.util]
 path = "../../util"
 
-[dependencies.core-nds]
-path = "../../cores/core-nds"
+[dependencies.nds]
+path = "../../core"

@@ -7,5 +7,8 @@
 #[macro_use]
 extern crate alloc;
 
+pub mod common;
 pub mod core;
+pub mod debug;
 pub mod hw;
+pub mod util;
