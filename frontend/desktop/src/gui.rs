@@ -1,131 +1,93 @@
-mod debug_views;
-mod gfx;
+pub mod gfx;
 
-use self::gfx::{imgui_ctx::ImguiCtx, window::WindowGfx};
-use crate::{cli::CliArgs, config, emu::EmuState};
+use crate::{
+    cli::CliArgs,
+    config,
+    debug_views::{DebugViews, DebugViewsBuilder},
+    emu::{self, SharedState},
+};
 use ::imgui::Ui;
-use std::time::Instant;
-use util::log::Logger;
+use anyhow::anyhow;
+use crossbeam_channel::{Receiver, TryRecvError};
+use gfx::Window;
+use std::{
+    fs,
+    path::PathBuf,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    thread::{self, JoinHandle},
+    time::Instant,
+};
 #[allow(unused)]
 use util::log::{self, info};
+use util::log::{error, Logger};
 use winit::{
-    dpi::PhysicalSize,
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
 
-struct GuiState {
-    window: WindowGfx,
-    imgui: ImguiCtx,
-    last_frame: Instant,
-    #[allow(unused)]
-    log: Logger,
-    debug_views: debug_views::DebugViews,
-    emu_state: EmuState,
-    config: config::GlobalConfig,
+struct EmuState {
+    shared_state: SharedState,
+    jhandle: JoinHandle<()>,
+    receiver: Receiver<emu::Message>,
 }
 
-impl GuiState {
-    fn run<T>(mut self, event_loop: EventLoop<T>) {
-        event_loop.run(move |event, _, flow| {
-            *flow = ControlFlow::Poll;
-            self.imgui
-                .platform
-                .handle_event(self.imgui.ctx.io_mut(), &self.window.window, &event);
-            match &event {
-                Event::WindowEvent { event, .. } => match event {
-                    WindowEvent::Resized(_) => self.resize_to_inner(),
-                    WindowEvent::CloseRequested => *flow = ControlFlow::Exit,
-                    #[allow(unused)]
-                    WindowEvent::MouseInput { state, button, .. } => {}
-                    #[allow(unused)]
-                    WindowEvent::KeyboardInput { input, .. } => {}
-                    _ => {}
-                },
-                Event::MainEventsCleared => self.window.request_redraw(),
-                Event::RedrawEventsCleared => {
-                    self.update_dela_time(Instant::now());
-                    self.draw()
-                }
-                Event::LoopDestroyed => *flow = ControlFlow::Exit,
-                _ => {}
-            }
-        });
+impl EmuState {
+    fn new(config: &config::GlobalConfig, log: Logger, rom: PathBuf) -> anyhow::Result<Self> {
+        let err = anyhow!("failed to load rom with path {rom:?}");
+        let core = bitwolf_core::CoreBuilder::new()
+            .rom(if let Ok(rom) = fs::read(rom) {
+                rom
+            } else {
+                return Err(err);
+            })
+            .build();
+
+        let (sender, receiver) = crossbeam_channel::bounded(25);
+
+        let shared_state = SharedState {
+            running: Arc::new(AtomicBool::new(true)),
+        };
+        let emu_log = log.clone();
+        let emu_shared_state = shared_state.clone();
+        let jhandle = thread::Builder::new()
+            .name("bitwolf-core".to_string())
+            .spawn(move || {
+                emu::run(core, emu_log, emu_shared_state, sender);
+            })
+            .expect("failed to start core thread.");
+        Ok(Self {
+            shared_state,
+            jhandle,
+            receiver,
+        })
     }
 
-    fn draw(&mut self) {
-        let Self {
-            window,
-            imgui,
-            debug_views,
-            ..
-        } = self;
-        let gfx = &window.gfx;
-        let frame = gfx
-            .surface
-            .get_current_texture()
-            .expect("unabel to create frame");
-
-        let mut encoder = gfx
-            .device
-            .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-
-        let view = frame
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-        drop(gfx);
-        {
-            let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: None,
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(window.clear_colour),
-                        store: true,
-                    },
-                })],
-                depth_stencil_attachment: None,
-            });
-            imgui
-                .platform
-                .prepare_frame(imgui.ctx.io_mut(), &window)
-                .expect("Failed to prepare frame");
-            let ui = imgui.ctx.frame();
-            ui_update(window, debug_views, &ui);
-            imgui
-                .renderer
-                .render(
-                    ui.render(),
-                    &window.gfx.queue,
-                    &window.gfx.device,
-                    &mut rpass,
-                )
-                .expect("Failed to render imgui frame.");
-        }
-        window.gfx.queue.submit(Some(encoder.finish()));
-        frame.present()
+    fn stop(&self) {
+        self.shared_state.running.store(false, Ordering::Relaxed);
     }
 
-    fn update_dela_time(&mut self, instant: Instant) {
-        self.imgui
-            .ctx
-            .io_mut()
-            .update_delta_time(instant - self.last_frame);
-        self.last_frame = instant;
+    fn invalidate(self) {
+        self.stop();
+        self.jhandle
+            .join()
+            .expect("unable to join emulator thread.");
     }
+}
 
-    fn resize_to_inner(&mut self) {
-        let size = self.window.inner_size();
-        self.resize(size);
-    }
+struct GuiState {
+    window: Window,
+    last_frame: Instant,
 
-    fn resize(&mut self, size: PhysicalSize<u32>) {
-        if size.width > 0 && size.height > 0 {
-            self.window.update_size(size);
-        }
-    }
+    log: Logger,
+    debug_views: DebugViews,
+
+    emu_state: Option<EmuState>,
+
+    config: config::GlobalConfig,
 }
 
 pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
@@ -134,40 +96,105 @@ pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
     } else {
         config::global_config()
     };
-    let emu_state = if let Some(path) = cli_args.rom {
-        EmuState::new_with_rom(log.clone(), &config.emu, &path)
+
+    let debug_views = DebugViewsBuilder::default().build();
+
+    let emu_state = if let Some(rom) = cli_args.rom {
+        match EmuState::new(&config, log.clone(), rom) {
+            Ok(state) => Some(state),
+            Err(e) => {
+                error!(
+                    log,
+                    "failed to create emulator state with command line argument. Error:\n{e}"
+                );
+                None
+            }
+        }
     } else {
-        EmuState::new(log.clone())
+        None
     };
 
     let event_loop = EventLoop::new();
     let window = WindowBuilder::new()
-        .with_title("Bitworlf")
+        .with_title("Bitwolf")
         .build(&event_loop)
         .expect("failure to build winit window");
-    let mut window = WindowGfx::new(window, wgpu::Color::BLACK);
-
-    let imgui = ImguiCtx::new(&mut window, None);
+    let window = Window::new(window, wgpu::Color::BLACK);
     let last_frame = Instant::now();
 
-    let gui_state = GuiState {
+    let mut gui = GuiState {
         window,
-        imgui,
         last_frame,
         log,
-        debug_views: Default::default(),
+        debug_views,
         emu_state,
         config,
     };
 
-    gui_state.run(event_loop);
+    event_loop.run(move |event, _, flow| {
+        *flow = ControlFlow::Poll;
+        match &event {
+            Event::WindowEvent { event, .. } => match event {
+                #[allow(unused)]
+                WindowEvent::MouseInput { state, button, .. } => {}
+                #[allow(unused)]
+                WindowEvent::KeyboardInput { input, .. } => {}
+                _ => {}
+            },
+            Event::MainEventsCleared => gui.window.request_redraw(),
+            Event::RedrawEventsCleared => {
+                let now = Instant::now();
+                gui.window
+                    .imgui
+                    .io_mut()
+                    .update_delta_time(now - gui.last_frame);
+                gui.last_frame = now;
+                gui.window.draw(|ui, gfx| {
+                    ui_update(&gui.log, gfx, &mut gui.emu_state, &mut gui.debug_views, ui);
+                });
+            }
+            Event::LoopDestroyed => *flow = ControlFlow::Exit,
+            _ => {}
+        }
+        gui.window.handle_event(event, flow);
+    });
 }
 
-fn ui_update(window: &mut WindowGfx, debug_views: &mut debug_views::DebugViews, ui: &Ui) {
+#[allow(clippy::too_many_arguments)]
+#[inline(always)]
+fn ui_update(
+    log: &Logger,
+    gfx: &mut gfx::GfxContext,
+    emu_state: &mut Option<EmuState>,
+    views: &mut DebugViews,
+    ui: &Ui,
+) {
     ui.main_menu_bar(|| {
         ui.menu("file", || {});
         ui.menu("options", || {});
-        debug_views.menu(ui);
+        if emu_state.is_some() {
+            views.menu(ui);
+        }
     });
-    debug_views.draw(window, ui);
+
+    if let Some(state) = emu_state {
+        let EmuState {
+            shared_state,
+            jhandle,
+            receiver,
+        } = state;
+
+        views.draw(gfx, ui);
+
+        match receiver.try_recv() {
+            Ok(msg) => match msg {
+                emu::Message::DebugView(msg) => views.update_state(msg),
+            },
+            Err(TryRecvError::Empty) => {}
+            Err(e) => error!(
+                log,
+                "failing to receive message from backend with error: {e:?}"
+            ),
+        }
+    }
 }

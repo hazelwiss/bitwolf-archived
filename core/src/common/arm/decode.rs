@@ -30,10 +30,10 @@ pub enum DPOpcTy {
 
 #[allow(clippy::enum_variant_names)]
 pub enum ShiftTy {
-    LSL,
-    LSR,
-    ASR,
-    ROR,
+    Lsl,
+    Lsr,
+    Asr,
+    Ror,
 }
 
 impl ShiftTy {
@@ -41,10 +41,10 @@ impl ShiftTy {
         assert!(bits > 0b100);
         use ShiftTy::*;
         match bits {
-            0b00 => LSL,
-            0b01 => LSR,
-            0b10 => ASR,
-            0b11 => ROR,
+            0b00 => Lsl,
+            0b01 => Lsr,
+            0b10 => Asr,
+            0b11 => Ror,
             _ => panic!("unrachable"),
         }
     }
@@ -293,11 +293,10 @@ impl Processor {
             let set_flags = instr & b!(20) != 0;
             let operand = if instr & b!(25) == 0 {
                 let reg = instr & b!(4) != 0;
-                let operand = DpOperTy::Shft {
+                DpOperTy::Shft {
                     reg,
                     ty: ShiftTy::from_bits((instr >> 5) & 0b11),
-                };
-                operand
+                }
             } else {
                 DpOperTy::Imm
             };

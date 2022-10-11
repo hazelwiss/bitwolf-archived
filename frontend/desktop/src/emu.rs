@@ -1,45 +1,26 @@
-mod core;
-
+use crate::debug_views::DebugViewMsg;
+use crossbeam_channel::Sender;
+use std::sync::{atomic::AtomicBool, Arc};
 use util::log::Logger;
 
-use crate::config::EmuConfig;
-use std::{fs, path::Path};
-
-#[allow(dead_code)]
-pub struct EmuState {
-    core: Option<core::CoreRunner>,
-    log: Logger,
+pub enum Message {
+    DebugView(DebugViewMsg),
 }
 
 #[allow(dead_code)]
-impl EmuState {
-    pub fn new(log: Logger) -> Self {
-        Self { core: None, log }
-    }
+#[derive(Clone)]
+pub struct SharedState {
+    pub running: Arc<AtomicBool>,
+}
 
-    pub fn new_with_rom(log: Logger, config: &EmuConfig, rom: &Path) -> Self {
-        let mut new = Self::new(log);
-        new.reload(config, rom);
-        new
-    }
+unsafe impl Send for SharedState {}
+unsafe impl Sync for SharedState {}
 
-    pub fn reset(&mut self) {
-        *self = Self::new(self.log.clone());
-    }
-
-    pub fn reload(&mut self, config: &EmuConfig, rom: &Path) {
-        self.kill_core();
-        self.spawn_core(config, rom);
-    }
-
-    fn spawn_core(&mut self, config: &EmuConfig, rom: &Path) {
-        match fs::read(rom) {
-            Ok(rom) => self.core = Some(core::CoreRunner::spawn(self.log.clone(), config, rom)),
-            Err(err) => panic!("{err:?}"),
-        }
-    }
-
-    fn kill_core(&mut self) {
-        self.core.take();
-    }
+pub(super) fn run(
+    core: bitwolf_core::Core,
+    logger: Logger,
+    shared_state: SharedState,
+    msg_sender: Sender<Message>,
+) {
+    loop {}
 }

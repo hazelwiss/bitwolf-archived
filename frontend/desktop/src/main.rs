@@ -1,5 +1,7 @@
 mod cli;
+mod common;
 mod config;
+mod debug_views;
 mod emu;
 mod gui;
 mod log;

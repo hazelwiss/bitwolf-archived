@@ -3,12 +3,18 @@
 #![allow(dead_code)]
 // -----------------
 
-#[allow(unused)]
+#[allow(unused_imports)]
 #[macro_use]
 extern crate alloc;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate util;
+extern crate self as bitwolf_core;
 
-pub mod common;
 pub mod core;
 pub mod debug;
-pub mod hw;
-pub mod util;
+
+mod common;
+mod hw;
+
+pub use crate::core::{Core, CoreBuilder};
