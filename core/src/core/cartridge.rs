@@ -39,8 +39,8 @@ macro_rules! header {
 }
 
 header! {
-    arm9_rom_offset, 0x020, 4;
-    arm9_entry_address, 0x024, 4;
-    arm9_ram_address, 0x028, 4;
+    arm9_rom_adr, 0x020, 4;
+    arm9_entry, 0x024, 4;
+    arm9_load_adr, 0x028, 4;
     arm9_size, 0x02C, 4;
 }

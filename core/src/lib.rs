@@ -1,4 +1,7 @@
 #![no_std]
+#![feature(int_roundings)]
+#![allow(incomplete_features)]
+#![feature(adt_const_params)]
 // --- Temporary ---
 #![allow(dead_code)]
 // -----------------

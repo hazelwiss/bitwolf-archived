@@ -7,7 +7,7 @@ pub mod registers;
 use crate::{emu::FrontendMsg, gui::window::Window};
 use core::ops::{Deref, DerefMut};
 use crossbeam_channel::{Sender, TrySendError};
-use imgui::Ui;
+use imgui::{Io, Ui};
 use util::log::{warn, Logger};
 
 pub trait DebugView: Default {
@@ -20,11 +20,14 @@ pub trait DebugView: Default {
         global_state: &GlobalState,
         window: &mut Window,
         ui: &Ui,
+        io: &Io,
     );
+
+    fn has_menu_bar(&self) -> bool;
 
     fn on_change(&mut self, old: Self::State, new: &mut Self::State);
 
-    fn config(&self, state: &Self::State) -> Option<Self::Conf>;
+    fn config(&self) -> Option<Self::Conf>;
 }
 
 pub trait GlobalStateData: Default {
@@ -69,15 +72,15 @@ impl<T: DebugView> DerefMut for DebugViewHandle<T> {
 }
 
 macro_rules! debug_views {
-    (draw $global_state:expr, $window:expr, $ui:expr, $val:expr, $print:literal) => {
+    (draw $global_state:expr, $window:expr, $ui:expr, $io:expr, $val:expr, $print:literal) => {
         {
             let cur = &mut $val;
             let open = &mut cur.open;
             let view = &mut cur.view;
             let state = &mut cur.state;
             if *open{
-                imgui::Window::new($print).opened(open).build($ui, ||{
-                    view.draw(state, $global_state, $window, $ui);
+                imgui::Window::new($print).opened(open).menu_bar(view.has_menu_bar()).build($ui, ||{
+                    view.draw(state, $global_state, $window, $ui, $io);
                 });
             }
         }
@@ -85,7 +88,6 @@ macro_rules! debug_views {
     (
         $(data $da_ident:ident, $da_msg:ident, $da_ty:ty);*;
         $(update $up_ident:ident, $up_msg:ident, $up_print:literal, $up_ty:ty);*;
-        $(instance $in_ident:ident, $in_print:literal, $in_ty:ty);* $(;)?
     ) => {
         #[derive(Debug)]
         pub enum DebugViewMsg{
@@ -130,43 +132,17 @@ macro_rules! debug_views {
         }
 
         #[derive(Default)]
-        pub struct DebugViewsBuilder{
-            $(
-                pub $in_ident: <$in_ty as DebugView>::State,
-            ),*
-        }
-
-        impl DebugViewsBuilder{
-            pub fn build(self) -> DebugViews{
-                DebugViews{
-                    $(
-                        $in_ident: DebugViewHandle::from_state(self.$in_ident),
-                    )*
-                    $(
-                        $up_ident: Default::default(),
-                    )*
-                    global_state: GlobalState::default(),
-                }
-            }
-        }
-
         pub struct DebugViews {
             $(
                 $up_ident: DebugViewHandle<$up_ty>,
-            )*
-            $(
-                $in_ident: DebugViewHandle<$in_ty>,
             )*
             global_state: GlobalState,
         }
 
         impl DebugViews{
-            pub fn draw(&mut self, window: &mut Window, ui: &Ui){
+            pub fn draw(&mut self, window: &mut Window, ui: &Ui, io: &Io){
                 $(
-                    debug_views!(draw &self.global_state, window, ui, self.$up_ident, $up_print);
-                )*
-                $(
-                    debug_views!(draw &self.global_state, window, ui, self.$in_ident, $in_print);
+                    debug_views!(draw &self.global_state, window, ui, io, self.$up_ident, $up_print);
                 )*
             }
 
@@ -176,13 +152,6 @@ macro_rules! debug_views {
                         {
                             let cur = &mut self.$up_ident;
                             let name = $up_print;
-                            ui.checkbox(name, &mut cur.open);
-                        }
-                    )*
-                    $(
-                        {
-                            let cur = &mut self.$in_ident;
-                            let name = $in_print;
                             ui.checkbox(name, &mut cur.open);
                         }
                     )*
@@ -217,7 +186,7 @@ macro_rules! debug_views {
                         let cur = &self.$up_ident;
                         let state = &cur.state;
                         let view = &cur.view;
-                        if let Some(msg) = view.config(state){
+                        if let Some(msg) = view.config(){
                             match sender.try_send(FrontendMsg::DebugView($up_msg (msg))){
                                 Ok(_) => {},
                                 Err(TrySendError::Full(msg)) => warn!(log, "frontend to backend message queue is full! discarding msg: {msg:?}"),
@@ -234,5 +203,5 @@ macro_rules! debug_views {
 debug_views! {
     data registers, Registers, registers::Registers;
     update disassembly_view, DisassemblyView, "disassmebly-view", disassembly::DVDisasm;
-    instance cartridge_view, "cartridge-view", cartridge::DVCartridge;
+    update cartridge_view, Cartridge, "cartridge-view", cartridge::DVCartridge;
 }

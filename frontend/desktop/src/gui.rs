@@ -4,12 +4,13 @@ use self::window::WindowBuilder;
 use crate::{
     cli::CliArgs,
     config,
-    debug_views::{self, DebugViews, DebugViewsBuilder},
+    debug_views::{self, DebugViews},
     emu::{self, SharedState},
 };
 use ::imgui::Ui;
 use anyhow::anyhow;
 use crossbeam_channel::{Receiver, Sender, TryRecvError};
+use imgui::Io;
 use std::{
     fs,
     path::PathBuf,
@@ -23,6 +24,8 @@ use std::{
 use util::log::{self, info};
 use util::log::{error, Logger};
 
+const CHANNEL_SIZE: usize = 32;
+
 struct EmuState {
     shared_state: SharedState,
     jhandle: JoinHandle<()>,
@@ -31,30 +34,18 @@ struct EmuState {
 }
 
 impl EmuState {
-    fn new(
-        config: &config::GlobalConfig,
-        debug_views: &mut DebugViews,
-        log: Logger,
-        rom: PathBuf,
-    ) -> anyhow::Result<Self> {
+    fn new(config: &config::GlobalConfig, log: Logger, rom: PathBuf) -> anyhow::Result<Self> {
         let err = anyhow!("failed to load rom with path {rom:?}");
-        let core = bitwolf_core::CoreBuilder::new()
+        let core_builder = bitwolf_core::CoreBuilder::default()
             .rom(if let Ok(rom) = fs::read(rom) {
                 rom
             } else {
                 return Err(err);
             })
-            .build();
+            .log(log.clone());
 
-        *debug_views = DebugViewsBuilder {
-            cartridge_view: debug_views::cartridge::State {
-                cartridge_header: bitwolf_core::debug::cartridge_info::cartridge_header(&core),
-            },
-        }
-        .build();
-
-        let (emu_sender, fe_receiver) = crossbeam_channel::bounded(25);
-        let (fe_sender, emu_receiver) = crossbeam_channel::bounded(25);
+        let (emu_sender, fe_receiver) = crossbeam_channel::bounded(CHANNEL_SIZE);
+        let (fe_sender, emu_receiver) = crossbeam_channel::bounded(CHANNEL_SIZE);
 
         let shared_state = SharedState {
             running: Arc::new(AtomicBool::new(true)),
@@ -63,7 +54,15 @@ impl EmuState {
         let emu_shared_state = shared_state.clone();
         let jhandle = thread::Builder::new()
             .name("bitwolf-core".to_string())
-            .spawn(move || emu::run(core, log, emu_shared_state, emu_sender, emu_receiver))
+            .spawn(move || {
+                emu::run(
+                    core_builder,
+                    log,
+                    emu_shared_state,
+                    emu_sender,
+                    emu_receiver,
+                )
+            })
             .expect("failed to start core thread.");
         Ok(Self {
             shared_state,
@@ -101,10 +100,10 @@ pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
         config::global_config()
     };
 
-    let mut debug_views = DebugViewsBuilder::default().build();
+    let mut debug_views = DebugViews::default();
 
     let emu_state = if let Some(rom) = cli_args.rom {
-        match EmuState::new(&config, &mut debug_views, log.clone(), rom) {
+        match EmuState::new(&config, log.clone(), rom) {
             Ok(state) => Some(state),
             Err(e) => {
                 error!(
@@ -118,7 +117,7 @@ pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
         None
     };
 
-    let mut gui = GuiState {
+    let gui = GuiState {
         log,
         views: debug_views,
         emu_state,
@@ -148,22 +147,22 @@ pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
 
     WindowBuilder {
         window: window::Window::new(&mut imgui, window, wgpu::Color::BLACK),
-        event_loop: event_loop,
+        event_loop,
         imgui,
     }
     .run(
         gui,
-        |_state, event, _window, _imgui| println!("event! {event:?}"),
-        move |state, ui, window| {
+        |_state, _event, _window, _imgui| {},
+        move |state, ui, io, window| {
             let _ = 0;
-            ui_update(window, state, ui)
+            ui_update(window, state, ui, io)
         },
     );
 }
 
 #[allow(clippy::too_many_arguments)]
 #[inline(always)]
-fn ui_update(window: &mut window::Window, state: &mut GuiState, ui: &Ui) {
+fn ui_update(window: &mut window::Window, state: &mut GuiState, ui: &Ui, io: &Io) {
     ui.main_menu_bar(|| {
         ui.menu("file", || {});
         ui.menu("options", || {});
@@ -180,15 +179,17 @@ fn ui_update(window: &mut window::Window, state: &mut GuiState, ui: &Ui) {
             sender,
         } = emu;
 
-        state.views.draw(window, ui);
+        state.views.draw(window, ui, io);
 
         state.views.config(&state.log, &emu.sender);
-        match receiver.try_recv() {
-            Ok(msg) => match msg {
-                emu::EmuMsg::DebugView(msg) => state.views.update_state(msg),
-            },
-            Err(TryRecvError::Empty) => {}
-            Err(e) => panic!("failing to receive message from backend with error: {e:?}"),
+        for _ in 0..CHANNEL_SIZE {
+            match receiver.try_recv() {
+                Ok(msg) => match msg {
+                    emu::EmuMsg::DebugView(msg) => state.views.update_state(msg),
+                },
+                Err(TryRecvError::Empty) => break,
+                Err(e) => panic!("failing to receive message from backend with error: {e:?}"),
+            }
         }
     }
 }

@@ -6,5 +6,11 @@ members = [
     "util",
     # Nintendo DS core.
     "core",
+    "core/arm-decode",
+    "core/arm-decode/macros",
 ]
 resolver = "2"
+
+[profile.dev]
+opt-level = 1
+overflow-checks = true

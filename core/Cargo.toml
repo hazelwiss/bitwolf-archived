@@ -5,3 +5,8 @@ edition = "2021"
 
 [dependencies]
 util = {path = "../util"}
+arm-decode = {path = "arm-decode"}
+
+[build-dependencies]
+arm-decode = {path = "arm-decode"}
+array-init = "2.0.1"

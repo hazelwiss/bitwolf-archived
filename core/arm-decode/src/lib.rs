@@ -1,6 +1,33 @@
+#![no_std]
+
+extern crate alloc;
+extern crate self as arm_decode;
+
+use alloc::{format, string::String};
+use macros::FullPrint;
+
+pub trait FullPrint {
+    fn full_print(&self) -> String;
+}
+
+macro_rules! full_print_impl {
+    ($($ty:ty),*) => {
+        $(
+            impl FullPrint for $ty {
+                fn full_print(&self) -> String {
+                    format!("{self:?}")
+                }
+            }
+        )*
+    };
+}
+
+full_print_impl!(bool);
+
 pub struct Processor {}
 
-pub enum DSPMulTy {
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum DspMulTy {
     Smul { x: bool },
     Smla { x: bool },
     Smulw,
@@ -9,7 +36,8 @@ pub enum DSPMulTy {
 }
 
 #[allow(clippy::enum_variant_names)]
-pub enum DPOpcTy {
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum DpOpcTy {
     And,
     Eor,
     Sub,
@@ -29,6 +57,7 @@ pub enum DPOpcTy {
 }
 
 #[allow(clippy::enum_variant_names)]
+#[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum ShiftTy {
     Lsl,
     Lsr,
@@ -37,8 +66,8 @@ pub enum ShiftTy {
 }
 
 impl ShiftTy {
-    fn from_bits(bits: u32) -> Self {
-        assert!(bits > 0b100);
+    const fn from_bits(bits: u32) -> Self {
+        assert!(bits < 0b100);
         use ShiftTy::*;
         match bits {
             0b00 => Lsl,
@@ -50,15 +79,16 @@ impl ShiftTy {
     }
 }
 
-pub enum TrasnfAdrTy {
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum TransfAdrTy {
     Post,
     Pre,
     Offset,
 }
 
-impl TrasnfAdrTy {
-    fn from_w_p(w: bool, p: bool) -> TrasnfAdrTy {
-        use TrasnfAdrTy::*;
+impl TransfAdrTy {
+    const fn from_w_p(w: bool, p: bool) -> TransfAdrTy {
+        use TransfAdrTy::*;
         if p {
             if w {
                 Pre
@@ -71,22 +101,25 @@ impl TrasnfAdrTy {
     }
 }
 
+#[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum DpOperTy {
     Imm,
-    Shft { reg: bool, ty: ShiftTy },
+    Shft { is_reg: bool, ty: ShiftTy },
 }
 
+#[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum TransferOperTy {
     Imm,
     Reg { shift: ShiftTy },
 }
 
+#[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum MulTy {
     Mul,
     Mull { unsigned: bool },
 }
 
-pub enum Instr {
+pub enum CondInstr {
     Msr {
         r: bool,
         imm: bool,
@@ -95,10 +128,8 @@ pub enum Instr {
         r: bool,
     },
     Bx,
-    Blx {
-        imm: bool,
-    },
-    Branch {
+    BlxReg,
+    B {
         link: bool,
     },
     Clz,
@@ -107,13 +138,13 @@ pub enum Instr {
         doubles: bool,
     },
     DspMul {
-        ty: DSPMulTy,
+        ty: DspMulTy,
         y: bool,
     },
     Bkpt,
     Dp {
         set_flags: bool,
-        opcode: DPOpcTy,
+        opcode: DpOpcTy,
         operand: DpOperTy,
     },
     Mul {
@@ -129,7 +160,7 @@ pub enum Instr {
         byte: bool,
         offset_add: bool,
         operand: TransferOperTy,
-        addressing: TrasnfAdrTy,
+        addressing: TransfAdrTy,
     },
     MiscTransfer {
         load: bool,
@@ -137,13 +168,13 @@ pub enum Instr {
         halfword: bool,
         offset_add: bool,
         imm: bool,
-        addressing: TrasnfAdrTy,
+        addressing: TransfAdrTy,
     },
     TransferDouble {
         store: bool,
         offset_add: bool,
         imm: bool,
-        addressing: TrasnfAdrTy,
+        addressing: TransfAdrTy,
     },
     TransferMult {
         load: bool,
@@ -160,6 +191,11 @@ pub enum Instr {
     Unpred,
 }
 
+pub enum UnCondInstr {
+    BlxImm,
+    Undef,
+}
+
 macro_rules! b {
     ($b:literal) => {
         (1 << $b)
@@ -167,7 +203,7 @@ macro_rules! b {
 }
 
 impl Processor {
-    pub fn decode_cond(instr: u32) -> Instr {
+    pub const fn decode_cond(&self, instr: u32) -> CondInstr {
         let instr = instr & 0x0FFFFFFF;
         // Miscellaneous instructions (3-3)
         if instr & 0x0F90_0010 == 0x0100_0000 || instr & 0x0F90_0090 == 0x0100_0010 {
@@ -183,82 +219,82 @@ impl Processor {
                         let r = upper & b!(1) != 0;
                         // Move status register to register.
                         if bits & 0b01 == 0 {
-                            Instr::Mrs { r }
+                            CondInstr::Mrs { r }
                         }
                         // Move register to status register.
                         else {
-                            Instr::Msr { r, imm: false }
+                            CondInstr::Msr { r, imm: false }
                         }
                     }
                     0b001 => {
                         // Branch/exchange instruction set.
                         if upper == 0b01 {
-                            Instr::Bx
+                            CondInstr::Bx
                         }
                         // Count leading zeros.
                         else if upper == 0b11 {
-                            Instr::Clz
+                            CondInstr::Clz
                         } else {
-                            Instr::Undef
+                            CondInstr::Undef
                         }
                     }
                     0b011 => {
                         // Branch and link/exchange instruction set.
                         if upper == 0b01 {
-                            Instr::Blx { imm: false }
+                            CondInstr::BlxReg
                         } else {
-                            Instr::Undef
+                            CondInstr::Undef
                         }
                     }
                     0b101 => {
                         // Enhanced DSP add/subtracts.
                         let sub = upper & b!(1) != 0;
                         let doubles = upper & b!(0) != 0;
-                        Instr::SatAddSub { sub, doubles }
+                        CondInstr::SatAddSub { sub, doubles }
                     }
                     0b111 => {
                         // Software Breakpoint.
                         if upper == 0b01 {
-                            Instr::Bkpt
+                            CondInstr::Bkpt
                         } else {
-                            Instr::Undef
+                            CondInstr::Undef
                         }
                     }
-                    _ => Instr::Undef,
+                    _ => CondInstr::Undef,
                 }
             } else {
                 // Enhanced DSP multiples.
                 if bits & 0b001 == 0 {
                     let x = bits & 0b010 != 0;
                     let y = bits & 0b100 != 0;
-                    Instr::DspMul {
+                    CondInstr::DspMul {
                         ty: match upper {
-                            0b00 => DSPMulTy::Smla { x },
+                            0b00 => DspMulTy::Smla { x },
                             0b01 => {
                                 if x {
-                                    DSPMulTy::Smulw
+                                    DspMulTy::Smulw
                                 } else {
-                                    DSPMulTy::Smlaw
+                                    DspMulTy::Smlaw
                                 }
                             }
-                            0b10 => DSPMulTy::Smlal { x },
-                            0b11 => DSPMulTy::Smul { x },
+                            0b10 => DspMulTy::Smlal { x },
+                            0b11 => DspMulTy::Smul { x },
                             _ => panic!("unreachable"),
                         },
                         y,
                     }
                 } else {
-                    Instr::Undef
+                    CondInstr::Undef
                 }
             }
         }
         // Undefined instruction.
         else if instr & 0x0FB0_0000 == 0x0300_0000 {
-            Instr::Undef
+            CondInstr::Undef
         }
         // Move immediate to status register
         else if instr & 0x0FB0_0000 == 0x0320_0000 {
-            Instr::Msr {
+            CondInstr::Msr {
                 r: instr & b!(22) != 0,
                 imm: true,
             }
@@ -269,7 +305,7 @@ impl Processor {
             || instr & 0x0E00_0000 == 0x0200_0000
         {
             let opcode = {
-                use DPOpcTy::*;
+                use DpOpcTy::*;
                 match (instr >> 21) & 0xF {
                     0b0000 => And,
                     0b0001 => Eor,
@@ -294,13 +330,13 @@ impl Processor {
             let operand = if instr & b!(25) == 0 {
                 let reg = instr & b!(4) != 0;
                 DpOperTy::Shft {
-                    reg,
+                    is_reg: reg,
                     ty: ShiftTy::from_bits((instr >> 5) & 0b11),
                 }
             } else {
                 DpOperTy::Imm
             };
-            Instr::Dp {
+            CondInstr::Dp {
                 set_flags,
                 opcode,
                 operand,
@@ -323,17 +359,17 @@ impl Processor {
                                 unsigned: instr & b!(22) != 0,
                             }
                         } else {
-                            return Instr::Undef;
+                            return CondInstr::Undef;
                         };
-                        Instr::Mul { acc, set_flags, ty }
+                        CondInstr::Mul { acc, set_flags, ty }
                     }
                     // Swap/swap byte.
                     else if bits & 0b11011 == 0b10000 {
-                        Instr::Swp {
+                        CondInstr::Swp {
                             byte: instr & b!(22) != 0,
                         }
                     } else {
-                        Instr::Undef
+                        CondInstr::Undef
                     }
                 }
                 _ if bits & 0b1001 == 0b1001 => {
@@ -343,12 +379,12 @@ impl Processor {
                     let w = instr & b!(21) != 0;
                     let p = instr & b!(24) != 0;
                     if p && w {
-                        return Instr::Unpred;
+                        return CondInstr::Unpred;
                     }
-                    let addressing = TrasnfAdrTy::from_w_p(w, p);
+                    let addressing = TransfAdrTy::from_w_p(w, p);
                     let bits = (instr >> 5) & 0b11;
                     if bits == 0b01 {
-                        Instr::MiscTransfer {
+                        CondInstr::MiscTransfer {
                             load: b20,
                             signed: false,
                             halfword: true,
@@ -361,7 +397,7 @@ impl Processor {
                         // Load signed halfword/byte.
                         if b20 {
                             let halfword = instr & b!(5) != 0;
-                            Instr::MiscTransfer {
+                            CondInstr::MiscTransfer {
                                 load: true,
                                 signed: true,
                                 halfword,
@@ -373,7 +409,7 @@ impl Processor {
                         // Load/store two words.
                         else {
                             let store = instr & b!(5) != 0;
-                            Instr::TransferDouble {
+                            CondInstr::TransferDouble {
                                 store,
                                 imm,
                                 offset_add,
@@ -381,18 +417,18 @@ impl Processor {
                             }
                         }
                     } else {
-                        Instr::Undef
+                        CondInstr::Undef
                     }
                 }
-                _ => Instr::Undef,
+                _ => CondInstr::Undef,
             }
         }
         // Load/store immediate/ offset
         else if instr & 0x0E00_0000 == 0x0400_0000 || instr & 0x0600_0010 == 0x0600_0000 {
             let w = instr & b!(21) != 0;
             let p = instr & b!(24) != 0;
-            let addressing = TrasnfAdrTy::from_w_p(w, p);
-            Instr::Transfer {
+            let addressing = TransfAdrTy::from_w_p(w, p);
+            CondInstr::Transfer {
                 load: instr & b!(20) != 0,
                 byte: instr & b!(22) != 0,
                 offset_add: instr & b!(23) != 0,
@@ -410,11 +446,11 @@ impl Processor {
         }
         // Undefined instruction
         else if instr & 0x0600_0010 == 0x0600_0010 {
-            Instr::Undef
+            CondInstr::Undef
         }
         // Load/store multiple
         else if instr & 0x0800_0000 == 0x0800_0000 {
-            Instr::TransferMult {
+            CondInstr::TransferMult {
                 load: instr & b!(20) != 0,
                 update_base: instr & b!(21) != 0,
                 upwards: instr & b!(23) != 0,
@@ -424,37 +460,45 @@ impl Processor {
         }
         // Branch and branch with link
         else if instr & 0x0E00_0000 == 0x0A00_0000 {
-            Instr::Branch {
+            CondInstr::B {
                 link: instr & b!(24) != 0,
             }
         }
         // Coprocessor load/store and double register transfers
         else if instr & 0x0E00_0000 == 0x0C00_0000 {
-            Instr::CPTransfer {}
+            CondInstr::CPTransfer {}
         }
         // Coprocessor data processing
         else if instr & 0x0F00_0010 == 0x0E00_0000 {
-            Instr::CPDp {}
+            CondInstr::CPDp {}
         }
         // Coprocessor register transfers
         else if instr & 0x0F00_0010 == 0x0E00_0010 {
-            Instr::CPRegTransfer {}
+            CondInstr::CPRegTransfer {}
         }
         // Software interrupt
         else if instr & 0x0F00_0000 == 0x0F00_0000 {
-            Instr::Swi
+            CondInstr::Swi
         }
         // Undefined
         else {
-            Instr::Undef
+            CondInstr::Undef
         }
     }
 
-    pub fn decode_uncond(instr: u32) -> Instr {
+    pub const fn decode_uncond(&self, instr: u32) -> UnCondInstr {
         if instr & 0x0E00_0000 == 0x0A00_0000 {
-            Instr::Blx { imm: true }
+            UnCondInstr::BlxImm
         } else {
-            Instr::Undef
+            UnCondInstr::Undef
         }
     }
+}
+
+pub const fn decode_cond(proc: Processor, instr: u32) -> CondInstr {
+    proc.decode_cond(instr)
+}
+
+pub const fn decode_uncond(proc: &Processor, instr: u32) -> UnCondInstr {
+    proc.decode_uncond(instr)
 }

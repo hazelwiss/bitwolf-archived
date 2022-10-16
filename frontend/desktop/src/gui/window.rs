@@ -137,7 +137,7 @@ impl<T: 'static> WindowBuilder<T> {
         self,
         mut state: S,
         mut f_event: impl FnMut(&mut S, Event<T>, &mut Window, &mut Imgui) + 'static,
-        mut f_frame: impl FnMut(&mut S, &imgui::Ui, &mut Window) + 'static,
+        mut f_frame: impl FnMut(&mut S, &imgui::Ui, &imgui::Io, &mut Window) + 'static,
     ) -> ! {
         let mut window = self.window;
         let mut imgui = self.imgui;
@@ -191,8 +191,13 @@ impl<T: 'static> WindowBuilder<T> {
                             .platform
                             .prepare_frame(imgui.io_mut(), &window.winit_window)
                             .expect("Failed to prepare frame");
+                        let io = unsafe {
+                            (imgui.io() as *const imgui::Io)
+                                .as_ref()
+                                .expect("unabel to unsafely borrow imgui IO")
+                        };
                         let ui = imgui.frame();
-                        f_frame(&mut state, &ui, &mut window);
+                        f_frame(&mut state, &ui, io, &mut window);
                         let frame = ui.render();
                         window
                             .gfx

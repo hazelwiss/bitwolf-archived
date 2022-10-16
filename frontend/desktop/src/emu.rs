@@ -28,13 +28,20 @@ unsafe impl Sync for SharedState {}
 
 #[allow(clippy::too_many_arguments)]
 pub fn run(
-    core: bitwolf_core::Core,
+    core_builder: bitwolf_core::CoreBuilder,
     log: Logger,
     shared_state: SharedState,
     msg_send: Sender<EmuMsg>,
     msg_recv: Receiver<FrontendMsg>,
 ) {
+    let mut core = core_builder.build();
     let mut dv_conf = debug_views::DebugViewsConfState::default();
+
+    let _ = msg_send.send(EmuMsg::DebugView(DVMsg::Cartridge(
+        debug_views::cartridge::State {
+            cartridge_header: debug::cartridge_info::cartridge_header(&core),
+        },
+    )));
 
     while shared_state.running.load(Ordering::Relaxed) {
         while let Ok(msg) = msg_recv.try_recv() {
@@ -47,15 +54,12 @@ pub fn run(
         let mut vec = vec![];
         for i in 0..conf.line_cnt {
             vec.push(debug::disassembly::disassemble_arm9(
-                &core,
+                &mut core,
                 start_adr.wrapping_add((4 * i) as u32),
             ))
         }
         let _ = msg_send.try_send(EmuMsg::DebugView(DVMsg::DisassemblyView(
-            debug_views::disassembly::State {
-                start_adr,
-                disasm: vec,
-            },
+            debug_views::disassembly::State { disasm: vec },
         )));
 
         let _ = msg_send.try_send(EmuMsg::DebugView(DVMsg::Registers(

@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate util;
+
 mod cli;
 mod common;
 mod config;

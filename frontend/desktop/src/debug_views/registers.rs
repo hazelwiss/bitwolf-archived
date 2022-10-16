@@ -20,15 +20,18 @@ impl Registers {
 impl GlobalStateData for Registers {
     type State = State;
 
+    #[inline]
     fn on_change(&mut self, old: Self::State) {
         let new = &self.state;
         self.pc_changed = new.pc != old.pc;
     }
 
+    #[inline]
     fn set_state(&mut self, new: Self::State) {
         self.state = new;
     }
 
+    #[inline]
     fn get_state(&self) -> Self::State {
         self.state.clone()
     }
