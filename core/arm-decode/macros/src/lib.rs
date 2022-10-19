@@ -1,9 +1,10 @@
 use proc_macro::TokenStream;
+use proc_macro2::Ident;
 use quote::quote;
-use syn::DeriveInput;
+use syn::{braced, punctuated::Punctuated, Attribute, DeriveInput, Path, Token};
 
 #[proc_macro_derive(FullPrint)]
-pub fn arm_decode(ts: TokenStream) -> TokenStream {
+pub fn full_print(ts: TokenStream) -> TokenStream {
     let parse = syn::parse::<DeriveInput>(ts).expect("failed to parse derive input");
     let DeriveInput {
         ident,
@@ -21,11 +22,14 @@ pub fn arm_decode(ts: TokenStream) -> TokenStream {
                 .map(|e| {
                     let ident = e.ident.expect("expected named field");
                     let ident_str = ident.to_string();
-                    quote!(format!("{}: {}", #ident_str, ::arm_decode::FullPrint::full_print(self.#ident)))
+                    quote!(format!("{}: {}", #ident_str, ::arm_decode::FullPrint::full_print(&self.#ident)))
                 })
                 .collect();
             let inputs: String = (0..fields.len()).map(|_| "{}, ").collect();
-            quote!(format!("{} {{ {} }}", #ident, format!(#inputs, #(#fields),*)))
+            let ident_str = ident.to_string();
+            let val = quote!(format!("{} {{ {} }}", #ident_str, format!(#inputs, #(#fields),*)))
+                .to_string();
+            quote!(format!("{} {{ {} }}", #ident_str, format!(#inputs, #(#fields),*)))
         }
         syn::Data::Enum(data) => {
             let variants: Vec<proc_macro2::TokenStream> = data
@@ -86,6 +90,170 @@ pub fn arm_decode(ts: TokenStream) -> TokenStream {
                 #print
             }
         }
+
+        impl ::core::fmt::Display for #ident #generics {
+            fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                f.write_str(&self.full_print())
+            }
+        }
     }
     .into()
+}
+
+#[proc_macro]
+#[allow(dead_code)]
+pub fn struct_enum(ts: TokenStream) -> TokenStream {
+    struct Field {
+        atrs: Vec<Attribute>,
+        ident: Ident,
+        colon_tk: Token![:],
+        ty: Path,
+    }
+
+    impl syn::parse::Parse for Field {
+        fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+            let atrs = Attribute::parse_outer(input)?;
+            let ident = input.parse()?;
+            let colon_tk = input.parse()?;
+            let ty = input.parse()?;
+            Ok(Self {
+                atrs,
+                ident,
+                colon_tk,
+                ty,
+            })
+        }
+    }
+
+    impl quote::ToTokens for Field {
+        fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+            let Self {
+                atrs,
+                ident,
+                colon_tk,
+                ty,
+            } = self;
+            tokens.extend(quote! {
+                #(#atrs)*
+                pub #ident #colon_tk #ty
+            });
+        }
+    }
+
+    struct Fields {
+        brace: syn::token::Brace,
+        fields: Punctuated<Field, Token![,]>,
+    }
+
+    impl syn::parse::Parse for Fields {
+        fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+            let contents;
+            let brace = braced!(contents in input);
+            let fields = Punctuated::parse_terminated(&contents)?;
+            Ok(Self { brace, fields })
+        }
+    }
+
+    impl quote::ToTokens for Fields {
+        fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+            let fields = &self.fields;
+            tokens.extend(quote! {
+                { #fields }
+            });
+        }
+    }
+
+    struct Variant {
+        atrs: Vec<Attribute>,
+        ident: Ident,
+        fields: Option<Fields>,
+    }
+
+    impl syn::parse::Parse for Variant {
+        fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+            let atrs = Attribute::parse_outer(input)?;
+            let ident = input.parse()?;
+            let fields = if input.peek(syn::token::Brace) {
+                Some(input.parse()?)
+            } else {
+                None
+            };
+            Ok(Self {
+                atrs,
+                ident,
+                fields,
+            })
+        }
+    }
+
+    struct Parse {
+        atrs: Vec<Attribute>,
+        pub_tk: Option<Token![pub]>,
+        enum_tk: Token![enum],
+        ident: Ident,
+        brace: syn::token::Brace,
+        variants: Punctuated<Variant, Token![,]>,
+    }
+
+    impl syn::parse::Parse for Parse {
+        fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+            let atrs = Attribute::parse_outer(input)?;
+            let pub_tk = input.parse()?;
+            let enum_tk = input.parse()?;
+            let ident = input.parse()?;
+            let contents;
+            let brace = braced!(contents in input);
+            let variants = Punctuated::parse_terminated(&contents)?;
+            Ok(Self {
+                atrs,
+                pub_tk,
+                enum_tk,
+                ident,
+                brace,
+                variants,
+            })
+        }
+    }
+
+    impl quote::ToTokens for Parse {
+        fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+            let Self {
+                atrs,
+                pub_tk,
+                enum_tk,
+                ident,
+                variants,
+                ..
+            } = self;
+            let mut inner = vec![];
+            let mut outer = vec![];
+            for variant in variants {
+                let Variant {
+                    atrs,
+                    ident,
+                    fields,
+                    ..
+                } = variant;
+                if let Some(fields) = fields {
+                    inner.push(quote!(#ident (#ident)));
+                    outer.push(quote! {
+                        #(#atrs)*
+                        #pub_tk struct #ident #fields
+                    });
+                } else {
+                    inner.push(quote!(#ident));
+                }
+            }
+            tokens.extend(quote! {
+                #(#atrs)*
+                #pub_tk #enum_tk #ident {
+                    #(#inner),*
+                }
+                #(#outer)*
+            });
+        }
+    }
+
+    let parsed: Parse = syn::parse(ts).expect("failed to parse");
+    quote!(#parsed).into()
 }

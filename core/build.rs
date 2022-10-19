@@ -1,6 +1,6 @@
 #![feature(fs_try_exists)]
 
-use arm_decode::{CondInstr, FullPrint};
+use arm_decode::CondInstr;
 use std::{env, fs};
 
 static CLEAN_VAR: &'static str = "BITWOLF_CLEAN";
@@ -33,63 +33,30 @@ fn main() {
 
 fn generate_arm9() {
     let processor = arm_decode::Processor {};
-    let mut lut: [CondInstr; 1 << 12] = array_init::array_init(|_| CondInstr::Undef);
     let mut output = "[".to_string();
-    for i in 0..lut.len() {
+    for i in 0..(1 << 12) {
         output.push_str(&format!(
             "{},",
             match processor.decode_cond((((i & 0xFF0) << 16) | ((i & 0xF) << 4)) as u32) {
-                CondInstr::Msr { r, imm } => format!("data::msr"),
-                CondInstr::Mrs { r } => format!("data::mrs"),
+                CondInstr::Msr(arg) => format!("data::msr::<{{ {arg} }}>"),
+                CondInstr::Mrs(arg) => format!("data::mrs::<{{ {arg} }}>"),
                 CondInstr::Bx => "branch::bx".to_string(),
                 CondInstr::BlxReg => "branch::blx::<false>".to_string(),
-                CondInstr::B { link } => format!("branch::b::<{}>", link),
-                CondInstr::Clz => "clz".to_string(),
-                CondInstr::SatAddSub { sub, doubles } => format!("data::sat_add_sub"),
-                CondInstr::DspMul { ty, y } => format!("data::dsp_mul"),
+                CondInstr::B(arg) => format!("branch::b::<{{ {arg} }}>"),
+                CondInstr::Clz => "data::clz".to_string(),
+                CondInstr::QArith(arg) => format!("data::qarith::<{{ {arg} }}>"),
+                CondInstr::DspMul(arg) => format!("data::dsp_mul::<{{ {arg} }}>"),
                 CondInstr::Bkpt => "misc::bkpt".to_string(),
-                CondInstr::Dp {
-                    set_flags,
-                    opcode,
-                    operand,
-                } => format!(
-                    "data::dp::<{set_flags}, {{ {} }}, {{ {} }}>",
-                    opcode.full_print(),
-                    operand.full_print(),
-                ),
-                CondInstr::Mul { acc, set_flags, ty } => format!("data::mul"),
-                CondInstr::Swp { byte } => format!("data::swp"),
-                CondInstr::Transfer {
-                    load,
-                    byte,
-                    offset_add,
-                    operand,
-                    addressing,
-                } => format!("mem::transfer"),
-                CondInstr::MiscTransfer {
-                    load,
-                    signed,
-                    halfword,
-                    offset_add,
-                    imm,
-                    addressing,
-                } => format!("mem::misc_transfer"),
-                CondInstr::TransferDouble {
-                    store,
-                    offset_add,
-                    imm,
-                    addressing,
-                } => format!("mem::transfer_double"),
-                CondInstr::TransferMult {
-                    load,
-                    update_base,
-                    upwards,
-                    privilige_mode,
-                    exclude_first,
-                } => format!("mem::transfer_multiple"),
-                CondInstr::CPTransfer {} => "misc::undef".to_string(),
-                CondInstr::CPDp {} => "misc::undef".to_string(),
-                CondInstr::CPRegTransfer {} => "misc::undef".to_string(),
+                CondInstr::Dp(arg) => format!("data::dp::<{{ {arg} }}>"),
+                CondInstr::Mul(arg) => format!("data::mul::<{{ {arg} }}>"),
+                CondInstr::Swp(arg) => format!("data::swp::<{{ {arg} }}>"),
+                CondInstr::Transfer(arg) => format!("mem::transfer::<{{ {arg} }}>"),
+                CondInstr::MiscTransfer(arg) => format!("mem::misc_transfer::<{{ {arg} }}>"),
+                CondInstr::TransferDouble(arg) => format!("mem::transfer_double::<{{ {arg} }}>"),
+                CondInstr::TransferMult(arg) => format!("mem::transfer_multiple::<{{ {arg} }}>"),
+                CondInstr::CPTransfer => "misc::undef".to_string(),
+                CondInstr::CPDp => "misc::undef".to_string(),
+                CondInstr::CPRegTransfer => "misc::undef".to_string(),
                 CondInstr::Swi => "misc::swi".to_string(),
                 CondInstr::Undef => "misc::undef".to_string(),
                 CondInstr::Unpred => "misc::unpred".to_string(),

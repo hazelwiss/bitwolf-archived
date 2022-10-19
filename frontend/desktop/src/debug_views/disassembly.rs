@@ -160,7 +160,7 @@ impl DebugView for DVDisasm {
                     }
                     ui.text(format!("{adr:08X}:"));
                     ui.table_next_column();
-                    ui.text_colored([0.2, 0.2, 0.2, 1.0], format!("{bytes:02X?}"));
+                    ui.text_colored([0.4, 0.4, 0.4, 1.0], format!("{bytes:02X?}"));
                     ui.table_next_column();
                     ui.text_colored([0.0, 0.6, 0.0, 1.0], str);
                 }

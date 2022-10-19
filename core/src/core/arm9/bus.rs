@@ -11,7 +11,9 @@ macro_rules! read {
             pub fn $fn_ident<A: AccessType>(core: &mut Core, adr: u32) -> $ty {
                 if let Some(ptr) = core.arm9.bus_ptrs.read(adr) {
                     unsafe {
-                        <$ty>::from_le(ptr.add(adr as usize & (Ptrs::PG_MASK as usize & !core::mem::size_of::<$ty>())).cast::<$ty>().read())
+                        let mask = core::mem::size_of::<$ty>() - 1;
+                        let mask = Ptrs::PG_MASK as usize & !mask;
+                        ptr.add(adr as usize & mask).cast::<$ty>().read().to_le()
                     }
                 } else {
                     $fallback(core, adr)
@@ -28,8 +30,10 @@ macro_rules! write {
             pub fn $fn_ident<A: AccessType>(core: &mut Core, adr: u32, val: $ty) {
                 if let Some(ptr) = core.arm9.bus_ptrs.$write_fn(adr) {
                     unsafe {
+                        let mask = core::mem::size_of::<$ty>() - 1;
+                        let mask = Ptrs::PG_MASK as usize & !mask;
                         let val = val.to_le();
-                        ptr.add(adr as usize & (Ptrs::PG_MASK as usize & !core::mem::size_of::<$ty>())).cast::<$ty>().write(val)
+                        ptr.add(adr as usize & mask).cast::<$ty>().write(val)
                     };
                 } else {
                     $fallback(core, adr, val);

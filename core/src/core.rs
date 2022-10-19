@@ -30,8 +30,8 @@ impl CoreBuilder {
         let arm7 = arm7::ARM7 {};
         let mut main_memory = Box::new([0; mb!(4)]);
         main_memory[0x3FFE00..].copy_from_slice(&self.rom[..0x200]);
-        main_memory[(header.arm9_load_adr() & mb!(4)) as usize
-            ..(header.arm9_load_adr() & mb!(4)) as usize + header.arm9_size() as usize]
+        main_memory[(header.arm9_load_adr() & (mb!(4) - 1)) as usize
+            ..(header.arm9_load_adr() & (mb!(4) - 1)) as usize + header.arm9_size() as usize]
             .copy_from_slice(
                 &self.rom[header.arm9_rom_adr() as usize
                     ..(header.arm9_rom_adr() + header.arm9_size()) as usize],

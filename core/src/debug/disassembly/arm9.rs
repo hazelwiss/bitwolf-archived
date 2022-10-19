@@ -7,12 +7,38 @@ use crate::{
     core::{arm9::bus, bus::DebugAccess},
     Core,
 };
-use alloc::{string::String, vec::Vec};
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
 use arm_decode::*;
 
-fn reg_print(reg: u32) -> String {
-    assert!(reg < 0x10);
-    format!("r{reg}")
+#[inline]
+fn reg(reg: u32) -> String {
+    debug_assert!(reg < 0x10);
+    match reg & 0xF {
+        v @ 0..=12 => format!("r{v}"),
+        13 => "sp".to_string(),
+        14 => "lr".to_string(),
+        15 => "pc".to_string(),
+        _ => unreachable!(),
+    }
+}
+
+#[inline]
+fn cond_print(cond: u32) -> String {
+    debug_assert!(cond < 0x10);
+    format!("")
+}
+
+#[inline]
+fn cond(instr: u32) -> String {
+    cond_print((instr >> 28) & 0xF)
+}
+
+enum ShiftOper {
+    Imm(u32),
+    Reg(u32),
 }
 
 type DecodeFn = fn(u32) -> String;
@@ -21,10 +47,10 @@ static COND_LUT: [DecodeFn; 1 << 12] = include!("../../../gen/arm9_arm_lut");
 pub fn disassemble_arm9(core: &mut Core, adr: u32) -> (String, Vec<u8>) {
     let instr = bus::read32::<DebugAccess>(core, adr);
     let byte_vec = vec![
-        (instr >> 24) as u8,
-        (instr >> 16) as u8,
-        (instr >> 8) as u8,
         instr as u8,
+        (instr >> 8) as u8,
+        (instr >> 16) as u8,
+        (instr >> 24) as u8,
     ];
     let index = (((instr >> 16) & 0xFF0) | ((instr >> 4) & 0xF)) as usize;
     let str = if instr >> 28 & 0xF == 0xF {

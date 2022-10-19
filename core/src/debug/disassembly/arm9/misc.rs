@@ -1,5 +1,4 @@
 use alloc::string::{String, ToString};
-use arm_decode::*;
 
 pub fn undef(_: u32) -> String {
     "undefined".to_string()
@@ -7,4 +6,12 @@ pub fn undef(_: u32) -> String {
 
 pub fn unpred(_: u32) -> String {
     "unpredictable".to_string()
+}
+
+pub fn bkpt(_: u32) -> String {
+    format!("bkpt")
+}
+
+pub fn swi(_: u32) -> String {
+    "swi".to_string()
 }

@@ -31,7 +31,7 @@ impl Ptrs {
         let index = adr as usize >> Self::PG_SHIFT;
         let attrs = self.attrs[index];
         if attrs & masks::R != 0 {
-            let ptrs = unsafe { self.ptrs[index].add((adr & Self::PG_MASK) as usize) };
+            let ptrs = self.ptrs[index];
             Some(ptrs)
         } else {
             None
@@ -42,7 +42,7 @@ impl Ptrs {
         let index = adr as usize >> Self::PG_SHIFT;
         let attrs = self.attrs[index];
         if attrs & masks::W_8 != 0 {
-            let ptrs = unsafe { self.ptrs[index].add((adr & Self::PG_MASK) as usize) };
+            let ptrs = self.ptrs[index];
             Some(ptrs)
         } else {
             None
@@ -53,7 +53,7 @@ impl Ptrs {
         let index = adr as usize >> Self::PG_SHIFT;
         let attrs = self.attrs[index];
         if attrs & masks::W_16_32 != 0 {
-            let ptrs = unsafe { self.ptrs[index].add((adr & Self::PG_MASK) as usize) };
+            let ptrs = self.ptrs[index];
             Some(ptrs)
         } else {
             None
