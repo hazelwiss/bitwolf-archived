@@ -3,12 +3,12 @@
 use arm_decode::CondInstr;
 use std::{env, fs};
 
-static CLEAN_VAR: &'static str = "BITWOLF_CLEAN";
-static GENERATE_VAR: &'static str = "BITWOLF_GENERATE";
+static CLEAN_VAR: &str = "BITWOLF_CLEAN";
+static GENERATE_VAR: &str = "BITWOLF_GENERATE";
 
-const OUT_DIR: &'static str = "gen";
+const OUT_DIR: &str = "gen";
 
-const OUT_ARM9_ARM: &'static str = "gen/arm9_arm_lut";
+const OUT_ARM9_ARM: &str = "gen/arm9_arm_lut";
 
 fn main() {
     if env::var(CLEAN_VAR).is_ok() {
@@ -44,8 +44,8 @@ fn generate_arm9() {
                 CondInstr::BlxReg => "branch::blx::<false>".to_string(),
                 CondInstr::B(arg) => format!("branch::b::<{{ {arg} }}>"),
                 CondInstr::Clz => "data::clz".to_string(),
-                CondInstr::QArith(arg) => format!("data::qarith::<{{ {arg} }}>"),
-                CondInstr::DspMul(arg) => format!("data::dsp_mul::<{{ {arg} }}>"),
+                CondInstr::QArith(arg) => format!("coproc::qarith::<{{ {arg} }}>"),
+                CondInstr::DspMul(arg) => format!("coproc::dsp_mul::<{{ {arg} }}>"),
                 CondInstr::Bkpt => "misc::bkpt".to_string(),
                 CondInstr::Dp(arg) => format!("data::dp::<{{ {arg} }}>"),
                 CondInstr::Mul(arg) => format!("data::mul::<{{ {arg} }}>"),
@@ -63,7 +63,7 @@ fn generate_arm9() {
             }
         ));
     }
-    output.push_str("]");
+    output.push(']');
     fs::write(OUT_ARM9_ARM, output).expect("failed to write ARM9 ARM decoding LUT.");
 }
 

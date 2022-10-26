@@ -1,4 +1,5 @@
 mod branch;
+mod coproc;
 mod data;
 mod mem;
 mod misc;
@@ -7,38 +8,37 @@ use crate::{
     core::{arm9::bus, bus::DebugAccess},
     Core,
 };
-use alloc::{
-    string::{String, ToString},
-    vec::Vec,
-};
+use alloc::{string::String, vec::Vec};
 use arm_decode::*;
 
-#[inline]
-fn reg(reg: u32) -> String {
-    debug_assert!(reg < 0x10);
-    match reg & 0xF {
-        v @ 0..=12 => format!("r{v}"),
-        13 => "sp".to_string(),
-        14 => "lr".to_string(),
-        15 => "pc".to_string(),
-        _ => unreachable!(),
+mod common {
+    pub use alloc::{
+        string::{String, ToString},
+        vec::Vec,
+    };
+
+    #[inline]
+    pub fn reg(reg: u32) -> String {
+        debug_assert!(reg < 0x10);
+        match reg & 0xF {
+            v @ 0..=12 => format!("r{v}"),
+            13 => "sp".to_string(),
+            14 => "lr".to_string(),
+            15 => "pc".to_string(),
+            _ => unreachable!(),
+        }
     }
-}
 
-#[inline]
-fn cond_print(cond: u32) -> String {
-    debug_assert!(cond < 0x10);
-    format!("")
-}
+    #[inline]
+    pub fn cond_print(cond: u32) -> String {
+        debug_assert!(cond < 0x10);
+        format!("")
+    }
 
-#[inline]
-fn cond(instr: u32) -> String {
-    cond_print((instr >> 28) & 0xF)
-}
-
-enum ShiftOper {
-    Imm(u32),
-    Reg(u32),
+    #[inline]
+    pub fn cond(instr: u32) -> String {
+        cond_print((instr >> 28) & 0xF)
+    }
 }
 
 type DecodeFn = fn(u32) -> String;

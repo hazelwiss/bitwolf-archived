@@ -15,7 +15,7 @@ impl Default for ARM9 {
     fn default() -> Self {
         Self {
             registers: RegFile { gpr: [0; 16] },
-            bus_ptrs: Box::new(bus::ptrs::Ptrs::default()),
+            bus_ptrs: Box::default(),
         }
     }
 }

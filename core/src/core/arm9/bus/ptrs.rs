@@ -25,7 +25,7 @@ impl Ptrs {
     pub const PG_SHIFT: usize = 14;
     pub const PG_SIZE: usize = 1 << Self::PG_SHIFT;
     pub const PG_MASK: u32 = Self::PG_SIZE as u32 - 1;
-    pub const ENTRIES: usize = 1 << (32 - Self::PG_SHIFT) + 1;
+    pub const ENTRIES: usize = 1 << (32 - Self::PG_SHIFT);
 
     pub fn read(&self, adr: u32) -> Option<*const u8> {
         let index = adr as usize >> Self::PG_SHIFT;

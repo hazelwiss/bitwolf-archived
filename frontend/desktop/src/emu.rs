@@ -58,11 +58,11 @@ pub fn run(
                 start_adr.wrapping_add((4 * i) as u32),
             ))
         }
-        let _ = msg_send.try_send(EmuMsg::DebugView(DVMsg::DisassemblyView(
+        let _ = msg_send.send(EmuMsg::DebugView(DVMsg::DisassemblyView(
             debug_views::disassembly::State { disasm: vec },
         )));
 
-        let _ = msg_send.try_send(EmuMsg::DebugView(DVMsg::Registers(
+        let _ = msg_send.send(EmuMsg::DebugView(DVMsg::Registers(
             debug_views::registers::State {
                 pc: core.arm9.registers.get_pc(),
             },

@@ -35,10 +35,10 @@ macro_rules! memory_sections {
             }
 
             #[inline]
-            fn from_adr(&self, adr: u32) -> Option<(Self, u32)> {
+            fn from_adr(adr: u32) -> Option<(Self, u32)> {
                 match adr {
                     $(
-                        $start..=$end => Some((Self::$name, adr & (self.start() - 1))),
+                        $start..=$end => Some((Self::$name, adr & ($start - 1))),
                     )*
                     _ => None
                 }
@@ -125,7 +125,7 @@ impl DebugView for DVDisasm {
             }
         });
         if ui.button("Go to PC") {
-            if let Some((section, rel)) = self.mem_section.from_adr(global_state.registers.pc()) {
+            if let Some((section, rel)) = MemorySection::from_adr(global_state.registers.pc()) {
                 self.mem_section = section;
                 self.rel_adr = rel;
             }

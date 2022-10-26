@@ -1,5 +1,4 @@
-use super::{cond, reg};
-use alloc::string::String;
+use super::common::*;
 
 pub fn blx<const IMM: bool>(instr: u32) -> String {
     format!(

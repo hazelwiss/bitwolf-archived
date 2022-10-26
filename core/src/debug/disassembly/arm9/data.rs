@@ -1,19 +1,18 @@
-use super::{cond, reg};
-use alloc::string::String;
+use super::common::*;
 use arm_decode::*;
 
 pub fn dp<const ARG: arm_decode::Dp>(instr: u32) -> String {
-    let s = if ARG.set_flags { "s" } else { "" };
+    let s = if ARG.flags { "s" } else { "" };
     let rd_i = (instr >> 12) & 0xF;
     let rn_i = (instr >> 16) & 0xF;
     let rd = reg(rd_i);
     let rn = reg(rn_i);
     let regs = if rd_i == rn_i {
-        format!("{rd}")
+        rd.to_string()
     } else {
         format!("{rd}, {rn}")
     };
-    let ((operand, mov_oper), mov) = match ARG.operand {
+    let ((operand, mov_oper), mov) = match ARG.oper {
         DpOperTy::Imm => {
             let rotate = (instr >> 8) & 0xF;
             let imm = instr & 0xFF;
@@ -38,12 +37,12 @@ pub fn dp<const ARG: arm_decode::Dp>(instr: u32) -> String {
                         if imm != 0 {
                             format!("{rm}, {shift_print} #0x{imm:X}")
                         } else {
-                            format!("{rm}")
+                            rm.clone()
                         },
                         if imm != 0 {
                             format!("{rm}, #0x{imm:X}")
                         } else {
-                            format!("{rm}")
+                            rm
                         },
                     )
                 },
@@ -52,7 +51,7 @@ pub fn dp<const ARG: arm_decode::Dp>(instr: u32) -> String {
         }
     };
     let cond = cond(instr);
-    match ARG.opcode {
+    match ARG.opc {
         DpOpcTy::And => format!("and{cond}{s} {regs}, {operand}"),
         DpOpcTy::Eor => format!("eor{cond}{s} {regs}, {operand}"),
         DpOpcTy::Sub => format!("sub{cond}{s} {regs}, {operand}"),
@@ -100,47 +99,20 @@ pub fn mrs<const ARG: arm_decode::Mrs>(instr: u32) -> String {
 }
 
 pub fn mul<const ARG: arm_decode::Mul>(instr: u32) -> String {
-    let cond = cond(instr);
-    let rd_index = (instr >> 16) & 0xF;
-    let rm_index = instr & 0xF;
-    let rd = reg(rd_index);
-    let rm = reg(rm_index);
+    let rm = reg((instr >> 8) & 0xF);
     let rs = reg((instr >> 8) & 0xF);
-    format!(
-        "mul{cond}{} {rd}, {}",
-        if ARG.set_flags { "s" } else { "" },
-        if rd_index != rm_index {
-            format!("{rm}, {rs}")
-        } else {
-            rs
-        }
-    )
-}
-
-pub fn qarith<const ARG: arm_decode::QArith>(instr: u32) -> String {
-    let opc_m = (ARG.sub, ARG.doubles);
-    let opc = match opc_m {
-        (true, true) => "qdsub",
-        (true, false) => "qsub",
-        (false, true) => "qdadd",
-        (false, false) => "qadd",
-    };
-    let rd_index = (instr >> 12) & 0xF;
-    let rm_index = instr & 0xF;
-    let rd = reg(rd_index);
-    let rm = reg(rm_index);
-    let rn = reg((instr >> 16) & 0xF);
+    let rd = reg((instr >> 16) & 0xF);
+    let rn = reg((instr >> 12) & 0xF);
+    let rdhi = reg((instr >> 16) & 0xF);
+    let rdlo = reg((instr >> 12) & 0xF);
+    let flags = if ARG.flags { "s" } else { "" };
     let cond = cond(instr);
-    format!(
-        "{opc}{cond} {rd}, {}",
-        if rd_index != rm_index {
-            format!("{rm}, {rn}")
-        } else {
-            rn
-        }
-    )
-}
-
-pub fn dsp_mul<const ARG: arm_decode::DspMul>(_: u32) -> String {
-    format!("dsp mul")
+    match ARG.ty {
+        MulTy::Mla => format!("mla{cond}{flags} {rd}, {rm}, {rs}, {rn}"),
+        MulTy::Mul => format!("mul{cond}{flags} {rd}, {rm}, {rs}"),
+        MulTy::Smlal => format!("smlal{cond}{flags} {rdlo}, {rdhi}, {rm}, {rs}"),
+        MulTy::Smull => format!("smull{cond}{flags} {rdlo}, {rdhi}, {rm}, {rs}"),
+        MulTy::Umlal => format!("umlal{cond}{flags} {rdlo}, {rdhi}, {rm}, {rs}"),
+        MulTy::Umull => format!("umull{cond}{flags} {rdlo}, {rdhi}, {rm}, {rs}"),
+    }
 }

@@ -71,7 +71,7 @@ pub fn full_print(ts: TokenStream) -> TokenStream {
                         }
                         syn::Fields::Unit => (quote!(), quote!("")),
                     };
-                    let head = format!("{}::{}", ident.to_string(), var_ident.to_string());
+                    let head = format!("{}::{}", ident, var_ident);
                     quote!(#ident :: #var_ident #declarations => format!("{} {}", #head, #tail))
                 })
                 .collect();

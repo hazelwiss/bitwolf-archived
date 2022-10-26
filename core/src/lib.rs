@@ -1,7 +1,9 @@
 #![no_std]
 #![feature(int_roundings)]
 #![allow(incomplete_features)]
+#![allow(clippy::comparison_chain)]
 #![feature(adt_const_params)]
+#![feature(stmt_expr_attributes)]
 // --- Temporary ---
 #![allow(dead_code)]
 // -----------------

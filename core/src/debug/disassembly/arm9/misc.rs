@@ -1,4 +1,4 @@
-use alloc::string::{String, ToString};
+use super::common::*;
 
 pub fn undef(_: u32) -> String {
     "undefined".to_string()
@@ -9,7 +9,7 @@ pub fn unpred(_: u32) -> String {
 }
 
 pub fn bkpt(_: u32) -> String {
-    format!("bkpt")
+    "bkpt".to_string()
 }
 
 pub fn swi(_: u32) -> String {
