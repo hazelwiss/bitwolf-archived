@@ -1,33 +1,16 @@
 #![feature(fs_try_exists)]
 
 use arm_decode::CondInstr;
-use std::{env, fs};
-
-static CLEAN_VAR: &str = "BITWOLF_CLEAN";
-static GENERATE_VAR: &str = "BITWOLF_GENERATE";
+use std::fs;
 
 const OUT_DIR: &str = "gen";
-
 const OUT_ARM9_ARM: &str = "gen/arm9_arm_lut";
 
 fn main() {
-    if env::var(CLEAN_VAR).is_ok() {
-        macro_rules! remove {
-            ($path:ident) => {
-                match fs::try_exists($path) {
-                    Ok(true) => fs::remove_file($path)
-                        .expect(&format!("unable to remove file at path {}", $path)),
-                    _ => {}
-                }
-            };
-        }
-        remove!(OUT_ARM9_ARM);
+    match fs::try_exists(OUT_ARM9_ARM) {
+        Ok(false) => generate(),
+        _ => {}
     }
-    if env::var(GENERATE_VAR).is_ok() {
-        generate()
-    }
-    println!("cargo:rerun-if-env-changed={CLEAN_VAR}");
-    println!("cargo:rerun-if-env-changed={GENERATE_VAR}");
     println!("cargo:rerun-if-changed={OUT_DIR}")
 }
 

@@ -22,4 +22,7 @@ pub mod debug;
 mod common;
 mod hw;
 
-pub use crate::core::{Core, CoreBuilder};
+pub use crate::core::{
+    interpreter::{self, Interpreter},
+    Core, CoreBuilder,
+};

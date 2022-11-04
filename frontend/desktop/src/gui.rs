@@ -1,16 +1,14 @@
 pub mod window;
 
-use self::window::WindowBuilder;
 use crate::{
     cli::CliArgs,
     config,
-    debug_views::{self, DebugViews},
+    debug_views::DebugViews,
     emu::{self, SharedState},
 };
-use ::imgui::Ui;
 use anyhow::anyhow;
 use crossbeam_channel::{Receiver, Sender, TryRecvError};
-use imgui::Io;
+use imgui::{Io, Ui};
 use std::{
     fs,
     path::PathBuf,
@@ -21,8 +19,8 @@ use std::{
     thread::{self, JoinHandle},
 };
 #[allow(unused)]
-use util::log::{self, info};
-use util::log::{error, Logger};
+use util::log::{self, error, info, Logger};
+use window::WindowBuilder;
 
 const CHANNEL_SIZE: usize = 32;
 
@@ -49,6 +47,7 @@ impl EmuState {
 
         let shared_state = SharedState {
             running: Arc::new(AtomicBool::new(true)),
+            stopped: Arc::new(AtomicBool::new(true)),
         };
 
         let emu_shared_state = shared_state.clone();
@@ -100,7 +99,7 @@ pub fn run(#[allow(unused)] log: log::Logger, cli_args: CliArgs) {
         config::global_config()
     };
 
-    let mut debug_views = DebugViews::default();
+    let debug_views = DebugViews::default();
 
     let emu_state = if let Some(rom) = cli_args.rom {
         match EmuState::new(&config, log.clone(), rom) {
@@ -174,14 +173,14 @@ fn ui_update(window: &mut window::Window, state: &mut GuiState, ui: &Ui, io: &Io
     if let Some(emu) = &state.emu_state {
         let EmuState {
             shared_state,
-            jhandle,
             receiver,
             sender,
+            ..
         } = emu;
 
         state.views.draw(window, ui, io);
 
-        state.views.config(&state.log, &emu.sender);
+        state.views.update_emu_state(&state.log, &sender);
         for _ in 0..CHANNEL_SIZE {
             match receiver.try_recv() {
                 Ok(msg) => match msg {

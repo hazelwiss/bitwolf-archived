@@ -27,8 +27,6 @@ pub fn full_print(ts: TokenStream) -> TokenStream {
                 .collect();
             let inputs: String = (0..fields.len()).map(|_| "{}, ").collect();
             let ident_str = ident.to_string();
-            let val = quote!(format!("{} {{ {} }}", #ident_str, format!(#inputs, #(#fields),*)))
-                .to_string();
             quote!(format!("{} {{ {} }}", #ident_str, format!(#inputs, #(#fields),*)))
         }
         syn::Data::Enum(data) => {

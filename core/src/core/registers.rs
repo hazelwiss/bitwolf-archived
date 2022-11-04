@@ -5,14 +5,14 @@ pub struct RegFile {
 impl RegFile {
     #[inline]
     pub fn get(&self, index: usize) -> u32 {
-        debug_assert!(index < 16);
-        unsafe { *self.gpr.get_unchecked(index) }
+        debug_assert!(index < 0x10);
+        unsafe { *self.gpr.get_unchecked(index & 0xF) }
     }
 
     #[inline]
     pub fn set(&mut self, index: usize, val: u32) {
-        debug_assert!(index < 16);
-        unsafe { *self.gpr.get_unchecked_mut(index) = val };
+        debug_assert!(index < 0x10);
+        unsafe { *self.gpr.get_unchecked_mut(index & 0xF) = val };
     }
 
     #[inline]

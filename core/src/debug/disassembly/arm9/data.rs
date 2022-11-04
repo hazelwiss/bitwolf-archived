@@ -1,7 +1,7 @@
 use super::common::*;
 use arm_decode::*;
 
-pub fn dp<const ARG: arm_decode::Dp>(instr: u32) -> String {
+pub fn dp<const ARG: arm_decode::Dp>(_: u32, instr: u32) -> String {
     let s = if ARG.flags { "s" } else { "" };
     let rd_i = (instr >> 12) & 0xF;
     let rn_i = (instr >> 16) & 0xF;
@@ -71,14 +71,14 @@ pub fn dp<const ARG: arm_decode::Dp>(instr: u32) -> String {
     }
 }
 
-pub fn clz(instr: u32) -> String {
+pub fn clz(_: u32, instr: u32) -> String {
     let rd = reg((instr >> 12) & 0xF);
     let rm = reg(instr & 0xF);
     let cond = cond(instr);
     format!("clz{cond} {rd}, {rm}")
 }
 
-pub fn msr<const ARG: arm_decode::Msr>(instr: u32) -> String {
+pub fn msr<const ARG: arm_decode::Msr>(_: u32, instr: u32) -> String {
     let psr = if ARG.r { "spsr" } else { "cpsr" };
     let arg = if ARG.imm {
         let imm = instr & 0xF;
@@ -92,13 +92,13 @@ pub fn msr<const ARG: arm_decode::Msr>(instr: u32) -> String {
     format!("msr{cond} {psr}_, {arg}")
 }
 
-pub fn mrs<const ARG: arm_decode::Mrs>(instr: u32) -> String {
+pub fn mrs<const ARG: arm_decode::Mrs>(_: u32, instr: u32) -> String {
     let rd = reg((instr >> 12) & 0xF);
     let cond = cond(instr);
     format!("mrs{cond} {rd}, {}", if ARG.r { "spsr" } else { "cpsr" })
 }
 
-pub fn mul<const ARG: arm_decode::Mul>(instr: u32) -> String {
+pub fn mul<const ARG: arm_decode::Mul>(_: u32, instr: u32) -> String {
     let rm = reg((instr >> 8) & 0xF);
     let rs = reg((instr >> 8) & 0xF);
     let rd = reg((instr >> 16) & 0xF);

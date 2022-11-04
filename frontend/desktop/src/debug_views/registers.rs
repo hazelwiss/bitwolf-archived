@@ -12,6 +12,7 @@ pub struct Registers {
 }
 
 impl Registers {
+    #[inline]
     pub fn pc(&self) -> u32 {
         self.state.pc
     }

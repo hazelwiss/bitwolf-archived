@@ -27,7 +27,7 @@ fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: TransfAdrTy) -
     }
 }
 
-pub fn transfer<const ARG: arm_decode::Transfer>(instr: u32) -> String {
+pub fn transfer<const ARG: arm_decode::Transfer>(_: u32, instr: u32) -> String {
     let cond = cond(instr);
     let rd = reg((instr >> 12) & 0xF);
     let rn = (instr >> 16) & 0xF;
@@ -73,7 +73,7 @@ pub fn transfer<const ARG: arm_decode::Transfer>(instr: u32) -> String {
     )
 }
 
-pub fn misc_transfer<const ARG: arm_decode::MiscTransfer>(instr: u32) -> String {
+pub fn misc_transfer<const ARG: arm_decode::MiscTransfer>(_: u32, instr: u32) -> String {
     let rd = reg((instr >> 12) & 0xF);
     let rn = (instr >> 16) & 0xF;
     let oper = adr_m_3(instr, rn, ARG.add_ofs, ARG.imm, ARG.adr_ty);
@@ -90,7 +90,7 @@ pub fn misc_transfer<const ARG: arm_decode::MiscTransfer>(instr: u32) -> String 
     )
 }
 
-pub fn transfer_multiple<const ARG: arm_decode::TransferMult>(instr: u32) -> String {
+pub fn transfer_multiple<const ARG: arm_decode::TransferMult>(_: u32, instr: u32) -> String {
     let rn = reg((instr >> 16) & 0xF);
     let register_list = {
         let mut len = 0;
@@ -143,7 +143,7 @@ pub fn transfer_multiple<const ARG: arm_decode::TransferMult>(instr: u32) -> Str
     )
 }
 
-pub fn transfer_double<const ARG: arm_decode::TransferDouble>(instr: u32) -> String {
+pub fn transfer_double<const ARG: arm_decode::TransferDouble>(_: u32, instr: u32) -> String {
     let start = (instr >> 12) & 0xE; // ignore lower bit.
     let rn = (instr >> 16) & 0xF;
     let lo = reg(start);

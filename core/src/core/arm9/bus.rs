@@ -3,12 +3,16 @@ pub mod ptrs;
 mod fallback;
 
 use self::ptrs::Ptrs;
-use crate::{core::bus::AccessType, Core};
+use crate::{
+    core::{bus::AccessType, engine::Engine},
+    Core,
+};
 
-macro_rules! read {
+macro_rules! def_read {
     ($($fn_ident:ident, $ty:ty, $fallback:path;)*) => {
         $(
-            pub fn $fn_ident<A: AccessType>(core: &mut Core, adr: u32) -> $ty {
+            #[inline(always)]
+            pub fn $fn_ident<A: AccessType, E: Engine>(core: &mut Core<E>, adr: u32) -> $ty {
                 if let Some(ptr) = core.arm9.bus_ptrs.read(adr) {
                     unsafe {
                         let mask = core::mem::size_of::<$ty>() - 1;
@@ -24,10 +28,11 @@ macro_rules! read {
     };
 }
 
-macro_rules! write {
+macro_rules! def_write {
     ($($fn_ident:ident, $ty:ty, $write_fn:ident, $fallback:path;)*) => {
         $(
-            pub fn $fn_ident<A: AccessType>(core: &mut Core, adr: u32, val: $ty) {
+            #[inline(always)]
+            pub fn $fn_ident<A: AccessType, E: Engine>(core: &mut Core<E>, adr: u32, val: $ty) {
                 if let Some(ptr) = core.arm9.bus_ptrs.$write_fn(adr) {
                     unsafe {
                         let mask = core::mem::size_of::<$ty>() - 1;
@@ -44,14 +49,14 @@ macro_rules! write {
     };
 }
 
-read! {
-    read8, u8, fallback::read8::<A>;
-    read16, u16, fallback::read16::<A>;
-    read32, u32, fallback::read32::<A>;
+def_read! {
+    read8, u8, fallback::read8::<E, A>;
+    read16, u16, fallback::read16::<E, A>;
+    read32, u32, fallback::read32::<E, A>;
 }
 
-write! {
-    write8, u8, write8, fallback::write8::<A>;
-    write16, u16, write32_16, fallback::write16::<A>;
-    write32, u32, write32_16, fallback::write32::<A>;
+def_write! {
+    write8, u8, write8, fallback::write8::<E, A>;
+    write16, u16, write32_16, fallback::write16::<E, A>;
+    write32, u32, write32_16, fallback::write32::<E, A>;
 }

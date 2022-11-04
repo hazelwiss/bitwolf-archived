@@ -1,6 +1,6 @@
 use crate::gui::window::Window;
 
-use super::{DebugView, GlobalState, Ui};
+use super::{DynamicDV, GlobalState, Ui};
 use bitwolf_core::debug::cartridge_info::Header;
 use imgui::Io;
 
@@ -12,9 +12,9 @@ pub struct State {
     pub cartridge_header: Header,
 }
 
-impl DebugView for DVCartridge {
-    type State = State;
-    type Conf = ();
+impl DynamicDV for DVCartridge {
+    type Local = State;
+    type Emu = ();
 
     #[inline]
     fn draw(
@@ -38,10 +38,10 @@ impl DebugView for DVCartridge {
     }
 
     #[inline]
-    fn on_change(&mut self, _old: Self::State, _new: &mut Self::State) {}
+    fn on_change(&mut self, _old: Self::Local, _new: &mut Self::Local) {}
 
     #[inline]
-    fn config(&self) -> Option<Self::Conf> {
+    fn emu_update(&self) -> Option<Self::Emu> {
         None
     }
 }

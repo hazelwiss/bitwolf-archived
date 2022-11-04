@@ -1,1 +1,1 @@
-pub struct ARM7 {}
+pub struct Arm7 {}

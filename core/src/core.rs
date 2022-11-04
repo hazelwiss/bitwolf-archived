@@ -3,9 +3,11 @@ pub mod arm9;
 pub mod bus;
 pub mod cartridge;
 pub mod engine;
+pub mod interpreter;
 pub mod registers;
 
 use alloc::{boxed::Box, vec::Vec};
+use engine::Engine;
 use util::log::{self, Logger};
 
 pub struct CoreBuilder {
@@ -23,11 +25,11 @@ impl Default for CoreBuilder {
 }
 
 impl CoreBuilder {
-    pub fn build(self) -> Core {
+    pub fn build<E: Engine>(self) -> Core<E> {
         debug_assert!(self.rom.len() > 0x200);
         let header = cartridge::Header::from_rom(&self.rom);
-        let arm9 = arm9::ARM9::default();
-        let arm7 = arm7::ARM7 {};
+        let arm9 = arm9::Arm9::default();
+        let arm7 = arm7::Arm7 {};
         let mut main_memory = Box::new([0; mb!(4)]);
         main_memory[0x3FFE00..].copy_from_slice(&self.rom[..0x200]);
         main_memory[(header.arm9_load_adr() & (mb!(4) - 1)) as usize
@@ -42,8 +44,9 @@ impl CoreBuilder {
             main_memory,
             cartidge_header: header,
             log: self.log,
+            engine_data: Default::default(),
         };
-        arm9::ARM9::reset(&mut core);
+        arm9::Arm9::reset(&mut core);
         core
     }
 
@@ -58,9 +61,10 @@ impl CoreBuilder {
     }
 }
 
-pub struct Core {
-    pub arm9: arm9::ARM9,
-    pub arm7: arm7::ARM7,
+pub struct Core<E: Engine> {
+    pub arm9: arm9::Arm9<E>,
+    pub arm7: arm7::Arm7,
+    engine_data: E::GlobalData,
     main_memory: Box<[u8; mb!(4)]>,
     pub(crate) cartidge_header: cartridge::Header,
     pub(crate) log: Logger,

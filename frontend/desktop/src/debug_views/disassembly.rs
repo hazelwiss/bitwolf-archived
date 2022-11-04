@@ -1,8 +1,6 @@
-use imgui::{Io, TableBgTarget, TableFlags, TableRowFlags};
-
+use super::{DynamicDV, GlobalState, Ui};
 use crate::gui::window::Window;
-
-use super::{DebugView, GlobalState, Ui};
+use imgui::{Io, TableBgTarget, TableFlags, TableRowFlags};
 
 macro_rules! memory_sections {
     ($($name:ident => $start:literal, $end:expr);* $(;)?) => {
@@ -89,24 +87,24 @@ impl DVDisasm {
 }
 
 #[derive(Default, Debug)]
-pub struct State {
+pub struct Local {
     pub disasm: Vec<(String, Vec<u8>)>,
 }
 
 #[derive(Debug, Default)]
-pub struct Conf {
+pub struct Emu {
     pub start_adr: u32,
     pub line_cnt: usize,
 }
 
-impl DebugView for DVDisasm {
-    type State = State;
-    type Conf = Conf;
+impl DynamicDV for DVDisasm {
+    type Local = Local;
+    type Emu = Emu;
 
     #[inline]
     fn draw(
         &mut self,
-        state: &mut State,
+        state: &mut Local,
         global_state: &GlobalState,
         _window: &mut Window,
         ui: &Ui,
@@ -180,11 +178,11 @@ impl DebugView for DVDisasm {
     }
 
     #[inline]
-    fn on_change(&mut self, _old: Self::State, _new: &mut Self::State) {}
+    fn on_change(&mut self, _old: Self::Local, _new: &mut Self::Local) {}
 
     #[inline]
-    fn config(&self) -> Option<Self::Conf> {
-        Some(Conf {
+    fn emu_update(&self) -> Option<Self::Emu> {
+        Some(Emu {
             start_adr: self.abs_adr,
             line_cnt: self.line_cnt,
         })

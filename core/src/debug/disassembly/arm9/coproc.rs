@@ -1,7 +1,7 @@
 use super::common::*;
 use arm_decode::*;
 
-pub fn qarith<const ARG: arm_decode::QArith>(instr: u32) -> String {
+pub fn qarith<const ARG: arm_decode::QArith>(_: u32, instr: u32) -> String {
     let opc_m = (ARG.sub, ARG.doubles);
     let opc = match opc_m {
         (true, true) => "qdsub",
@@ -25,7 +25,7 @@ pub fn qarith<const ARG: arm_decode::QArith>(instr: u32) -> String {
     )
 }
 
-pub fn dsp_mul<const ARG: arm_decode::DspMul>(instr: u32) -> String {
+pub fn dsp_mul<const ARG: arm_decode::DspMul>(_: u32, instr: u32) -> String {
     let arg_ty = #[inline(always)]
     |b: bool| {
         if b {
