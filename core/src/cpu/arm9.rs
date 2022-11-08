@@ -1,9 +1,8 @@
 pub mod bus;
 
-use self::bus::ptrs::masks;
-use super::{engine::Engine, registers::RegFile};
-use crate::Core;
+use crate::{cpu::registers::RegFile, engine::Engine, Core};
 use alloc::boxed::Box;
+use bus::ptrs::masks;
 
 #[allow(clippy::new_without_default)]
 pub struct Arm9<E: Engine> {

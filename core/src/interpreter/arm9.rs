@@ -1,17 +1,17 @@
 mod branch;
-mod coproc;
+mod cp;
 mod data;
 mod mem;
 mod misc;
 
 use crate::{
-    core::{arm9::bus, bus::CPUAccess},
+    cpu::{arm9::bus, bus::CPUAccess},
     Core, Interpreter,
 };
 use arm_decode::*;
 
 type CondFn = fn(&mut Core<Interpreter>, u32);
-static COND_LUT: [CondFn; 1 << 12] = include!("../../../gen/arm9_arm_lut");
+static COND_LUT: [CondFn; 1 << 12] = include!("../../gen/arm9_arm_lut");
 
 #[inline]
 pub fn step(core: &mut Core<Interpreter>) {

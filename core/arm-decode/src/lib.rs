@@ -86,18 +86,6 @@ pub enum TransfAdrTy {
     Offset,
 }
 
-#[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum TransfMulAdrTy {
-    /// Increment after.
-    IA,
-    /// Increment before.
-    IB,
-    /// Decrement after.
-    DA,
-    /// Decrement before.
-    DB,
-}
-
 impl TransfAdrTy {
     const fn from_w_p(w: bool, p: bool) -> TransfAdrTy {
         use TransfAdrTy::*;
@@ -111,6 +99,26 @@ impl TransfAdrTy {
             Post { translation: w }
         }
     }
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum TransfMulAdrTy {
+    /// Increment after.
+    IA,
+    /// Increment before.
+    IB,
+    /// Decrement after.
+    DA,
+    /// Decrement before.
+    DB,
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum TransfCpAdrTy {
+    Post,
+    Unindexed,
+    Pre,
+    Offset,
 }
 
 #[derive(FullPrint, Debug, PartialEq, Eq)]
@@ -240,11 +248,21 @@ macros::struct_enum! {
             privilige_mode: bool,
         },
         #[derive(FullPrint, PartialEq, Eq)]
-        CPTransfer,
-        #[derive(FullPrint, PartialEq, Eq)]
         CPDp,
         #[derive(FullPrint, PartialEq, Eq)]
-        CPRegTransfer,
+        CPMov{
+            /// If the operation loads into an ARM register, or a coprocessor register.
+            arm_reg_load: bool
+        },
+        #[derive(FullPrint, PartialEq, Eq)]
+        CPTransfer{
+            load: bool,
+            adr_ty: TransfCpAdrTy,
+            /// Add the offset (true) or subtract the offset (false).
+            add_ofs: bool,
+            /// Coprocessor dependent.
+            n: bool,
+        },
         #[derive(FullPrint, PartialEq, Eq)]
         Swi,
         #[derive(FullPrint, PartialEq, Eq)]
@@ -533,10 +551,10 @@ impl Processor {
             let p = (instr >> 24) != 0;
             let u = (instr >> 23) != 0;
             let adr_ty = match (p, u) {
-                (true, true) => TransfMulAdrTy::IB,
-                (true, false) => TransfMulAdrTy::DB,
-                (false, true) => TransfMulAdrTy::IA,
-                (false, false) => TransfMulAdrTy::DA,
+                (false, true) => TransfMulAdrTy::IB,
+                (false, false) => TransfMulAdrTy::DB,
+                (true, true) => TransfMulAdrTy::IA,
+                (true, false) => TransfMulAdrTy::DA,
             };
             CondInstr::TransferMult(TransferMult {
                 load: instr & b!(20) != 0,
@@ -553,15 +571,40 @@ impl Processor {
         }
         // Coprocessor load/store and double register transfers
         else if instr & 0x0E00_0000 == 0x0C00_0000 {
-            CondInstr::CPTransfer
+            let p = instr & b!(24) != 0;
+            let u = instr & b!(23) != 0;
+            let w = instr & b!(21) != 0;
+            let adr_ty = {
+                match (p, w) {
+                    (false, false) => {
+                        if u {
+                            TransfCpAdrTy::Unindexed
+                        } else {
+                            // Might be undefined depending on version.
+                            return CondInstr::Unpred;
+                        }
+                    }
+                    (false, true) => TransfCpAdrTy::Post,
+                    (true, false) => TransfCpAdrTy::Offset,
+                    (true, true) => TransfCpAdrTy::Pre,
+                }
+            };
+            CondInstr::CPTransfer(CPTransfer {
+                load: instr & b!(20) != 0,
+                adr_ty,
+                n: instr & b!(22) != 0,
+                add_ofs: u,
+            })
         }
         // Coprocessor data processing
         else if instr & 0x0F00_0010 == 0x0E00_0000 {
-            CondInstr::CPDp {}
+            CondInstr::CPDp
         }
         // Coprocessor register transfers
         else if instr & 0x0F00_0010 == 0x0E00_0010 {
-            CondInstr::CPRegTransfer {}
+            CondInstr::CPMov(CPMov {
+                arm_reg_load: instr & b!(20) != 0,
+            })
         }
         // Software interrupt
         else if instr & 0x0F00_0000 == 0x0F00_0000 {

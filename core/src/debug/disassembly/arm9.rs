@@ -1,11 +1,12 @@
 mod branch;
-mod coproc;
+mod cp;
 mod data;
 mod mem;
 mod misc;
 
 use crate::{
-    core::{arm9::bus, bus::DebugAccess, engine::Engine},
+    cpu::{arm9::bus, bus::DebugAccess},
+    engine::Engine,
     Core,
 };
 use alloc::{string::String, vec::Vec};
@@ -30,7 +31,7 @@ mod common {
     }
 
     #[inline]
-    pub fn cond_print(cond: u32) -> &'static str {
+    pub fn cond_from_nibble(cond: u32) -> &'static str {
         debug_assert!(cond < 0x10);
         match cond {
             0x0 => "eq",
@@ -53,8 +54,8 @@ mod common {
     }
 
     #[inline]
-    pub fn cond(instr: u32) -> &'static str {
-        cond_print((instr >> 28) & 0xF)
+    pub fn cond_extract(instr: u32) -> &'static str {
+        cond_from_nibble((instr >> 28) & 0xF)
     }
 }
 

@@ -1,8 +1,7 @@
 use super::common::*;
 use arm_decode::*;
 
-pub fn dp<const ARG: arm_decode::Dp>(_: u32, instr: u32) -> String {
-    let s = if ARG.flags { "s" } else { "" };
+pub fn dp<const ARG: Dp>(_: u32, instr: u32) -> String {
     let rd_i = (instr >> 12) & 0xF;
     let rn_i = (instr >> 16) & 0xF;
     let rd = reg(rd_i);
@@ -50,7 +49,8 @@ pub fn dp<const ARG: arm_decode::Dp>(_: u32, instr: u32) -> String {
             )
         }
     };
-    let cond = cond(instr);
+    let s = if ARG.flags { "s" } else { "" };
+    let cond = cond_extract(instr);
     match ARG.opc {
         DpOpcTy::And => format!("and{cond}{s} {regs}, {operand}"),
         DpOpcTy::Eor => format!("eor{cond}{s} {regs}, {operand}"),
@@ -74,11 +74,11 @@ pub fn dp<const ARG: arm_decode::Dp>(_: u32, instr: u32) -> String {
 pub fn clz(_: u32, instr: u32) -> String {
     let rd = reg((instr >> 12) & 0xF);
     let rm = reg(instr & 0xF);
-    let cond = cond(instr);
+    let cond = cond_extract(instr);
     format!("clz{cond} {rd}, {rm}")
 }
 
-pub fn msr<const ARG: arm_decode::Msr>(_: u32, instr: u32) -> String {
+pub fn msr<const ARG: Msr>(_: u32, instr: u32) -> String {
     let psr = if ARG.r { "spsr" } else { "cpsr" };
     let arg = if ARG.imm {
         let imm = instr & 0xF;
@@ -88,17 +88,17 @@ pub fn msr<const ARG: arm_decode::Msr>(_: u32, instr: u32) -> String {
     } else {
         reg(instr & 0xF)
     };
-    let cond = cond(instr);
+    let cond = cond_extract(instr);
     format!("msr{cond} {psr}_, {arg}")
 }
 
-pub fn mrs<const ARG: arm_decode::Mrs>(_: u32, instr: u32) -> String {
+pub fn mrs<const ARG: Mrs>(_: u32, instr: u32) -> String {
     let rd = reg((instr >> 12) & 0xF);
-    let cond = cond(instr);
+    let cond = cond_extract(instr);
     format!("mrs{cond} {rd}, {}", if ARG.r { "spsr" } else { "cpsr" })
 }
 
-pub fn mul<const ARG: arm_decode::Mul>(_: u32, instr: u32) -> String {
+pub fn mul<const ARG: Mul>(_: u32, instr: u32) -> String {
     let rm = reg((instr >> 8) & 0xF);
     let rs = reg((instr >> 8) & 0xF);
     let rd = reg((instr >> 16) & 0xF);
@@ -106,7 +106,7 @@ pub fn mul<const ARG: arm_decode::Mul>(_: u32, instr: u32) -> String {
     let rdhi = reg((instr >> 16) & 0xF);
     let rdlo = reg((instr >> 12) & 0xF);
     let flags = if ARG.flags { "s" } else { "" };
-    let cond = cond(instr);
+    let cond = cond_extract(instr);
     match ARG.ty {
         MulTy::Mla => format!("mla{cond}{flags} {rd}, {rm}, {rs}, {rn}"),
         MulTy::Mul => format!("mul{cond}{flags} {rd}, {rm}, {rs}"),

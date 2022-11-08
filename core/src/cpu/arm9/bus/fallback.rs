@@ -1,7 +1,4 @@
-use crate::{
-    core::{bus::AccessType, engine::Engine},
-    Core,
-};
+use crate::{cpu::bus::AccessType, engine::Engine, Core};
 
 pub fn read8<E: Engine, A: AccessType>(core: &mut Core<E>, adr: u32) -> u8 {
     if A::CPU {

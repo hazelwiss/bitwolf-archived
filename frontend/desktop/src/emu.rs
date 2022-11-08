@@ -1,5 +1,5 @@
 use crate::debug_views::{self, DVEmuStateMsg, DVStateMsg};
-use bitwolf_core::{core::engine::Engine, debug, interpreter, Core};
+use bitwolf_core::{debug, engine::Engine, interpreter, Core};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
