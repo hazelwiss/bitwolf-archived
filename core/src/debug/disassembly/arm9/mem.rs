@@ -2,7 +2,7 @@ use super::common::*;
 use arm_decode::*;
 
 #[inline(always)]
-fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: AdrMode3) -> String {
+fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: AdrModeTy) -> String {
     let rn = reg(rn & 0xF);
     let mut show_oper = true;
     let oper = format!(
@@ -18,9 +18,9 @@ fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: AdrMode3) -> S
     );
     if show_oper {
         match adr_ty {
-            AdrMode3::Post { .. } => format!("[{rn}], {oper}"),
-            AdrMode3::Pre => todo!("[{rn}, {oper}]!"),
-            AdrMode3::Offset => format!("[{rn}, {oper}]"),
+            AdrModeTy::Post { .. } => format!("[{rn}], {oper}"),
+            AdrModeTy::Pre => todo!("[{rn}, {oper}]!"),
+            AdrModeTy::Offset => format!("[{rn}, {oper}]"),
         }
     } else {
         format!("[{rn}]")
@@ -57,9 +57,9 @@ pub fn transfer<const ARG: Transfer>(_: u32, instr: u32) -> String {
         };
         let base = reg(rn & 0xF);
         match ARG.adr_ty {
-            AdrMode3::Post { translation } => (format!("[{base}]{operand}"), translation),
-            AdrMode3::Pre => (format!("[{base}{operand}]!"), false),
-            AdrMode3::Offset => (format!("[{base}{operand}]"), false),
+            AdrModeTy::Post { translation } => (format!("[{base}]{operand}"), translation),
+            AdrModeTy::Pre => (format!("[{base}{operand}]!"), false),
+            AdrModeTy::Offset => (format!("[{base}{operand}]"), false),
         }
     };
     format!(

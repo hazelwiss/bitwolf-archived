@@ -124,15 +124,15 @@ pub enum MulTy {
 }
 
 #[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum AdrMode3 {
+pub enum AdrModeTy {
     Post { translation: bool },
     Pre,
     Offset,
 }
 
-impl AdrMode3 {
-    const fn from_w_p(w: bool, p: bool) -> AdrMode3 {
-        use AdrMode3::*;
+impl AdrModeTy {
+    const fn from_w_p(w: bool, p: bool) -> AdrModeTy {
+        use AdrModeTy::*;
         if p {
             if w {
                 Pre
@@ -220,7 +220,7 @@ macros::struct_enum! {
             add_ofs: bool,
             ty: TransfTy,
             oper: TransfOperTy,
-            adr_ty: AdrMode3,
+            adr_ty: AdrModeTy,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         MiscTransfer {
@@ -229,7 +229,7 @@ macros::struct_enum! {
             add_ofs: bool,
             imm: bool,
             ty: MiscTransfTy,
-            adr_ty: AdrMode3,
+            adr_ty: AdrModeTy,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         TransferDouble {
@@ -237,7 +237,7 @@ macros::struct_enum! {
             /// Add the offset (true) or subtract the offset (false).
             add_ofs: bool,
             imm: bool,
-            adr_ty: AdrMode3,
+            adr_ty: AdrModeTy,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         TransferMult {
@@ -425,7 +425,7 @@ impl Processor {
                     if p && w {
                         return CondInstr::Unpred;
                     }
-                    let addressing = AdrMode3::from_w_p(w, p);
+                    let addressing = AdrModeTy::from_w_p(w, p);
                     let bits = (instr >> 5) & 0b11;
                     if bits == 0b01 {
                         CondInstr::MiscTransfer(MiscTransfer {
@@ -523,7 +523,7 @@ impl Processor {
         else if instr & 0x0E00_0000 == 0x0400_0000 || instr & 0x0E00_0010 == 0x0600_0000 {
             let w = instr & b!(21) != 0;
             let p = instr & b!(24) != 0;
-            let adr_ty = AdrMode3::from_w_p(w, p);
+            let adr_ty = AdrModeTy::from_w_p(w, p);
             CondInstr::Transfer(Transfer {
                 load: instr & b!(20) != 0,
                 ty: if instr & b!(22) != 0 {
