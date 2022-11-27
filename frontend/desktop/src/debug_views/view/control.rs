@@ -1,4 +1,4 @@
-use super::StaticDV;
+use crate::debug_views::{GlobalState, StaticDV};
 
 #[derive(Default)]
 pub struct Control {
@@ -18,7 +18,7 @@ impl StaticDV for Control {
     #[inline]
     fn draw(
         &mut self,
-        _global_state: &super::GlobalState,
+        _global_state: &GlobalState,
         _: &mut crate::gui::window::Window,
         ui: &imgui::Ui,
         _: &imgui::Io,

@@ -180,7 +180,7 @@ fn ui_update(window: &mut window::Window, state: &mut GuiState, ui: &Ui, io: &Io
 
         state.views.draw(window, ui, io);
 
-        state.views.update_emu_state(&state.log, &sender);
+        state.views.update_emu_state(&state.log, sender);
         for _ in 0..CHANNEL_SIZE {
             match receiver.try_recv() {
                 Ok(msg) => match msg {

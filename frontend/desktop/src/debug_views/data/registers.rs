@@ -1,8 +1,9 @@
-use super::GlobalStateData;
+use crate::debug_views::GlobalStateData;
 
 #[derive(Default, Debug, Clone)]
 pub struct State {
     pub pc: u32,
+    pub gpr: [u32; 16],
 }
 
 #[derive(Default, Debug)]
@@ -16,6 +17,11 @@ impl Registers {
     pub fn pc(&self) -> u32 {
         self.state.pc
     }
+
+    #[inline]
+    pub fn gpr(&self) -> &[u32; 16] {
+        &self.state.gpr
+    }
 }
 
 impl GlobalStateData for Registers {
@@ -28,12 +34,7 @@ impl GlobalStateData for Registers {
     }
 
     #[inline]
-    fn set_state(&mut self, new: Self::State) {
-        self.state = new;
-    }
-
-    #[inline]
-    fn get_state(&self) -> Self::State {
-        self.state.clone()
+    fn get_state_mut(&mut self) -> &mut Self::State {
+        &mut self.state
     }
 }

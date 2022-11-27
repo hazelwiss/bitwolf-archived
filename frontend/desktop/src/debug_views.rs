@@ -1,9 +1,7 @@
 #![allow(dead_code)]
 
-pub mod cartridge;
-pub mod control;
-pub mod disassembly;
-pub mod registers;
+mod data;
+mod view;
 
 use crate::{emu::FrontendMsg, gui::window::Window};
 use core::ops::{Deref, DerefMut};
@@ -46,9 +44,7 @@ pub trait GlobalStateData: Default {
 
     fn on_change(&mut self, old: Self::State);
 
-    fn set_state(&mut self, new: Self::State);
-
-    fn get_state(&self) -> Self::State;
+    fn get_state_mut(&mut self) -> &mut Self::State;
 }
 
 #[derive(Default)]
@@ -117,14 +113,21 @@ macro_rules! debug_views {
             ),*
         }
 
+        $(
+            pub type $da_msg = <$da_ty as GlobalStateData>::State;
+        )*
+        $(
+            pub type $up_msg = <$up_ty as DynamicDV>::Local;
+        )*
+
         /// Sent from the core to update the DV state.
         #[derive(Debug)]
         pub enum DVStateMsg{
             $(
-                $up_msg (<$up_ty as DynamicDV>::Local),
+                $up_msg ($up_msg),
             )*
             $(
-                $da_msg (<$da_ty as GlobalStateData>::State),
+                $da_msg ($da_msg),
             )*
         }
 
@@ -237,8 +240,9 @@ macro_rules! debug_views {
                     $(
                         $da_msg (state) => {
                             let cur = &mut self.global_state.$da_ident;
-                            let old = GlobalStateData::get_state(cur);
-                            GlobalStateData::set_state(cur, state);
+                            let new = GlobalStateData::get_state_mut(cur);
+                            let mut old = state;
+                            core::mem::swap(new, &mut old);
                             GlobalStateData::on_change(cur, old);
                         },
                     )*
@@ -276,8 +280,10 @@ macro_rules! debug_views {
 }
 
 debug_views! {
-    data registers, Registers, registers::Registers;
-    dynamic disassembly_view, DisassemblyView, "disassmebly-view", disassembly::DVDisasm;
-    dynamic cartridge_view, Cartridge, "cartridge-view", cartridge::DVCartridge;
-    static control_view, Control, "control-view", control::Control;
+    data registers, Registers, data::registers::Registers;
+    data cartridge, Cartridge, data::cartridge::Cartridge;
+    dynamic disassembly_view, Disassembly, "disassmebly-view", view::disassembly::Disassembly;
+    static cartridge_view, Cartridge, "cartridge-view", view::cartridge::Cartridge;
+    static control_view, Control, "control-view", view::control::Control;
+    static register_view, Registers, "register-view", view::registers::Registers;
 }

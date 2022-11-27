@@ -1,4 +1,4 @@
-use super::{DynamicDV, GlobalState, Ui};
+use crate::debug_views::{DynamicDV, GlobalState, Ui};
 use crate::gui::window::Window;
 use imgui::{Io, TableBgTarget, TableFlags, TableRowFlags};
 
@@ -67,7 +67,7 @@ impl Default for ViewType {
 }
 
 #[derive(Default)]
-pub struct DVDisasm {
+pub struct Disassembly {
     mem_section: MemorySection,
     view_type: ViewType,
     line_cnt: usize,
@@ -76,7 +76,7 @@ pub struct DVDisasm {
     abs_adr: u32,
 }
 
-impl DVDisasm {
+impl Disassembly {
     fn scroll(&mut self, scroll: f32) {
         self.rel_adr = if scroll.is_sign_positive() {
             self.rel_adr.saturating_sub(scroll as u32 * 4)
@@ -97,7 +97,7 @@ pub struct Emu {
     pub line_cnt: usize,
 }
 
-impl DynamicDV for DVDisasm {
+impl DynamicDV for Disassembly {
     type Local = Local;
     type Emu = Emu;
 

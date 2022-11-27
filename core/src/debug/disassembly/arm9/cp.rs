@@ -121,10 +121,10 @@ pub fn cp_transfer<const ARG: CPTransfer>(_: u32, instr: u32) -> String {
             "stc2".to_string()
         },
         match ARG.adr_ty {
-            TransfCpAdrTy::Post => format!("[{rn}], {offset}"),
-            TransfCpAdrTy::Unindexed => format!("[{rn}], 0x{option:08X}"),
-            TransfCpAdrTy::Pre => format!("[{rn}, {offset}]!"),
-            TransfCpAdrTy::Offset => format!("[{rn}, {offset}]"),
+            AdrMode5::Post => format!("[{rn}], {offset}"),
+            AdrMode5::Unindexed => format!("[{rn}], 0x{option:08X}"),
+            AdrMode5::Pre => format!("[{rn}, {offset}]!"),
+            AdrMode5::Offset => format!("[{rn}, {offset}]"),
         }
     )
 }

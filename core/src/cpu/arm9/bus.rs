@@ -3,7 +3,7 @@ pub mod ptrs;
 mod fallback;
 
 use self::ptrs::Ptrs;
-use crate::{cpu::bus::AccessType, engine::Engine, Core};
+use crate::{cpu::bus::AccessType, Core, Engine};
 
 macro_rules! def_read {
     ($($fn_ident:ident, $ty:ty, $fallback:path;)*) => {

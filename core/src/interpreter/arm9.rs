@@ -1,17 +1,15 @@
-mod branch;
-mod cp;
-mod data;
-mod mem;
-mod misc;
+mod instr;
 
 use crate::{
     cpu::{arm9::bus, bus::CPUAccess},
     Core, Interpreter,
 };
-use arm_decode::*;
 
-type CondFn = fn(&mut Core<Interpreter>, u32);
-static COND_LUT: [CondFn; 1 << 12] = include!("../../gen/arm9_arm_lut");
+impl Core<Interpreter> {
+    fn arm9_next_instr_adr(&self) -> u32 {
+        self.arm9.registers.get_pc()
+    }
+}
 
 #[inline]
 pub fn step(core: &mut Core<Interpreter>) {
@@ -21,13 +19,13 @@ pub fn step(core: &mut Core<Interpreter>) {
         .set_pc(core.arm9.registers.get_pc().wrapping_add(4));
     if (instr >> 28) & 0xF == 0xF {
         if (instr >> 25) & 0b111 == 0b101 {
-            branch::blx::<true>(core, instr)
+            instr::branch::blx::<true>(core, instr)
         } else {
-            misc::undef(core, instr);
+            instr::misc::undef(core, instr);
         }
     } else {
         let index = ((instr >> 4) & 0xF) | ((instr >> 16) & 0xFF0);
-        COND_LUT[index as usize](core, instr)
+        instr::INSTR_CONDITIONAL[index as usize](core, instr)
     }
 }
 

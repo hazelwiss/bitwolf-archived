@@ -1,7 +1,6 @@
 pub mod arm9;
 
-use super::engine::Engine;
-use crate::Core;
+use crate::{Core, Engine};
 
 pub struct Interpreter;
 

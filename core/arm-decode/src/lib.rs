@@ -26,15 +26,6 @@ full_print_impl!(bool, u8, u16, u32, u64, u128);
 
 pub struct Processor {}
 
-#[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum DspMulTy {
-    Smul { x: bool },
-    Smla { x: bool },
-    Smulw,
-    Smlaw,
-    Smlal { x: bool },
-}
-
 #[allow(clippy::enum_variant_names)]
 #[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum DpOpcTy {
@@ -54,6 +45,12 @@ pub enum DpOpcTy {
     Mov,
     Bic,
     Mvn,
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum DpOperTy {
+    Imm,
+    Shft { is_reg: bool, ty: ShiftTy },
 }
 
 #[allow(clippy::enum_variant_names)]
@@ -80,51 +77,12 @@ impl ShiftTy {
 }
 
 #[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum TransfAdrTy {
-    Post { translation: bool },
-    Pre,
-    Offset,
-}
-
-impl TransfAdrTy {
-    const fn from_w_p(w: bool, p: bool) -> TransfAdrTy {
-        use TransfAdrTy::*;
-        if p {
-            if w {
-                Pre
-            } else {
-                Offset
-            }
-        } else {
-            Post { translation: w }
-        }
-    }
-}
-
-#[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum TransfMulAdrTy {
-    /// Increment after.
-    IA,
-    /// Increment before.
-    IB,
-    /// Decrement after.
-    DA,
-    /// Decrement before.
-    DB,
-}
-
-#[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum TransfCpAdrTy {
-    Post,
-    Unindexed,
-    Pre,
-    Offset,
-}
-
-#[derive(FullPrint, Debug, PartialEq, Eq)]
-pub enum DpOperTy {
-    Imm,
-    Shft { is_reg: bool, ty: ShiftTy },
+pub enum DspMulTy {
+    Smul { x: bool },
+    Smla { x: bool },
+    Smulw,
+    Smlaw,
+    Smlal { x: bool },
 }
 
 #[derive(FullPrint, Debug, PartialEq, Eq)]
@@ -163,6 +121,48 @@ pub enum MulTy {
     Smull,
     Umlal,
     Umull,
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum AdrMode3 {
+    Post { translation: bool },
+    Pre,
+    Offset,
+}
+
+impl AdrMode3 {
+    const fn from_w_p(w: bool, p: bool) -> AdrMode3 {
+        use AdrMode3::*;
+        if p {
+            if w {
+                Pre
+            } else {
+                Offset
+            }
+        } else {
+            Post { translation: w }
+        }
+    }
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum AdrMode4 {
+    /// Increment after.
+    IA,
+    /// Increment before.
+    IB,
+    /// Decrement after.
+    DA,
+    /// Decrement before.
+    DB,
+}
+
+#[derive(FullPrint, Debug, PartialEq, Eq)]
+pub enum AdrMode5 {
+    Post,
+    Unindexed,
+    Pre,
+    Offset,
 }
 
 macros::struct_enum! {
@@ -206,7 +206,6 @@ macros::struct_enum! {
         },
         #[derive(FullPrint, PartialEq, Eq)]
         Mul {
-            acc: bool,
             flags: bool,
             ty: MulTy,
         },
@@ -221,7 +220,7 @@ macros::struct_enum! {
             add_ofs: bool,
             ty: TransfTy,
             oper: TransfOperTy,
-            adr_ty: TransfAdrTy,
+            adr_ty: AdrMode3,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         MiscTransfer {
@@ -230,7 +229,7 @@ macros::struct_enum! {
             add_ofs: bool,
             imm: bool,
             ty: MiscTransfTy,
-            adr_ty: TransfAdrTy,
+            adr_ty: AdrMode3,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         TransferDouble {
@@ -238,13 +237,13 @@ macros::struct_enum! {
             /// Add the offset (true) or subtract the offset (false).
             add_ofs: bool,
             imm: bool,
-            adr_ty: TransfAdrTy,
+            adr_ty: AdrMode3,
         },
         #[derive(FullPrint, PartialEq, Eq)]
         TransferMult {
             load: bool,
             base_update: bool,
-            adr_ty: TransfMulAdrTy,
+            adr_ty: AdrMode4,
             privilige_mode: bool,
         },
         #[derive(FullPrint, PartialEq, Eq)]
@@ -257,7 +256,7 @@ macros::struct_enum! {
         #[derive(FullPrint, PartialEq, Eq)]
         CPTransfer{
             load: bool,
-            adr_ty: TransfCpAdrTy,
+            adr_ty: AdrMode5,
             /// Add the offset (true) or subtract the offset (false).
             add_ofs: bool,
             /// Coprocessor dependent.
@@ -404,7 +403,6 @@ impl Processor {
                             return CondInstr::Undef;
                         };
                         CondInstr::Mul(Mul {
-                            acc,
                             flags: set_flags,
                             ty,
                         })
@@ -427,7 +425,7 @@ impl Processor {
                     if p && w {
                         return CondInstr::Unpred;
                     }
-                    let addressing = TransfAdrTy::from_w_p(w, p);
+                    let addressing = AdrMode3::from_w_p(w, p);
                     let bits = (instr >> 5) & 0b11;
                     if bits == 0b01 {
                         CondInstr::MiscTransfer(MiscTransfer {
@@ -525,7 +523,7 @@ impl Processor {
         else if instr & 0x0E00_0000 == 0x0400_0000 || instr & 0x0E00_0010 == 0x0600_0000 {
             let w = instr & b!(21) != 0;
             let p = instr & b!(24) != 0;
-            let adr_ty = TransfAdrTy::from_w_p(w, p);
+            let adr_ty = AdrMode3::from_w_p(w, p);
             CondInstr::Transfer(Transfer {
                 load: instr & b!(20) != 0,
                 ty: if instr & b!(22) != 0 {
@@ -551,10 +549,10 @@ impl Processor {
             let p = (instr >> 24) != 0;
             let u = (instr >> 23) != 0;
             let adr_ty = match (p, u) {
-                (false, true) => TransfMulAdrTy::IB,
-                (false, false) => TransfMulAdrTy::DB,
-                (true, true) => TransfMulAdrTy::IA,
-                (true, false) => TransfMulAdrTy::DA,
+                (false, true) => AdrMode4::IB,
+                (false, false) => AdrMode4::DB,
+                (true, true) => AdrMode4::IA,
+                (true, false) => AdrMode4::DA,
             };
             CondInstr::TransferMult(TransferMult {
                 load: instr & b!(20) != 0,
@@ -578,15 +576,15 @@ impl Processor {
                 match (p, w) {
                     (false, false) => {
                         if u {
-                            TransfCpAdrTy::Unindexed
+                            AdrMode5::Unindexed
                         } else {
                             // Might be undefined depending on version.
                             return CondInstr::Unpred;
                         }
                     }
-                    (false, true) => TransfCpAdrTy::Post,
-                    (true, false) => TransfCpAdrTy::Offset,
-                    (true, true) => TransfCpAdrTy::Pre,
+                    (false, true) => AdrMode5::Post,
+                    (true, false) => AdrMode5::Offset,
+                    (true, true) => AdrMode5::Pre,
                 }
             };
             CondInstr::CPTransfer(CPTransfer {

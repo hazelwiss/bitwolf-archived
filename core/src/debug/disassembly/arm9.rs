@@ -6,8 +6,7 @@ mod misc;
 
 use crate::{
     cpu::{arm9::bus, bus::DebugAccess},
-    engine::Engine,
-    Core,
+    Core, Engine,
 };
 use alloc::{string::String, vec::Vec};
 use arm_decode::*;

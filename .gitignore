@@ -2,3 +2,4 @@
 imgui.*
 makefile
 /core/gen
+.vscode

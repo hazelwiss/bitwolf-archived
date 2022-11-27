@@ -18,7 +18,6 @@ extern crate self as bitwolf_core;
 
 pub mod core;
 pub mod debug;
-pub mod engine;
 pub mod interpreter;
 
 mod cartridge;
@@ -30,8 +29,12 @@ pub use interpreter::Interpreter;
 
 use alloc::{boxed::Box, vec::Vec};
 use cpu::{arm7, arm9};
-use engine::Engine;
 use util::log::{self, Logger};
+
+pub trait Engine {
+    type GlobalData: Default;
+    type Arm9Data: Default;
+}
 
 pub struct CoreBuilder {
     pub rom: Vec<u8>,
@@ -89,6 +92,6 @@ pub struct Core<E: Engine> {
     pub arm7: arm7::Arm7,
     engine_data: E::GlobalData,
     main_memory: Box<[u8; mb!(4)]>,
-    pub(crate) cartidge_header: cartridge::Header,
-    pub(crate) log: Logger,
+    cartidge_header: cartridge::Header,
+    log: Logger,
 }

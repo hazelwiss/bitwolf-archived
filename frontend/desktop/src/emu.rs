@@ -1,5 +1,5 @@
 use crate::debug_views::{self, DVEmuStateMsg, DVStateMsg};
-use bitwolf_core::{debug, engine::Engine, interpreter, Core};
+use bitwolf_core::{debug, interpreter, Core, Engine};
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -45,13 +45,14 @@ fn dv_update<E: Engine>(
             start_adr.wrapping_add((4 * i) as u32),
         ))
     }
-    let _ = sender.send(EmuMsg::DebugView(DVStateMsg::DisassemblyView(
-        debug_views::disassembly::Local { disasm: vec },
+    let _ = sender.send(EmuMsg::DebugView(DVStateMsg::Disassembly(
+        debug_views::Disassembly { disasm: vec },
     )));
 
     let _ = sender.send(EmuMsg::DebugView(DVStateMsg::Registers(
-        debug_views::registers::State {
+        debug_views::Registers {
             pc: core.arm9.registers.get_pc(),
+            gpr: core.arm9.registers.gpr,
         },
     )));
 }
@@ -68,7 +69,7 @@ pub fn run(
     let mut dv_conf = debug_views::DVEmuState::default();
 
     let _ = sender.send(EmuMsg::DebugView(DVStateMsg::Cartridge(
-        debug_views::cartridge::State {
+        debug_views::Cartridge {
             cartridge_header: debug::cartridge_info::cartridge_header(&core),
         },
     )));
@@ -78,7 +79,7 @@ pub fn run(
         if let Ok(recv) = recver.try_recv() {
             match recv {
                 FrontendMsg::DebugView(conf) => match conf {
-                    DVEmuStateMsg::DisassemblyView(conf) => dv_conf.disassembly_view = conf,
+                    DVEmuStateMsg::Disassembly(conf) => dv_conf.disassembly_view = conf,
                     DVEmuStateMsg::Cartridge(cart) => dv_conf.cartridge_view = cart,
                     DVEmuStateMsg::Control(control) => {
                         arm9_step = if let Some(val) = control.arm9_step {
@@ -87,6 +88,7 @@ pub fn run(
                             0
                         };
                     }
+                    DVEmuStateMsg::Registers(_) => todo!(),
                 },
             }
         }
