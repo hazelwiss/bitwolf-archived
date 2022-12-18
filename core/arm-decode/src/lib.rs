@@ -102,7 +102,7 @@ pub enum MiscTransfTy {
     /// Signed halfword.
     SH,
     /// Unsigned halfword.
-    H,
+    H { load: bool },
     /// Signed byte.
     SB,
 }
@@ -125,7 +125,7 @@ pub enum MulTy {
 
 #[derive(FullPrint, Debug, PartialEq, Eq)]
 pub enum AdrModeTy {
-    Post { translation: bool },
+    Post,
     Pre,
     Offset,
 }
@@ -140,7 +140,7 @@ impl AdrModeTy {
                 Offset
             }
         } else {
-            Post { translation: w }
+            Post
         }
     }
 }
@@ -224,7 +224,6 @@ macros::struct_enum! {
         },
         #[derive(FullPrint, PartialEq, Eq)]
         MiscTransfer {
-            load: bool,
             /// Add the offset (true) or subtract the offset (false).
             add_ofs: bool,
             imm: bool,
@@ -429,8 +428,7 @@ impl Processor {
                     let bits = (instr >> 5) & 0b11;
                     if bits == 0b01 {
                         CondInstr::MiscTransfer(MiscTransfer {
-                            load: b20,
-                            ty: MiscTransfTy::H,
+                            ty: MiscTransfTy::H { load: b20 },
                             add_ofs,
                             imm,
                             adr_ty: addressing,
@@ -441,7 +439,6 @@ impl Processor {
                         if b20 {
                             let halfword = instr & b!(5) != 0;
                             CondInstr::MiscTransfer(MiscTransfer {
-                                load: true,
                                 ty: if halfword {
                                     MiscTransfTy::SH
                                 } else {

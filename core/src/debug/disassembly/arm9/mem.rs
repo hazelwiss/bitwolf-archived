@@ -18,7 +18,7 @@ fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: AdrModeTy) -> 
     );
     if show_oper {
         match adr_ty {
-            AdrModeTy::Post { .. } => format!("[{rn}], {oper}"),
+            AdrModeTy::Post => format!("[{rn}], {oper}"),
             AdrModeTy::Pre => todo!("[{rn}, {oper}]!"),
             AdrModeTy::Offset => format!("[{rn}, {oper}]"),
         }
@@ -57,7 +57,7 @@ pub fn transfer<const ARG: Transfer>(_: u32, instr: u32) -> String {
         };
         let base = reg(rn & 0xF);
         match ARG.adr_ty {
-            AdrModeTy::Post { translation } => (format!("[{base}]{operand}"), translation),
+            AdrModeTy::Post => (format!("[{base}]{operand}"), (instr >> 21) & 0b1 != 0),
             AdrModeTy::Pre => (format!("[{base}{operand}]!"), false),
             AdrModeTy::Offset => (format!("[{base}{operand}]"), false),
         }
@@ -78,16 +78,12 @@ pub fn misc_transfer<const ARG: MiscTransfer>(_: u32, instr: u32) -> String {
     let rn = (instr >> 16) & 0xF;
     let oper = adr_m_3(instr, rn, ARG.add_ofs, ARG.imm, ARG.adr_ty);
     let cond = cond_extract(instr);
-    format!(
-        "{}{cond}{} {rd}, {}",
-        if ARG.load { "ldr" } else { "str" },
-        match ARG.ty {
-            MiscTransfTy::SH => "sh",
-            MiscTransfTy::H => "h",
-            MiscTransfTy::SB => "sb",
-        },
-        oper
-    )
+    let (pre, post) = match ARG.ty {
+        MiscTransfTy::SH => ("ldr", "sh"),
+        MiscTransfTy::H { load } => (if load { "ldr" } else { "str" }, "h"),
+        MiscTransfTy::SB => ("ldr", "sb"),
+    };
+    format!("{pre}{cond}{post} {rd}, {oper}")
 }
 
 pub fn transfer_multiple<const ARG: TransferMult>(_: u32, instr: u32) -> String {

@@ -37,7 +37,7 @@ pub fn transfer<const ARG: arm_decode::Transfer>(core: &mut Core<Interpreter>, i
             }
         };
         match ADR_TY {
-            arm_decode::AdrModeTy::Post { translation } => {
+            arm_decode::AdrModeTy::Post => {
                 let val = if ADD_OFS {
                     rn.wrapping_add(oper)
                 } else {
@@ -97,12 +97,77 @@ pub fn misc_transfer<const ARG: arm_decode::MiscTransfer>(
 ) {
     #[allow(non_snake_case)]
     let arm_decode::MiscTransfer {
-        load: LOAD,
         add_ofs: ADD_OFS,
         imm: IMM,
         ty: TY,
         adr_ty: ADR_TY,
     } = ARG;
+    let rdi = (instr >> 12) & 0xF;
+    let rni = (instr >> 16) & 0xF;
+    let rn = core.arm9.get_reg(rni);
+    let rd = core.arm9.get_reg(rdi);
+    let adr = {
+        let oper = if IMM {
+            let lo = instr & 0xF;
+            let hi = (instr >> 8) & 0xF;
+            lo | (hi << 4)
+        } else {
+            core.arm9.get_reg(instr & 0xF)
+        };
+        match ADR_TY {
+            arm_decode::AdrModeTy::Post => {
+                core.arm9.set_reg(
+                    rni,
+                    if ADD_OFS {
+                        rn.wrapping_add(oper)
+                    } else {
+                        rn.wrapping_sub(oper)
+                    },
+                );
+                rn
+            }
+            arm_decode::AdrModeTy::Pre => {
+                let val = if ADD_OFS {
+                    rn.wrapping_add(oper)
+                } else {
+                    rn.wrapping_sub(oper)
+                };
+                core.arm9.set_reg(rni, val);
+                val
+            }
+            arm_decode::AdrModeTy::Offset => {
+                if ADD_OFS {
+                    rn.wrapping_add(oper)
+                } else {
+                    rn.wrapping_sub(oper)
+                }
+            }
+        }
+    };
+    match TY {
+        arm_decode::MiscTransfTy::SH => {
+            if adr & 0b1 != 0 {
+                super::misc::unpred(core, instr);
+            }
+            let read = bus::read16::<CPUAccess, _>(core, adr) as i16 as i32 as u32;
+            core.arm9.set_reg(rdi, read);
+        }
+        arm_decode::MiscTransfTy::H { load } => {
+            if adr & 0b1 != 0 {
+                super::misc::unpred(core, instr);
+            }
+            if load {
+                let read = bus::read16::<CPUAccess, _>(core, adr) as u32;
+                core.arm9.set_reg(rdi, read);
+            } else {
+                bus::write16::<CPUAccess, _>(core, adr, rd as u16);
+            }
+        }
+        arm_decode::MiscTransfTy::SB => {
+            let read = bus::read8::<CPUAccess, _>(core, adr) as i8 as i32 as u32;
+            core.arm9.set_reg(rdi, read);
+        }
+    }
 }
 
 pub fn transfer_multiple<const ARG: arm_decode::TransferMult>(
@@ -116,6 +181,7 @@ pub fn transfer_multiple<const ARG: arm_decode::TransferMult>(
         adr_ty: ADR_TY,
         privilige_mode: PRIVILIGE_MODE,
     } = ARG;
+    
 }
 
 pub fn transfer_double<const ARG: arm_decode::TransferDouble>(
