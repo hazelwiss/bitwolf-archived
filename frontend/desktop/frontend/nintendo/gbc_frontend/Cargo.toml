@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 # Backend crate.
-gbc_backend = {path = "../../../../../cores/bitwolf/nintendo/gbc_backend"}
+gbc_backend = {path = "../../../../../cores/cores/nintendo/gbc_backend"}
 
 # Backend crate.
 common-core = {path = "../../../../../cores/common-core"}

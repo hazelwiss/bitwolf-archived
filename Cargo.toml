@@ -3,9 +3,9 @@ members = [
     # Shared utility between backends.
     "cores/common-core",
     # The different backend cores.
-    "cores/bitwolf/nintendo/*",
+    "cores/cores/nintendo/*",
     # Frontend desktop crates.
-    "frontend/desktop/bitwolf/nintendo/*",
+    "frontend/desktop/frontend/nintendo/*",
     "frontend/desktop/common-frontend",
     "frontend/desktop/imgui",
     "frontend/desktop/libaudio",

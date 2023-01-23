@@ -25,7 +25,7 @@ libaudio = {path = "libaudio"}
 common-frontend = {path = "common-frontend"}
 
 # GBC frontend crate.
-gbc_frontend = {path = "bitwolf/nintendo/gbc_frontend"}
+gbc_frontend = {path = "frontend/nintendo/gbc_frontend"}
 
 # File dialogue crate.
 rfd = "0.8.4"
