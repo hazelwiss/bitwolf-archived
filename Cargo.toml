@@ -1,13 +1,14 @@
 [workspace]
 members = [
     # Frontend code.
-    "frontend/*",
-    # Util.
-    "util",
+    "frontend",
+    "frontend/lib",
+    # Common core code.
+    "core/common/arm",
+    "core/common/arm/arm-decode",
+    "core/common/arm/arm-decode/macros",
     # Nintendo DS core.
-    "core",
-    "core/arm-decode",
-    "core/arm-decode/macros",
+    "core/nds",
 ]
 resolver = "2"
 

@@ -1,0 +1,16 @@
+[package]
+name = "nds"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = "0.4.17"
+
+[dependencies.libfrontend]
+path = "../../frontend/lib"
+
+[dependencies.arm-decode]
+path = "../common/arm/arm-decode"
+
+[dependencies.arm]
+path = "../common/arm"

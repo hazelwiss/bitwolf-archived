@@ -1,0 +1,26 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "desktop"
+path = "desktop/main.rs"
+
+[dependencies]
+env_logger = "0.10.0"
+log = "0.4.17"
+argh = "0.1.9"
+pollster = "0.2.5"
+wgpu = "0.14.2"
+imgui = { version = "0.9.0",  features = ["tables-api"] }
+imgui-wgpu = "0.21.0"
+imgui-winit-support = "0.9.0" 
+winit = "0.27.2"
+crossbeam = "0.7.3"
+
+[dependencies.libfrontend]
+path = "lib"
+
+[dependencies.nds]
+path = "../core/nds"
