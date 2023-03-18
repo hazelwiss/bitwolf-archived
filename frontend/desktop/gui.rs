@@ -1,78 +1,42 @@
-mod debug;
 mod menu;
 mod window;
 
-use std::path::Path;
-
 use crate::config::Config;
-use crate::core::{Backend, CoreBuilder, Runner};
+use crate::core::{self, Core___};
+use crate::state::ProgramState;
 use crate::{cla, config};
+use std::path::Path;
 use winit::event_loop::EventLoop;
 
-enum CoreState {
-    Runner(Runner),
-    None,
-}
-
-impl CoreState {
-    fn empty(&self) -> bool {
-        match self {
-            CoreState::Runner(_) => true,
-            CoreState::None => false,
-        }
-    }
-}
-
-struct GUIState {
-    core: CoreState,
-    config: Config,
-    debug: debug::DebugUI,
-}
-
-impl GUIState {
-    fn spawn_core_with_config(&mut self, backend: Backend, rom: &Path) {
-        self.core = CoreState::Runner(
-            CoreBuilder::new(backend, rom.to_path_buf())
-                .from_config(&self.config)
-                .build_threaded(),
-        )
-    }
-}
-
-fn spawn_imgui_ctx() -> imgui::Context {
-    let imgui_ctx = imgui::Context::create();
-    imgui_ctx
-}
-
 pub fn main() {
-    // Initialize winit event loop, window and imgui context.
-    let event_loop = EventLoop::new();
-    let mut imgui_ctx = spawn_imgui_ctx();
-    let window = window::Builder::new()
-        .build(&event_loop, &mut imgui_ctx)
-        .expect("failed to create window");
     // Parse command line arguments and access emulator config.
     let cla = cla::from_env();
     let config = config::from_env();
-    // Create global GUI state.
-    let gui_state = GUIState {
-        core: if let Some(builder) = CoreBuilder::from_cla(&cla) {
-            CoreState::Runner(builder.from_config(&config).build_threaded())
-        } else {
-            CoreState::None
-        },
+    // Create global program state.
+    let state = ProgramState {
         config,
-        debug: debug::DebugUI::new(),
+        core: core::nds::NDS::new(),
     };
+    run_core_loop(state);
+}
+
+fn run_core_loop<C: Core___ + 'static>(state: ProgramState<C>) {
+    // Initialize winit event loop, window and imgui context.
+    let event_loop = EventLoop::new();
+    let mut imgui_ctx = imgui::Context::create();
+    let window = window::Builder::new()
+        .build(&event_loop, &mut imgui_ctx)
+        .expect("failed to create window");
     window::run(
         event_loop,
         window,
-        gui_state,
+        state,
         imgui_ctx,
         // Frame function.
         |state, ui, io, _control_flow| {
             menu::main_bar(state, ui);
-            debug::draw(state, ui);
+            Core___::draw_debug(state, ui, io);
+            Core___::run_until_sync(state);
         },
         // Input function.
         |state| {},

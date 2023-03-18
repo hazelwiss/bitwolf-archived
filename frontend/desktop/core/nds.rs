@@ -1,46 +1,20 @@
-use super::SharedData;
-use crate::debug::DebugCoreInterface;
-use nds::Interpreter;
-use std::sync::{atomic::Ordering, Arc};
+mod gui;
 
-pub(super) fn run_core_interp_threaded(
-    mut core: nds::Core<Interpreter>,
-    shared_data: Arc<SharedData>,
-    mut dbg: DebugCoreInterface,
-) {
-    while shared_data.running.load(Ordering::Relaxed) {
-        run_core_interp(
-            &mut core,
-            shared_data.paused.load(Ordering::Relaxed),
-            &mut dbg,
-        );
+use super::Core___;
+use crate::state::ProgramState;
+
+pub struct NDS {}
+
+impl NDS {
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
-pub(super) fn run_core_interp(
-    core: &mut nds::Core<Interpreter>,
-    paused: bool,
-    dbg: &mut DebugCoreInterface,
-) {
-    if paused {
-        while dbg.steps > 0 {
-            dbg.steps -= 1;
-        }
-    } else {
+impl Core___ for NDS {
+    fn run_until_sync(state: &mut ProgramState<Self>) {}
+
+    fn draw_debug(state: &mut ProgramState<Self>, ui: &mut imgui::Ui, io: &imgui::Io) {
+        gui::debug_draw(state)
     }
 }
-
-enum CtoF {}
-
-enum FotC {}
-
-pub struct Interface;
-
-impl super::InterfaceImpl for Interface {
-    type CtoF = CtoF;
-    type FtoC = FotC;
-}
-
-impl super::Interface<Interface> {}
-
-impl super::CoreInterface<Interface> {}

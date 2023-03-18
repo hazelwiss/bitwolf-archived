@@ -1,4 +1,3 @@
-use crate::core::Backend;
 use argh::FromArgs;
 use std::fmt::Display;
 use std::path::PathBuf;
@@ -6,7 +5,6 @@ use std::str::FromStr;
 
 pub struct LoadRom {
     pub rom: PathBuf,
-    pub backend: Backend,
 }
 
 pub enum LoadRomError {
@@ -37,7 +35,7 @@ impl FromStr for LoadRom {
             .split_once(':')
             .ok_or(LoadRomError::MissingColon(s.to_string()))?;
         let backend = match backend {
-            "nds" => Backend::NDS,
+            //"nds" => Backend::NDS,
             _ => return Err(LoadRomError::InvalidBackend(backend.to_string())),
         };
         let path = std::path::PathBuf::from_str(rom)
@@ -45,7 +43,7 @@ impl FromStr for LoadRom {
         if !path.exists() {
             return Err(LoadRomError::UnableToFindRom(rom.to_string()));
         }
-        Ok(Self { rom: path, backend })
+        Ok(Self { rom: path })
     }
 }
 

@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused)]
-#![feature(let_chains)]
-
-extern crate libfrontend as lib;
+#![feature(type_alias_impl_trait)]
 
 #[macro_use]
 extern crate log;
@@ -10,8 +8,9 @@ extern crate log;
 mod cla;
 mod config;
 mod core;
-mod debug;
 mod gui;
+mod state;
+
 
 fn main() {
     // Initializes logging for all cores and frontend.

@@ -1,3 +1,5 @@
+use crate::cla::CLA;
+
 #[derive(Default)]
 pub struct Config {}
 

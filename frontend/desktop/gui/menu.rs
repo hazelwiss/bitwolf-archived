@@ -1,24 +1,22 @@
+use crate::core::Core___;
+use crate::gui::ProgramState;
+use imgui::Ui;
 use std::path::Path;
 
-use crate::core::Backend;
-
-use super::GUIState;
-use imgui::Ui;
-
-pub(super) fn main_bar(state: &mut GUIState, ui: &Ui) {
+pub(super) fn main_bar<C: Core___>(state: &mut ProgramState<C>, ui: &Ui) {
     ui.main_menu_bar(|| {
         ui.menu("File", || {
-            if ui.button("tmp!") {
-                state.spawn_core_with_config(
-                    Backend::NDS,
-                    Path::new("/home/nibble/Downloads/roms/NDS/armwrestler.nds"),
-                )
-            }
+            //if ui.button("tmp!") {
+            //    state.spawn_core_with_config(
+            //        Backend::NDS,
+            //        Path::new("/home/nibble/Downloads/roms/NDS/armwrestler.nds"),
+            //    )
+            //}
         });
-        if !state.core.empty() {
-            ui.menu("Debug", || {
-                ui.checkbox("CPU", &mut state.debug.cpu_view.opened);
-            });
-        }
+        //if !state.core.empty() {
+        //    ui.menu("Debug", || {
+        //        ui.checkbox("CPU", &mut state.debug.cpu_view.opened);
+        //    });
+        //}
     });
 }

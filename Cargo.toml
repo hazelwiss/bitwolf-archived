@@ -2,13 +2,9 @@
 members = [
     # Frontend code.
     "frontend",
-    "frontend/lib",
-    # Common core code.
-    "core/common/arm",
-    "core/common/arm/arm-decode",
-    "core/common/arm/arm-decode/macros",
     # Nintendo DS core.
-    "core/nds",
+    "core",
+    "core/arm-decode",
 ]
 resolver = "2"
 
