@@ -1,11 +1,17 @@
-use crate::cla::CLA;
+use crate::cla::{LoadRom, CLA};
 
-#[derive(Default)]
-pub struct Config {}
+pub struct Config {
+    pub load_rom: Option<LoadRom>,
+}
 
 impl Config {
     pub fn from_env() -> Self {
-        Self {}
+        Self { load_rom: None }
+    }
+
+    pub fn with_cla(mut self, cla: CLA) -> Self {
+        self.load_rom = cla.load_rom;
+        self
     }
 }
 

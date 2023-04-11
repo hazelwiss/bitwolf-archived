@@ -242,14 +242,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "core"
-version = "0.1.0"
-dependencies = [
- "arm-decode",
- "log",
-]
-
-[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -622,13 +614,13 @@ name = "frontend"
 version = "0.1.0"
 dependencies = [
  "argh",
- "core",
  "crossbeam",
  "env_logger",
  "imgui",
  "imgui-wgpu",
  "imgui-winit-support",
  "log",
+ "nds",
  "pollster",
  "wgpu",
  "winit",
@@ -1083,6 +1075,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cf2aae958bd232cac5069850591667ad422d263686d75b52a065f9badeee5a3"
 dependencies = [
  "jni-sys",
+]
+
+[[package]]
+name = "nds"
+version = "0.1.0"
+dependencies = [
+ "arm-decode",
+ "log",
 ]
 
 [[package]]

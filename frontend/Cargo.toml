@@ -19,5 +19,5 @@ imgui-winit-support = "0.9.0"
 winit = "0.27.2"
 crossbeam = "0.7.3"
 
-[dependencies.core]
-path = "../core"
+[dependencies.nds]
+path = "../cores/nds"

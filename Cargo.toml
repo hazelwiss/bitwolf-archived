@@ -3,8 +3,9 @@ members = [
     # Frontend code.
     "frontend",
     # Nintendo DS core.
-    "core",
-    "core/arm-decode",
+    "cores/nds",
+    # Common
+    "common/arm-decode",
 ]
 resolver = "2"
 

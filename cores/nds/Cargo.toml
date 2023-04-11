@@ -1,5 +1,5 @@
 [package]
-name = "core"
+name = "nds"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 log = "0.4.17"
 
 [dependencies.arm-decode]
-path = "arm-decode"
+path = "../../common/arm-decode"
 
 [build-dependencies]
-arm-decode = {path = "arm-decode"}
+arm-decode = {path = "../../common/arm-decode"}

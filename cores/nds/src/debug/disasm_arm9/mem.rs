@@ -27,7 +27,7 @@ fn adr_m_3(instr: u32, rn: u32, add_ofs: bool, imm: bool, adr_ty: AdrModeTy) -> 
     }
 }
 
-pub fn transf<const ARG: Transf>(_: u32, instr: u32) -> String {
+pub fn transf<const ARG: Transf>(instr: u32) -> String {
     let cond = cond_extract(instr);
     let rd = preg((instr >> 12) & 0xF);
     let rn = (instr >> 16) & 0xF;
@@ -73,7 +73,7 @@ pub fn transf<const ARG: Transf>(_: u32, instr: u32) -> String {
     )
 }
 
-pub fn transf_misc<const ARG: TransfMisc>(_: u32, instr: u32) -> String {
+pub fn transf_misc<const ARG: TransfMisc>(instr: u32) -> String {
     let rd = preg((instr >> 12) & 0xF);
     let rn = (instr >> 16) & 0xF;
     let oper = adr_m_3(instr, rn, ARG.add_ofs, ARG.imm, ARG.adr_ty);
@@ -86,7 +86,7 @@ pub fn transf_misc<const ARG: TransfMisc>(_: u32, instr: u32) -> String {
     format!("{pre}{cond}{post} {rd}, {oper}")
 }
 
-pub fn transf_mult<const ARG: TransfMult>(_: u32, instr: u32) -> String {
+pub fn transf_mult<const ARG: TransfMult>(instr: u32) -> String {
     let rn = preg((instr >> 16) & 0xF);
     let register_list = {
         let mut len = 0;
@@ -142,7 +142,7 @@ pub fn transf_mult<const ARG: TransfMult>(_: u32, instr: u32) -> String {
     )
 }
 
-pub fn transf_double<const ARG: TransfDouble>(_: u32, instr: u32) -> String {
+pub fn transf_double<const ARG: TransfDouble>(instr: u32) -> String {
     let start = (instr >> 12) & 0xE; // ignore lower bit.
     let rn = (instr >> 16) & 0xF;
     let lo = preg(start);
@@ -155,7 +155,7 @@ pub fn transf_double<const ARG: TransfDouble>(_: u32, instr: u32) -> String {
     )
 }
 
-pub fn cp_transf<const ARG: CpTransf>(_: u32, instr: u32) -> String {
+pub fn cp_transf<const ARG: CpTransf>(instr: u32) -> String {
     let rn = preg((instr >> 16) & 0xF);
     let crd = (instr >> 12) & 0xF;
     let proc = (instr >> 8) & 0xF;

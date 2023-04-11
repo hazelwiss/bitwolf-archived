@@ -1,9 +1,11 @@
+use crate::frontend::Core;
 use argh::FromArgs;
 use std::fmt::Display;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 pub struct LoadRom {
+    pub core: Core,
     pub rom: PathBuf,
 }
 
@@ -31,19 +33,19 @@ impl FromStr for LoadRom {
     type Err = LoadRomError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (backend, rom) = s
+        let (core, rom) = s
             .split_once(':')
             .ok_or(LoadRomError::MissingColon(s.to_string()))?;
-        let backend = match backend {
-            //"nds" => Backend::NDS,
-            _ => return Err(LoadRomError::InvalidBackend(backend.to_string())),
+        let core = match core {
+            "nds" => Core::NDS,
+            _ => return Err(LoadRomError::InvalidBackend(core.to_string())),
         };
         let path = std::path::PathBuf::from_str(rom)
             .or(Err(LoadRomError::InvalidPath(rom.to_string())))?;
         if !path.exists() {
             return Err(LoadRomError::UnableToFindRom(rom.to_string()));
         }
-        Ok(Self { rom: path })
+        Ok(Self { rom: path, core })
     }
 }
 
@@ -51,7 +53,7 @@ impl FromStr for LoadRom {
 #[derive(FromArgs)]
 pub struct CLA {
     /// initial rom loading.
-    /// [backend]:[rom]
+    /// [[core]]:[[rom]]
     #[argh(option)]
     pub load_rom: Option<LoadRom>,
 }

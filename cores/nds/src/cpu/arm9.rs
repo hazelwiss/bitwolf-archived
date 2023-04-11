@@ -5,8 +5,8 @@ use super::psr::PSR;
 use crate::Engine;
 
 pub struct ARM9<E: Engine> {
-    pub(crate) gpr: [u32; 16],
-    pub(crate) cpsr: PSR,
+    pub gpr: [u32; 16],
+    pub cpsr: PSR,
     bus_ptrs: Box<Ptrs>,
     data: E::ARM9Data,
 }

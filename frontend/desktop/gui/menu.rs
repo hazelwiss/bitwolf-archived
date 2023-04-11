@@ -1,9 +1,9 @@
-use crate::core::Core___;
-use crate::gui::ProgramState;
+use super::State;
+use crate::frontend::Frontend;
 use imgui::Ui;
 use std::path::Path;
 
-pub(super) fn main_bar<C: Core___>(state: &mut ProgramState<C>, ui: &Ui) {
+pub(super) fn main_bar(state: &mut State, ui: &Ui) {
     ui.main_menu_bar(|| {
         ui.menu("File", || {
             //if ui.button("tmp!") {
@@ -13,10 +13,9 @@ pub(super) fn main_bar<C: Core___>(state: &mut ProgramState<C>, ui: &Ui) {
             //    )
             //}
         });
-        //if !state.core.empty() {
-        //    ui.menu("Debug", || {
-        //        ui.checkbox("CPU", &mut state.debug.cpu_view.opened);
-        //    });
-        //}
+        match &mut state.frontend {
+            Frontend::None => {}
+            other => ui.menu("Debug", || other.draw_menu_debug(ui)),
+        }
     });
 }

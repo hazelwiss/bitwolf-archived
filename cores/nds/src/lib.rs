@@ -1,5 +1,6 @@
 //TMP
 #![allow(dead_code)]
+#![allow(unused)]
 //
 #![feature(stmt_expr_attributes)]
 #![allow(incomplete_features)]
@@ -10,10 +11,10 @@
 extern crate log;
 
 pub mod cpu;
+pub mod debug;
 pub mod interpreter;
 
 mod bus;
-mod debug;
 
 pub use interpreter::Interpreter;
 
@@ -29,11 +30,11 @@ pub trait Engine {
 
 pub struct Core<E: Engine> {
     global_data: E::GlobalData,
-    arm9: ARM9<E>,
+    pub arm9: ARM9<E>,
 }
 
 impl<E: Engine> Core<E> {
-    pub fn new() -> Self {
+    pub fn new(rom: Box<[u8]>) -> Self {
         let mut arm9 = ARM9::<E>::new();
         arm9.init();
         Self {
@@ -42,3 +43,5 @@ impl<E: Engine> Core<E> {
         }
     }
 }
+
+unsafe impl<E: Engine> Send for Core<E> {}

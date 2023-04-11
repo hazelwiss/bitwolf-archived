@@ -1,7 +1,7 @@
 use super::{cond_extract, pcond, preg};
 use arm_decode::*;
 
-pub fn dp<const ARG: Dp>(_: u32, instr: u32) -> String {
+pub fn dp<const ARG: Dp>(instr: u32) -> String {
     let rd_i = (instr >> 12) & 0xF;
     let rn_i = (instr >> 16) & 0xF;
     let rd = preg(rd_i);
@@ -71,14 +71,14 @@ pub fn dp<const ARG: Dp>(_: u32, instr: u32) -> String {
     }
 }
 
-pub fn clz(_: u32, instr: u32) -> String {
+pub fn clz(instr: u32) -> String {
     let rd = preg((instr >> 12) & 0xF);
     let rm = preg(instr & 0xF);
     let cond = cond_extract(instr);
     format!("clz{cond} {rd}, {rm}")
 }
 
-pub fn msr<const ARG: Msr>(_: u32, instr: u32) -> String {
+pub fn msr<const ARG: Msr>(instr: u32) -> String {
     let psr = if ARG.r { "spsr" } else { "cpsr" };
     let arg = if ARG.imm {
         let imm = instr & 0xF;
@@ -92,13 +92,13 @@ pub fn msr<const ARG: Msr>(_: u32, instr: u32) -> String {
     format!("msr{cond} {psr}_, {arg}")
 }
 
-pub fn mrs<const ARG: Mrs>(_: u32, instr: u32) -> String {
+pub fn mrs<const ARG: Mrs>(instr: u32) -> String {
     let rd = preg((instr >> 12) & 0xF);
     let cond = cond_extract(instr);
     format!("mrs{cond} {rd}, {}", if ARG.r { "spsr" } else { "cpsr" })
 }
 
-pub fn mul<const ARG: Mul>(_: u32, instr: u32) -> String {
+pub fn mul<const ARG: Mul>(instr: u32) -> String {
     let rm = preg((instr >> 8) & 0xF);
     let rs = preg((instr >> 8) & 0xF);
     let rd = preg((instr >> 16) & 0xF);
@@ -117,7 +117,7 @@ pub fn mul<const ARG: Mul>(_: u32, instr: u32) -> String {
     }
 }
 
-pub fn qarith<const ARG: QArith>(_: u32, instr: u32) -> String {
+pub fn qarith<const ARG: QArith>(instr: u32) -> String {
     let opc_m = (ARG.sub, ARG.doubles);
     let opc = match opc_m {
         (true, true) => "qdsub",
@@ -141,7 +141,7 @@ pub fn qarith<const ARG: QArith>(_: u32, instr: u32) -> String {
     )
 }
 
-pub fn dsp_mul<const ARG: DspMul>(_: u32, instr: u32) -> String {
+pub fn dsp_mul<const ARG: DspMul>(instr: u32) -> String {
     let arg_ty = #[inline(always)]
     |b: bool| {
         if b {
@@ -165,7 +165,7 @@ pub fn dsp_mul<const ARG: DspMul>(_: u32, instr: u32) -> String {
     }
 }
 
-pub fn cp_dp(_: u32, instr: u32) -> String {
+pub fn cp_dp(instr: u32) -> String {
     let cond_val = (instr >> 28) & 0xF;
     let cond = pcond(cond_val & 0xF);
     let crn = (instr >> 16) & 0xF;
@@ -181,7 +181,7 @@ pub fn cp_dp(_: u32, instr: u32) -> String {
     }
 }
 
-pub fn cp_mov<const ARG: CpMov>(_: u32, instr: u32) -> String {
+pub fn cp_mov<const ARG: CpMov>(instr: u32) -> String {
     let crn = (instr >> 16) & 0xF;
     let crm = instr & 0xF;
     let rd = preg((instr >> 12) & 0xF);

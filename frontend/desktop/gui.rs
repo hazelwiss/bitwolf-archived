@@ -1,26 +1,32 @@
+pub mod debug;
+
 mod menu;
 mod window;
 
 use crate::config::Config;
-use crate::core::{self, Core___};
-use crate::state::ProgramState;
+use crate::frontend::Frontend;
 use crate::{cla, config};
 use std::path::Path;
 use winit::event_loop::EventLoop;
 
+struct State {
+    config: config::Config,
+    frontend: Frontend,
+}
+
 pub fn main() {
     // Parse command line arguments and access emulator config.
     let cla = cla::from_env();
-    let config = config::from_env();
-    // Create global program state.
-    let state = ProgramState {
+    let config = config::from_env().with_cla(cla);
+    // Gui state.
+    let state = State {
+        frontend: Frontend::nds(
+            std::fs::read(&config.load_rom.as_ref().expect("expected initial rom cli command").rom)
+                .expect("failed to read rom")
+                .into_boxed_slice(),
+        ),
         config,
-        core: core::nds::NDS::new(),
     };
-    run_core_loop(state);
-}
-
-fn run_core_loop<C: Core___ + 'static>(state: ProgramState<C>) {
     // Initialize winit event loop, window and imgui context.
     let event_loop = EventLoop::new();
     let mut imgui_ctx = imgui::Context::create();
@@ -35,12 +41,11 @@ fn run_core_loop<C: Core___ + 'static>(state: ProgramState<C>) {
         // Frame function.
         |state, ui, io, _control_flow| {
             menu::main_bar(state, ui);
-            Core___::draw_debug(state, ui, io);
-            Core___::run_until_sync(state);
+            state.frontend.update(ui, io);
         },
         // Input function.
-        |state| {},
+        |state| info!("input!"),
         // Exit function.
-        |state| {},
+        |state| info!("exit!"),
     );
 }
