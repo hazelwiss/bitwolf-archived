@@ -1,20 +1,40 @@
-#![allow(dead_code)]
-#![allow(unused)]
-#![feature(atomic_bool_fetch_not)]
-#![feature(type_alias_impl_trait)]
+use std::fs;
+
+use nds::Interpreter;
+
+#[macro_use]
+extern crate anyhow;
 
 #[macro_use]
 extern crate log;
 
-mod cla;
-mod config;
-mod frontend;
+mod cargs;
 mod gui;
 
 fn main() {
-    // Initializes logging for all cores and frontend.
     env_logger::builder()
-        .filter_level(log::LevelFilter::Off)
+        .filter_level(log::LevelFilter::Warn)
         .init();
-    gui::main()
+    let cargs = cargs::from_env();
+    let core = nds::Core::<nds::Interpreter>::new(
+        fs::read(&cargs.rom.expect("didn't supply rom"))
+            .expect("failed to read rom")
+            .into_boxed_slice(),
+    );
+    struct State {
+        core: nds::Core<Interpreter>,
+    }
+    gui::run(
+        State { core },
+        |state| {
+            info!("kbd input");
+        },
+        |state, ctx| {
+            egui::Window::new("test").show(ctx, |ui| {
+                ui.label("hello");
+            });
+            nds::interpreter::step(&mut state.core);
+        },
+        |state| info!("exiting"),
+    );
 }

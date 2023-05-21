@@ -9,3 +9,5 @@ impl Engine for Interpreter {
     type ARM9Data = ();
     type ARM7Data = ();
 }
+
+pub fn step(core: &mut Core<Interpreter>) {}

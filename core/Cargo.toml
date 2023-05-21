@@ -7,7 +7,7 @@ edition = "2021"
 log = "0.4.17"
 
 [dependencies.arm-decode]
-path = "../../common/arm-decode"
+path = "../arm-decode"
 
 [build-dependencies]
-arm-decode = {path = "../../common/arm-decode"}
+arm-decode = {path = "../arm-decode"}
